@@ -13,6 +13,7 @@
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.3",
     "@types/react-router-dom": "^5.1.1",
+    "electron-rebuild": "^1.8.6",
     "node-sass": "^4.13.0",
     "parcel-bundler": "^1.12.3",
     "react-router-dom": "^5.1.2",

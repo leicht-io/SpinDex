@@ -1,13 +1,11 @@
 const {app, BrowserWindow} = require('electron');
-const SerialPort = require('serialport')
-const Readline = require('@serialport/parser-readline')
-const port = new SerialPort('COM3', {baudRate: 9600})
+const SerialPort = require('serialport');
+const Readline = require('@serialport/parser-readline');
+const port = new SerialPort('COM3', {baudRate: 9600});
+const fs = require('fs');
 
 const parser = new Readline();
 port.pipe(parser);
-
-parser.on('data', line => console.log(`> ${line}`))
-
 
 const mainWindow = function createWindow() {
     const window = new BrowserWindow({
@@ -23,3 +21,8 @@ const mainWindow = function createWindow() {
 };
 
 app.on('ready', mainWindow);
+
+parser.on('data', line => {
+    fs.appendFile("tmp/test", line + "\n", function (err) {
+    });
+});
