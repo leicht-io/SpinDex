@@ -1,19 +1,30 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import { Container, CssBaseline } from '@material-ui/core';
+import * as React from 'react';
+import { render } from 'react-dom';
+import { App } from './components/App';
+import { Sidebar } from './components/Sidebar';
+import { TopBar } from './components/TopBar';
+import { Dashboard } from './routes/dashboard';
 
-class HelloMessage extends React.Component<any> {
+const renderApp = () => {
+    render(
+        <React.Fragment>
+            <App>
+                <CssBaseline />
+                <TopBar />
 
-    render() {
-        this.getData();
+                <Container maxWidth={false}>
+                    <Sidebar />
+                    <Dashboard />
+                </Container>
+            </App>
+        </React.Fragment>,
+        document.getElementById('app')
+    );
+};
 
-        return <div>
-            <div className="container">
-                <h1>Hello {this.props.name}</h1>
-            </div>
-        </div>;
-    }
+renderApp();
+
+if ((module as any).hot) {
+    (module as any).hot.accept(renderApp);
 }
-
-let App = document.getElementById('app');
-
-ReactDOM.render(<HelloMessage name="Lars"/>, App);
