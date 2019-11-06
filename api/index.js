@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 var sqlite3 = require('sqlite3').verbose()
-var db = new sqlite3.Database('astraeus.db');
+var db = new sqlite3.Database('astraeus.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");
@@ -15,23 +15,21 @@ app.listen(3000, () => {
 });
 
 
-app.get("/url", (req, res, next) => {
+app.get("/rpm/add", (req, res, next) => {
     var stmt = db.prepare('INSERT INTO rpm VALUES (?)');
-    stmt.run(20.2).finalize();
+    stmt.run(20).finalize();
 
-    return res.json({status: "OK"});
+    res.json({status: "OK"});
 });
 
 app.get("/rpm/latest", (req, res, next) => {
-    db.all("SELECT * FROM rpm", (data) => {
-        res.json(data);
+    db.all("SELECT * FROM rpm", (error, data) => {
+        res.json(data[data.length - 1]);
     });
 });
 
 app.get("/rpm/all", (req, res, next) => {
-    return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM rpm", function (err, rows) {
-            res.json(rows);
-        });
-    })
+    db.all("SELECT * FROM rpm", function (err, rows) {
+        res.json(rows);
+    });
 });
