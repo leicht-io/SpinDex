@@ -17,6 +17,7 @@
     "node-sass": "^4.13.0",
     "parcel-bundler": "^1.12.3",
     "react-router-dom": "^5.1.2",
+    "recharts": "^1.8.5",
     "serialport": "^8.0.5"
   },
   "devDependencies": {
