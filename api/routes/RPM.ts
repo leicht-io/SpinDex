@@ -2,22 +2,25 @@ export class RPM {
 
     public static initRoutes(database, app) {
         app.post("/rpm/add", (req, res, next) => {
-            let value: number | null = null;
-
             try {
-                value = Number(req.body.value);
-            } catch (e) {
-                value = null;
-            }
+                let value: number | null = null;
 
-            if (value === null || isNaN(value)) {
-                res.status(500);
-                res.json({error: "value is NaN"});
-            } else {
-                const statement = database.prepare("INSERT INTO " + this.databaseName + " VALUES (?, ?)");
-                statement.run(value, Date.now()).finalize();
+                try {
+                    value = Number(req.body.value);
+                } catch (e) {
+                    value = null;
+                }
 
-                res.json();
+                if (value === null || isNaN(value)) {
+                    res.status(500);
+                    res.json({error: "value is NaN"});
+                } else {
+                    const statement = database.prepare("INSERT INTO " + this.databaseName + " VALUES (?, ?)");
+                    statement.run(value, Date.now()).finalize();
+                    res.json({status: 200});
+                }
+            } catch (err) {
+                 next(err);
             }
         });
 
