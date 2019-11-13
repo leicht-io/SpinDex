@@ -1,41 +1,31 @@
 export class RPM {
+    private static databaseName = 'rpm';
 
-    public static initRoutes(database, app) {
-        app.post("/rpm/add", (req, res, next) => {
-            try {
-                let value: number | null = null;
+    public static add(value: string, database: any) {
+        return new Promise((resolve, reject) => {
+            if (value !== null && !isNaN(Number(value))) {
+                const statement = database.prepare('INSERT INTO ' + this.databaseName + ' VALUES (?, ?)');
+                const now = Date.now();
+                statement.run(value, now).finalize();
 
-                try {
-                    value = Number(req.body.value);
-                } catch (e) {
-                    value = null;
-                }
-
-                if (value === null || isNaN(value)) {
-                    res.status(500);
-                    res.json({error: "value is NaN"});
-                } else {
-                    const statement = database.prepare("INSERT INTO " + this.databaseName + " VALUES (?, ?)");
-                    statement.run(value, Date.now()).finalize();
-                    res.json({status: 200});
-                }
-            } catch (err) {
-                 next(err);
+                resolve({value, timestamp: now});
             }
         });
+    }
 
-        app.get("/rpm/latest", (req, res, next) => {
-            database.all("SELECT * FROM rpm", (error, data) => {
-                res.json(data[data.length - 1]);
-            });
-        });
-
-        app.get("/rpm/all", (req, res, next) => {
-            database.all("SELECT * FROM " + this.databaseName, (err, rows) => {
-                res.json(rows);
+    public static getAll(database: any) {
+        return new Promise((resolve, reject) => {
+            database.all('SELECT * FROM ' + this.databaseName, (err: any, rows: any) => {
+                resolve(rows);
             });
         });
     }
 
-    private static databaseName = "rpm";
+    public static getLatest(database: any) {
+        return new Promise((resolve, reject) => {
+            database.all('SELECT * FROM rpm', (error: any, data: any) => {
+                resolve(data[data.length - 1]);
+            });
+        });
+    }
 }
