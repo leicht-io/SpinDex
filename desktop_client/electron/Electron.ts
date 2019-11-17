@@ -5,7 +5,7 @@ import WebSocket from 'ws';
 import { API } from '../../api/API';
 
 export class Electron {
-    private WebSocketServer = new WebSocket('ws://localhost:3000');
+    private webSocket: WebSocket = new WebSocket('ws://localhost:3000');
     private port = new SerialPort('COM4', {baudRate: 9600});
     private parser = new Readline();
     private webAPI: API = new API();
@@ -18,7 +18,7 @@ export class Electron {
             this.createWindow();
             this.checkDevices();
             this.startAPI();
-            this.startWebSocket();
+            this.sendDataToAPI();
         });
 
         app.on('before-quit', () => {
@@ -47,12 +47,11 @@ export class Electron {
         });
     }
 
-    private startWebSocket() {
-        this.WebSocketServer.on('open', () => {
-            this.parser.on('data', (line: string) => {
-                const value = JSON.stringify({type: 'add', value: line});
-                this.WebSocketServer.send(value);
-            });
+    private sendDataToAPI() {
+        this.parser.on('data', (line: string) => {
+            const value = JSON.stringify({type: 'add', value: line});
+
+            this.webSocket.send(value);
         });
     }
 

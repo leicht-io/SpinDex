@@ -9,9 +9,14 @@ export const Dashboard = () => {
     const [currentRPM, setCurrentRPM] = React.useState<number>(0.00);
     const [currentData, setCurrentData] = React.useState<any>();
 
+    webSocket.onopen = () => {
+        console.log("socket open!")
+    }
+
     webSocket.onmessage = (event) => {
-        console.log('got', JSON.parse(event.data));
-        setCurrentRPM(JSON.parse(event.data).value);
+        const value = Number(JSON.parse(event.data).value);
+        console.log(JSON.parse(event.data).value)
+        setCurrentRPM(value);
     };
 
     /*React.useEffect(() => {

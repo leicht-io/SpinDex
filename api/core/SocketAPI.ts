@@ -17,13 +17,17 @@ export class SocketAPI {
         const wss: any = new WebSocket.Server({server});
 
         wss.on('connection', (ws: WebSocket) => {
-            console.log('WS connection OPEN');
+            console.log('WS connection open!');
             ws.on('message', (message: string) => {
                 const parsedMessage: any = JSON.parse(message);
-
+                console.log('Got data from controller: ' + parsedMessage.value);
                 if (parsedMessage.type === 'add') {
                     RPM.add(parsedMessage.value, this.database).then((response) => {
-                        ws.send(JSON.stringify(response));
+                        console.log('Added to database');
+
+                        wss.clients.forEach(function each(client) {
+                            client.send(JSON.stringify(response));
+                        });
                     });
                 }
 
