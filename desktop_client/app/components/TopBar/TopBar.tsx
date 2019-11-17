@@ -1,16 +1,14 @@
-import { Pane, Text, ThemeConsumer } from 'evergreen-ui';
 import * as React from 'react';
+import { ProfileButtons } from '../ProfileButtons/ProfileButtons';
+import { Typography } from '../Typography/Typography';
+import './topbar.scss';
 
 export const TopBar = () => {
     return (
-        <ThemeConsumer>
-            { (theme) => (
-                <Pane display="flex" elevation={ 2 } background={ theme.colors.background.overlay } height={ 64 } margin={ 0 }
-                      padding={ 0 }>
-                    <Text>Pane</Text>
-                </Pane>)
-            }
-        </ThemeConsumer>
+        <div className="topbar">
+            <Typography>Profiles</Typography>
 
+            <ProfileButtons/>
+        </div>
     );
 };

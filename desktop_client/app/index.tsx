@@ -1,9 +1,19 @@
 import * as React from 'react';
 import { render } from 'react-dom';
+
+import WebFont from 'webfontloader';
 import { App } from './components/App';
+import { Container } from './components/Container';
+import { Page } from './components/Page';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { Dashboard } from './routes/dashboard';
+
+WebFont.load({
+    google: {
+        families: ['Open-Sans Web:300,400,700', 'sans-serif']
+    }
+});
 
 const renderApp = () => {
     render(
@@ -11,8 +21,12 @@ const renderApp = () => {
             <App>
                 <TopBar />
 
-                <Sidebar />
-                <Dashboard />
+                <Container>
+                    <Sidebar />
+                    <Page>
+                        <Dashboard />
+                    </Page>
+                </Container>
             </App>
         </React.Fragment>,
         document.getElementById('app')

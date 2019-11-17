@@ -1,10 +1,10 @@
-import { Pane } from 'evergreen-ui';
 import * as React from 'react';
-
-export const drawerWidth = 360;
+import './sidebar.scss';
 
 export const Sidebar = () => {
     return (
-        <Pane />
+        <div className="sidebar">
+            <div />
+        </div>
     );
 };

@@ -1,5 +1,6 @@
-import { Pane } from 'evergreen-ui';
 import * as React from 'react';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Divider } from '../../components/Divider';
 import { HotSpotCard } from '../../components/HotSpotCard';
 
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
@@ -34,34 +35,21 @@ export const Dashboard = () => {
     }, []);*/
 
     return (
-        <Pane clearfix={ true }>
-            <Pane
-                elevation={ 2 }
-                float="left"
-                width={ 200 }
-                height={ 120 }
-                margin={ 24 }
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                flexDirection="column">
-                <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
-                { /*<HotSpotCard title="Temperature" value="30 C"/>
-                        <HotSpotCard title="Current" value="2.1 A"/>
-                        <HotSpotCard title="Voltage" value="12 V"/>*/}
-            </Pane>
-        </Pane>);
+        <div>
+            <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
 
-    {
-        /*<Paper className={ classes.graph }>
-                    <ResponsiveContainer height={ 300 } width="100%">
-                        <LineChart data={ currentData }>
-                            <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-                            <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </Paper>*/
-    }
+            <Divider />
+
+            <HotSpotCard>
+                <ResponsiveContainer height={ 300 } width="100%">
+                    <LineChart data={ currentData }>
+                        <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+                        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                    </LineChart>
+                </ResponsiveContainer>
+            </HotSpotCard>
+        </div>
+    );
 };

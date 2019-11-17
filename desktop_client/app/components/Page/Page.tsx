@@ -1,9 +1,9 @@
 import * as React from 'react';
-import './app.scss';
+import './page.scss';
 
-export const App = (props: any) => {
+export const Page = (props: any) => {
     return (
-        <div>
+        <div className="page">
             { props.children }
         </div>
     );

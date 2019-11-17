@@ -1,14 +1,14 @@
-import { Pane, Text } from 'evergreen-ui';
 import * as React from 'react';
+import './hotspot-card.scss';
 
 export const HotSpotCard = (props: any) => {
 
     return (
-        <Pane>
-            <Text>
+        <div className="hotspot-card">
+            <div>
                 { props.title }
-            </Text>
-            { props.value }
-        </Pane>
+            </div>
+            { props.value || props.children }
+        </div>
     );
 };

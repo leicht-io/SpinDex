@@ -1,0 +1,27 @@
+.button {
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  border-radius: 3px;
+  background: #689F38;
+  color: #fff;
+  outline: none;
+  height: 42px;
+  font-weight: 700;
+  padding: 0 16px;
+  border: none;
+  cursor: pointer;
+
+  transition: all linear 150ms;
+  will-change: background, color;
+
+  &:hover {
+    background: darken(#689F38, 5%);
+    color: darken(#fff, 5%);
+  }
+
+  &:active {
+    background: darken(#689F38, 15%);
+    color: darken(#fff, 15%);
+  }
+}
