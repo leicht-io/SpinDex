@@ -6,12 +6,11 @@ import { API } from '../../api/API';
 
 export class Electron {
     private webSocket: WebSocket = new WebSocket('ws://localhost:3000');
-    private port = new SerialPort('COM4', {baudRate: 9600});
+    private port = null;
     private parser = new Readline();
     private webAPI: API = new API();
 
     constructor() {
-        this.port.pipe(this.parser);
 
         app.on('ready', () => {
             this.startWebClient();
@@ -24,6 +23,13 @@ export class Electron {
         app.on('before-quit', () => {
             this.webAPI.stopAPI();
         });
+    }
+
+    private startSerialConnection() {
+        if (this.port !== null) {
+            // @ts-ignore
+            this.port.pipe(this.parser);
+        }
     }
 
     private createWindow() {
@@ -42,8 +48,18 @@ export class Electron {
     }
 
     private checkDevices() {
-        SerialPort.list().then((response: any) => {
-            console.log(response);
+        SerialPort.list().then((devices) => {
+            devices.forEach((device) => {
+                if (device.vendorId === '1A86' && device.productId === '7523') {
+                    this.port = new SerialPort(device.path, {baudRate: 9600});
+
+                    // @ts-ignore
+                    this.webSocket.on('open', () => {
+                        this.webSocket.send(JSON.stringify({type: 'setDeviceInfo', value: device.path}));
+                    });
+                    this.startSerialConnection();
+                }
+            });
         });
     }
 

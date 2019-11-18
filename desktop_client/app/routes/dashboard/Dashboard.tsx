@@ -11,11 +11,10 @@ export const Dashboard = () => {
 
     webSocket.onopen = () => {
         console.log("socket open!")
-    }
+    };
 
     webSocket.onmessage = (event) => {
         const value = Number(JSON.parse(event.data).value);
-        console.log(JSON.parse(event.data).value)
         setCurrentRPM(value);
     };
 

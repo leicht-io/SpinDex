@@ -6,6 +6,7 @@ export class SocketAPI {
     private database: any;
     private app: any;
     private portNumber: number = 3000;
+    private deviceInfo = null;
 
     constructor(database: any, app: any) {
         this.database = database;
@@ -20,14 +21,27 @@ export class SocketAPI {
             console.log('WS connection open!');
             ws.on('message', (message: string) => {
                 const parsedMessage: any = JSON.parse(message);
-                console.log('Got data from controller: ' + parsedMessage.value);
                 if (parsedMessage.type === 'add') {
                     RPM.add(parsedMessage.value, this.database).then((response) => {
-                        console.log('Added to database');
-
                         wss.clients.forEach(function each(client) {
                             client.send(JSON.stringify(response));
                         });
+                    });
+                }
+
+                if (parsedMessage.type === 'setDeviceInfo') {
+                    this.deviceInfo = parsedMessage;
+                }
+
+                if (parsedMessage.type === 'getDeviceInfo') {
+                    wss.clients.forEach((client) => {
+                        if (this.deviceInfo) {
+                            console.log('returning device info');
+
+                            // @ts-ignore
+                            this.deviceInfo.type = 'deviceInfo';
+                            client.send(JSON.stringify(this.deviceInfo));
+                        }
                     });
                 }
 

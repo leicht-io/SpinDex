@@ -4,6 +4,7 @@ import { render } from 'react-dom';
 import WebFont from 'webfontloader';
 import { App } from './components/App';
 import { Container } from './components/Container';
+import { Footer } from './components/Footer';
 import { Page } from './components/Page';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -26,6 +27,7 @@ const renderApp = () => {
                     <Page>
                         <Dashboard />
                     </Page>
+                    <Footer />
                 </Container>
             </App>
         </React.Fragment>,

@@ -1,0 +1,18 @@
+.footer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  align-content: stretch;
+  right: 0;
+  bottom: 0;
+  width: calc(100vw - 360px);
+  box-sizing: border-box;
+  padding: 0 24px;
+  background: #cfcfcf;
+  height: 64px;
+  left: 360px;
+
+}
