@@ -88,7 +88,6 @@ export class Electron {
 
             if (!deviceFound) {
                 this.timeout = setTimeout(() => {
-                    console.log('checking devices again');
                     this.checkDevices();
                 }, 1000);
             }

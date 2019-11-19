@@ -1,3 +1,4 @@
+import moment = require('moment');
 import * as React from 'react';
 import './sidebar.scss';
 
@@ -32,12 +33,51 @@ export const Sidebar = () => {
         <div className="sidebar">
             {
                 profiles && profiles.map((profile, index) => {
-                    const date = new Date(Number(profile.start)).toISOString().slice(0, 19).replace('T', ' ');
+                    const startDate = moment(profile.start).format('DD-MM-YYYY HH:MM:ss');
+                    const endDate = moment(profile.finish).format('DD-MM-YYYY HH:MM:ss');
+
+                    // TODO: Update this value
+                    let durationHours;
+                    if (!profile.finish) {
+                        durationHours = moment.duration(moment().diff(moment(profile.start))).asHours().toFixed(2);
+                    } else {
+                        durationHours = moment.duration(moment(profile.finish).diff(moment(profile.start))).asHours().toFixed(2);
+                    }
 
                     return (
-                        <div className="sidebar-item" key={index}>
-                            <p>{profile.name} ({profile.id})</p>
-                            <span><small><b>Start:</b> {date} </small> | <small><b>End:</b> </small></span>
+                        <div className={ `sidebar-item sidebar-item-${profile.active === 1 ? 'active' : 'inactive'} ` }
+                             key={ index }>
+                            <p>{ profile.name } ({ profile.id })</p>
+
+                            <table>
+                                <tr>
+                                    <td>
+                                        <small><b>Status:</b></small>
+                                    </td>
+                                    <td><small>{ `${profile.active === 1 ? 'Running' : 'Done'} ` }</small></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <small><b>Started:</b></small>
+                                    </td>
+                                    <td><small>{ startDate }</small></td>
+                                </tr>
+                                { profile.finish &&
+                                <tr>
+                                    <td>
+                                        <small><b>Ended:</b></small>
+                                    </td>
+                                    <td><small>{ endDate }</small></td>
+                                </tr>
+                                }
+
+                                <tr>
+                                    <td>
+                                        <small><b>Duration:</b></small>
+                                    </td>
+                                    <td><small>{ durationHours } hours</small></td>
+                                </tr>
+                            </table>
                         </div>
                     );
                 })

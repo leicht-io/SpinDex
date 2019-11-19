@@ -3,17 +3,20 @@ export class Profile {
 
     private static uuidv4() {
         return 'xxxx-xxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16).toUpperCase();
         });
-    };
+    }
 
     public static createProfile(name: string, database: any) {
         return new Promise((resolve, reject) => {
-
-            const statement = database.prepare('INSERT INTO ' + this.databaseName + ' VALUES (?, ?, ?, ?)');
             const now = Date.now();
-            statement.run(name, this.uuidv4(), now, null).finalize();
+
+            const statement2 = database.prepare('UPDATE ' + this.databaseName + ' SET finish = ' + now + ', active = false WHERE finish IS NULL');
+            statement2.run().finalize();
+
+            const statement = database.prepare('INSERT INTO ' + this.databaseName + ' VALUES (?, ?, ?, ?, ?)');
+            statement.run(name, this.uuidv4(), now, null, true).finalize();
 
             resolve({status: 'OK'});
         });

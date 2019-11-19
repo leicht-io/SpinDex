@@ -24,11 +24,24 @@
       margin: 0;
     }
 
-     span {
+    span {
       font-size: 16px;
     }
 
     padding: 16px;
     border-bottom: 1px solid #eee;
+
+    &.sidebar-item-inactive {
+      opacity: 0.5;
+    }
+  }
+}
+
+
+table {
+  width: 100%;
+
+  td:first-child {
+    width: 80px;
   }
 }

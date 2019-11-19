@@ -8,9 +8,9 @@ export const ProfileButtons = () => {
 
     return (
         <div className="profile-buttons">
-            <Button onClick={() => {
+            <Button onClick={ () => {
                 webSocket.send(JSON.stringify({type: 'createProfile', name: 'Beogram 4002'}));
-            }}>New Profile</Button>
+            } }>New Profile</Button>
         </div>
     );
 };

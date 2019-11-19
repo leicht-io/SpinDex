@@ -34,9 +34,9 @@ export class SocketAPI {
                 }
 
                 if (parsedMessage.type === 'createProfile') {
-                    Profile.createProfile(parsedMessage.name, this.database).then(response => {
+                    Profile.createProfile(parsedMessage.name, this.database).then((response) => {
                         console.log('created profile');
-                        Profile.getProfiles(this.database).then(profiles => {
+                        Profile.getProfiles(this.database).then((profiles) => {
                             wss.clients.forEach((client) => {
                                 client.send(JSON.stringify(profiles));
                             });
@@ -45,7 +45,7 @@ export class SocketAPI {
                 }
 
                 if (parsedMessage.type === 'getProfiles') {
-                    Profile.getProfiles(this.database).then(profiles => {
+                    Profile.getProfiles(this.database).then((profiles) => {
                         wss.clients.forEach((client) => {
                             client.send(JSON.stringify(profiles));
                         });
@@ -63,8 +63,6 @@ export class SocketAPI {
                 if (parsedMessage.type === 'getDeviceInfo') {
                     wss.clients.forEach((client) => {
                         if (this.deviceInfo) {
-                            console.log('returning device info');
-
                             // @ts-ignore
                             this.deviceInfo.type = 'deviceInfo';
                             client.send(JSON.stringify(this.deviceInfo));
@@ -96,7 +94,7 @@ export class SocketAPI {
             // tslint:disable-next-line:no-console
             console.log('RPM database created.');
             this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, timestamp NUMBER)');
-            this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start NUMBER, finish NUMBER)');
+            this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start INTEGER, finish INTEGER, active BOOLEAN)');
         });
     }
 }
