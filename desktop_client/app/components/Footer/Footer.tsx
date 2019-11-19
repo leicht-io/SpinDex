@@ -4,24 +4,53 @@ import './footer.scss';
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
 export const Footer = () => {
-    const [devicePath, setDevicePath] = React.useState<string>('');
+    const [devicePath, setDevicePath] = React.useState<string | null>(null);
+    const [initial, setInitial] = React.useState<boolean>(true);
 
-    webSocket.onopen = (event) => {
-        webSocket.send(JSON.stringify({type: 'getDeviceInfo'}));
+    const getContent = () => {
+        let interval;
+        webSocket.onopen = (event) => {
+            interval = setInterval(() => {
+                if (!devicePath) {
+                    webSocket.send(JSON.stringify({type: 'getDeviceInfo'}));
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1500);
 
-        webSocket.onmessage = (event: any) => {
-            const parsedEvent = JSON.parse(event.data);
-            if (parsedEvent.type === 'deviceInfo') {
-                setDevicePath((parsedEvent.value));
+            webSocket.onmessage = (event: any) => {
+                const parsedEvent = JSON.parse(event.data);
+                if (parsedEvent.type === 'deviceInfo') {
+                    setDevicePath((parsedEvent.value));
+                    setInitial(false);
+                    //webSocket.close();
+                }
 
-                webSocket.close();
-            }
+                console.log('deviceRemoved', parsedEvent);
+                if (parsedEvent.type === 'deviceRemoved') {
+                    console.log('deviceRemoved');
+                    setInitial(false);
+                    setDevicePath(null);
+                }
+            };
         };
     };
+    getContent();
+
+    let footerContent: JSX.Element;
+    if (initial) {
+        footerContent = <p>Please wait...</p>;
+    } else {
+        if (devicePath) {
+            footerContent = <p>Connected to tachometer on <b>{devicePath}</b>.</p>;
+        } else {
+            footerContent = <p>No tachometer found. Please plug it in.</p>;
+        }
+    }
 
     return (
         <div className="footer">
-            <p>Connected to tachometer on <b>{ devicePath }</b>.</p>
+            {footerContent}
         </div>
     );
 };

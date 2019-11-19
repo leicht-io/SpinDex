@@ -9,6 +9,7 @@ export class Electron {
     private port = null;
     private parser = new Readline();
     private webAPI: API = new API();
+    private timeout: any;
 
     constructor() {
 
@@ -49,17 +50,48 @@ export class Electron {
 
     private checkDevices() {
         SerialPort.list().then((devices) => {
+            let deviceFound: boolean = false;
             devices.forEach((device) => {
                 if (device.vendorId === '1A86' && device.productId === '7523') {
+                    clearTimeout(this.timeout);
+                    deviceFound = true;
+
                     this.port = new SerialPort(device.path, {baudRate: 9600});
 
-                    // @ts-ignore
-                    this.webSocket.on('open', () => {
+                    if (this.port) {
+                        // @ts-ignore
+                        this.port.on('close', () => {
+                            if (this.webSocket.readyState === 0) {
+                                this.webSocket.on('open', () => {
+                                    this.webSocket.send(JSON.stringify({type: 'deviceRemoved'}));
+                                });
+                            } else if (this.webSocket.readyState === 1) {
+                                this.webSocket.send(JSON.stringify({type: 'deviceRemoved'}));
+                            }
+
+                            deviceFound = false;
+                            this.checkDevices();
+                        });
+                    }
+
+                    if (this.webSocket.readyState === 0) {
+                        this.webSocket.on('open', () => {
+                            this.webSocket.send(JSON.stringify({type: 'setDeviceInfo', value: device.path}));
+                        });
+                    } else if (this.webSocket.readyState === 1) {
                         this.webSocket.send(JSON.stringify({type: 'setDeviceInfo', value: device.path}));
-                    });
+                    }
+
                     this.startSerialConnection();
                 }
             });
+
+            if (!deviceFound) {
+                this.timeout = setTimeout(() => {
+                    console.log('checking devices again');
+                    this.checkDevices();
+                }, 1000);
+            }
         });
     }
 

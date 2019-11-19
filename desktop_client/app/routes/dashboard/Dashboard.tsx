@@ -10,12 +10,14 @@ export const Dashboard = () => {
     const [currentData, setCurrentData] = React.useState<any>();
 
     webSocket.onopen = () => {
-        console.log("socket open!")
+        console.log('socket open!');
     };
 
     webSocket.onmessage = (event) => {
         const value = Number(JSON.parse(event.data).value);
-        setCurrentRPM(value);
+        if (!isNaN(value)) {
+            setCurrentRPM(value);
+        }
     };
 
     /*React.useEffect(() => {
@@ -40,17 +42,17 @@ export const Dashboard = () => {
 
     return (
         <div>
-            <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
+            <HotSpotCard title="RPM" value={currentRPM.toFixed(2)}/>
 
-            <Divider />
+            <Divider/>
 
             <HotSpotCard>
-                <ResponsiveContainer height={ 300 } width="100%">
-                    <LineChart data={ currentData }>
-                        <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-                        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                <ResponsiveContainer height={300} width="100%">
+                    <LineChart data={currentData}>
+                        <Line type="monotone" dataKey="uv" stroke="#8884d8"/>
+                        <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
+                        <XAxis dataKey="name"/>
+                        <YAxis/>
                     </LineChart>
                 </ResponsiveContainer>
             </HotSpotCard>

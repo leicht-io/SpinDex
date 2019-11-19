@@ -1,5 +1,6 @@
 import * as http from 'http';
 import * as WebSocket from 'ws';
+import { Profile } from '../routes/Profile';
 import { RPM } from '../routes/RPM';
 
 export class SocketAPI {
@@ -18,7 +19,6 @@ export class SocketAPI {
         const wss: any = new WebSocket.Server({server});
 
         wss.on('connection', (ws: WebSocket) => {
-            console.log('WS connection open!');
             ws.on('message', (message: string) => {
                 const parsedMessage: any = JSON.parse(message);
                 if (parsedMessage.type === 'add') {
@@ -31,6 +31,33 @@ export class SocketAPI {
 
                 if (parsedMessage.type === 'setDeviceInfo') {
                     this.deviceInfo = parsedMessage;
+                }
+
+                if (parsedMessage.type === 'createProfile') {
+                    Profile.createProfile(parsedMessage.name, this.database).then(response => {
+                        console.log('created profile');
+                        Profile.getProfiles(this.database).then(profiles => {
+                            wss.clients.forEach((client) => {
+                                client.send(JSON.stringify(profiles));
+                            });
+                        });
+                    });
+                }
+
+                if (parsedMessage.type === 'getProfiles') {
+                    Profile.getProfiles(this.database).then(profiles => {
+                        wss.clients.forEach((client) => {
+                            client.send(JSON.stringify(profiles));
+                        });
+                    });
+                }
+
+                if (parsedMessage.type === 'deviceRemoved') {
+                    this.deviceInfo = null;
+
+                    wss.clients.forEach((client) => {
+                        client.send(JSON.stringify({type: 'deviceRemoved'}));
+                    });
                 }
 
                 if (parsedMessage.type === 'getDeviceInfo') {
@@ -69,6 +96,7 @@ export class SocketAPI {
             // tslint:disable-next-line:no-console
             console.log('RPM database created.');
             this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, timestamp NUMBER)');
+            this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start NUMBER, finish NUMBER)');
         });
     }
 }
