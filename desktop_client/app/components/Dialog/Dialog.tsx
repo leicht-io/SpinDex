@@ -21,8 +21,8 @@ export const Dialog = (props: T.IProps) => {
                     { props.children }
                 </div>
                 <div className="dialog-buttons">
-                    <Button onClick={ props.onCancel }>Cancel</Button>
-                    <Button disabled={ props.acceptDisabled } onClick={ props.onAccept }>Accept</Button>
+                    <Button type="danger" onClick={ props.onCancel }>Cancel</Button>
+                    <Button type="success" disabled={ props.acceptDisabled } onClick={ props.onAccept }>Accept</Button>
                 </div>
             </div>
         </div>

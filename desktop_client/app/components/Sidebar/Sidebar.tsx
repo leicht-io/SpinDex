@@ -1,11 +1,13 @@
 import moment = require('moment');
 import * as React from 'react';
+import { ProfileButtons } from '../ProfileButtons/ProfileButtons';
 import './sidebar.scss';
 
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
 export const Sidebar = () => {
     const [profiles, setProfiles] = React.useState();
+    const [selectedProfile, setSelectedProfile] = React.useState<number>(0);
 
     webSocket.onopen = () => {
         webSocket.send(JSON.stringify({type: 'getProfiles'}));
@@ -45,8 +47,12 @@ export const Sidebar = () => {
                     }
 
                     return (
-                        <div className={ `sidebar-item sidebar-item-${profile.active === 1 ? 'active' : 'inactive'} ` }
-                             key={ index }>
+                        <div
+                            onClick={ () => {
+                                setSelectedProfile(index);
+                            } }
+                            className={ `sidebar-item sidebar-item-${profile.active === 1 ? 'active' : 'inactive'} ${selectedProfile === index ? 'sidebar-item--selected' : ''} ` }
+                            key={ index }>
                             <p>{ profile.name } ({ profile.id })</p>
 
                             <table>
@@ -82,6 +88,18 @@ export const Sidebar = () => {
                     );
                 })
             }
+
+            { !profiles || profiles.length === 0 ? <div className="no-profile-yet">No profiles yet...</div> : '' }
+
+            <ProfileButtons
+                selectedProfile={ profiles && profiles[selectedProfile] }
+                onDelete={ () => {
+                    webSocket.send(JSON.stringify({type: 'deleteProfile', id: profiles[selectedProfile].id}));
+                    webSocket.send(JSON.stringify({type: 'getProfiles'}));
+                } }
+                onStop={ () => {
+                    webSocket.send(JSON.stringify({type: 'getProfiles'}));
+                } } />
         </div>
     );
 };

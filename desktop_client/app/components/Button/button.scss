@@ -3,8 +3,6 @@
   -webkit-font-smoothing: antialiased;
 
   border-radius: 3px;
-  background: #689F38;
-  color: #fff;
   outline: none;
   height: 42px;
   font-weight: 700;
@@ -12,21 +10,41 @@
   border: none;
   cursor: pointer;
 
+  &--success {
+    background: #689F38;
+    color: #fff;
+
+    &:hover {
+      background: darken(#689F38, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken(#689F38, 15%);
+      color: darken(#fff, 15%);
+    }
+  }
+
+  &--danger {
+    background: #9f383c;
+    color: #fff;
+
+    &:hover {
+      background: darken(#9f383c, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken(#9f383c, 15%);
+      color: darken(#fff, 15%);
+    }
+  }
+
   transition: all linear 150ms;
   will-change: background, color;
 
   &[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  &:hover {
-    background: darken(#689F38, 5%);
-    color: darken(#fff, 5%);
-  }
-
-  &:active {
-    background: darken(#689F38, 15%);
-    color: darken(#fff, 15%);
   }
 }

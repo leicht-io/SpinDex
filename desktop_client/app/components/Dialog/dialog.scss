@@ -19,6 +19,8 @@
   will-change: opacity;
   transition: opacity 250ms linear;
 
+  z-index: 9;
+
   &--visible {
     opacity: 1;
   }
@@ -42,14 +44,15 @@
 
     color: #000;
     padding: 16px 24px;
+
+    p {
+      margin: 0;
+    }
   }
 
   .dialog-container {
-    width: 50vw;
-    min-width: 450px;
+    width: 450px;
     background: #fff;
-    min-height: 300px;
-    height: 40vh;
 
     display: flex;
     flex-direction: column;
@@ -59,7 +62,7 @@
     align-content: center;
 
     filter: drop-shadow(0 0 0.75rem #ccc);
-    border-radius: 3px;
+    border-radius: 8px;
 
     .dialog-buttons {
       padding: 24px;
@@ -75,5 +78,24 @@
         margin-left: 8px;
       }
     }
+  }
+}
+
+input {
+  margin-top: 16px;
+  padding: 8px;
+  width: 100%;
+  font-size: 16px;
+  line-height: 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  border: 1px solid #eee;
+  outline: none;
+  transition: border 250ms linear;
+  will-change: border;
+
+  &:focus {
+    transition: border 100ms linear;
+    border: 1px solid darken(#eee, 10%);
   }
 }

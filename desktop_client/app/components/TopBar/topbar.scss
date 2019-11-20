@@ -6,16 +6,29 @@
   box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   z-index: 3;
   padding: 0 16px;
+
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: stretch;
+  justify-content: flex-start;
+  align-items: center;
   align-content: stretch;
+
   box-sizing: border-box;
+
   position: absolute;
 
-  h1 {
+  .topbar--left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: stretch;
     width: calc(360px - 16px);
+    margin-right: 8px;
+  }
+
+  h1 {
   }
 }

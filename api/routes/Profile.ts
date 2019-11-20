@@ -22,6 +22,16 @@ export class Profile {
         });
     }
 
+    public static deleteProfile(id: string, database: any) {
+        return new Promise(((resolve, reject) => {
+            // TODO: delete data
+            const statement2 = database.prepare('DELETE FROM ' + this.databaseName + ' WHERE id = "' + id + '"');
+            statement2.run().finalize();
+
+            resolve();
+        }));
+    }
+
     public static getProfiles(database: any) {
         return new Promise((resolve, reject) => {
             database.all('SELECT * FROM ' + this.databaseName, (error: any, data: any) => {

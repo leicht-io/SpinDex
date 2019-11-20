@@ -52,6 +52,14 @@ export class SocketAPI {
                     });
                 }
 
+                if (parsedMessage.type === 'deleteProfile') {
+                    Profile.deleteProfile(parsedMessage.id, this.database).then((profiles) => {
+                        wss.clients.forEach((client) => {
+                            client.send(JSON.stringify(profiles));
+                        });
+                    });
+                }
+
                 if (parsedMessage.type === 'deviceRemoved') {
                     this.deviceInfo = null;
 
