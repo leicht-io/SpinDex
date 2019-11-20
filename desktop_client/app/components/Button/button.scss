@@ -15,6 +15,11 @@
   transition: all linear 150ms;
   will-change: background, color;
 
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   &:hover {
     background: darken(#689F38, 5%);
     color: darken(#fff, 5%);

@@ -23,7 +23,7 @@ export const Footer = () => {
                 if (parsedEvent.type === 'deviceInfo') {
                     setDevicePath((parsedEvent.value));
                     setInitial(false);
-                    //webSocket.close();
+                    // webSocket.close();
                 }
 
                 console.log('deviceRemoved', parsedEvent);
@@ -40,9 +40,12 @@ export const Footer = () => {
     let footerContent: JSX.Element;
     if (initial) {
         footerContent = <p>Please wait...</p>;
+        setTimeout(() => {
+            setInitial(false);
+        }, 2500);
     } else {
         if (devicePath) {
-            footerContent = <p>Connected to tachometer on <b>{devicePath}</b>.</p>;
+            footerContent = <p>Connected to tachometer on <b>{ devicePath }</b>.</p>;
         } else {
             footerContent = <p>No tachometer found. Please plug it in.</p>;
         }
@@ -50,7 +53,7 @@ export const Footer = () => {
 
     return (
         <div className="footer">
-            {footerContent}
+            { footerContent }
         </div>
     );
 };
