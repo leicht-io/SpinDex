@@ -19,6 +19,7 @@ export const TopBar = () => {
                 onAccept={ () => {
                     if (profileName) {
                         webSocket.send(JSON.stringify({type: 'createProfile', name: profileName}));
+                        webSocket.send(JSON.stringify({type: 'getProfiles', name: profileName}));
                         setShowDialog(false);
                     }
                 } }

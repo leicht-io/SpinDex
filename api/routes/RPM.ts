@@ -1,21 +1,22 @@
-export class RPM {
-    private static databaseName = 'rpm';
+import { BaseRoute } from '../core/BaseRoute';
 
-    public static add(value: string, database: any) {
+export class RPM extends BaseRoute {
+    private static tableName = 'rpm';
+
+    public static add(value: string, id: string | null) {
         return new Promise((resolve, reject) => {
             if (value !== null && !isNaN(Number(value))) {
-                const statement = database.prepare('INSERT INTO ' + this.databaseName + ' VALUES (?, ?)');
+                const statement = this.database.prepare('INSERT INTO ' + this.tableName + ' VALUES (?, ?, ?)');
                 const now = Date.now();
-                statement.run(value, now).finalize();
-
-                resolve({value, timestamp: now});
+                statement.run(value, id, now).finalize();
+                resolve({value, id: id, timestamp: now});
             }
         });
     }
 
-    public static getAll(database: any) {
+    public static getAll() {
         return new Promise((resolve, reject) => {
-            database.all('SELECT * FROM ' + this.databaseName, (err: any, rows: any) => {
+            this.database.all('SELECT * FROM ' + this.tableName, (err: any, rows: any) => {
                 resolve(rows);
             });
         });
@@ -23,7 +24,7 @@ export class RPM {
 
     public static getLatest(database: any) {
         return new Promise((resolve, reject) => {
-            database.all('SELECT * FROM rpm', (error: any, data: any) => {
+            this.database.all('SELECT * FROM rpm', (error: any, data: any) => {
                 resolve(data[data.length - 1]);
             });
         });

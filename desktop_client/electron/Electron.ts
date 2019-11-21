@@ -10,6 +10,7 @@ export class Electron {
     private parser = new Readline();
     private webAPI: API = new API();
     private timeout: any;
+    private sendMockData: boolean = true;
 
     constructor() {
 
@@ -39,6 +40,7 @@ export class Electron {
         const browserWindow = new BrowserWindow({
             width: 1280,
             height: 760,
+            resizable: false,
             title: 'Astraeus',
             webPreferences: {
                 nodeIntegration: true,
@@ -95,11 +97,22 @@ export class Electron {
     }
 
     private sendDataToAPI() {
-        this.parser.on('data', (line: string) => {
-            const value = JSON.stringify({type: 'add', value: line});
+        if (this.sendMockData) {
+            setInterval(() => {
+                const value = JSON.stringify({
+                    type: 'add',
+                    value: Number((Math.random() * (32.12 - 33.52) + 33.52).toFixed(2))
+                });
 
-            this.webSocket.send(value);
-        });
+                this.webSocket.send(value);
+            }, 1000);
+        } else {
+            this.parser.on('data', (line: string) => {
+                const value = JSON.stringify({type: 'add', value: line});
+
+                this.webSocket.send(value);
+            });
+        }
     }
 
     private startAPI() {

@@ -1,5 +1,6 @@
+import moment = require('moment');
 import * as React from 'react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Label, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { Divider } from '../../components/Divider';
 import { HotSpotCard } from '../../components/HotSpotCard';
 
@@ -7,7 +8,7 @@ const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
 export const Dashboard = () => {
     const [currentRPM, setCurrentRPM] = React.useState<number>(0.00);
-    const [currentData, setCurrentData] = React.useState<any>();
+    const [currentData, setCurrentData] = React.useState<any>([]);
 
     webSocket.onopen = () => {
         console.log('socket open!');
@@ -17,45 +18,34 @@ export const Dashboard = () => {
         const value = Number(JSON.parse(event.data).value);
         if (!isNaN(value)) {
             setCurrentRPM(value);
+
+            setCurrentData(currentData.concat([{value: value, timestamp: Date.now()}]));
         }
     };
 
-    /*React.useEffect(() => {
-        // TODO: Use socket instead
-        const interval = setInterval(() => {
-            // TODO: Use socket instead
-            fetch('http://localhost:3000/rpm/all')
-                .then((response) => response.json())
-                .then((values) => {
-                    const tempData = [];
-                    for (let i = 0; i < values.length; i++) {
-                        tempData.push({
-                            name: values[i].timestamp,
-                            uv: values[i].value,
-                        });
-                    }
-                    setCurrentData(tempData);
-                });
-        }, 1500);
-        return () => clearInterval(interval);
-    }, []);*/
-
     return (
         <div>
-            <HotSpotCard title="RPM" value={currentRPM.toFixed(2)}/>
+            <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
 
-            <Divider/>
+            <Divider />
 
             <HotSpotCard>
-                <ResponsiveContainer height={300} width="100%">
-                    <LineChart data={currentData}>
-                        <Line type="monotone" dataKey="uv" stroke="#8884d8"/>
-                        <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
-                        <XAxis dataKey="name"/>
-                        <YAxis/>
+                <ResponsiveContainer height={ 385 } width="100%">
+                    <LineChart data={ currentData } baseValue={ 0 } margin={ {bottom: 20, left: -0} }>
+                        <Line type="linear" dataKey="value" stroke="#8884d8" strokeWidth={ 2 } isAnimationActive={ false }
+                              dot={ false } />
+                        <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+                        <XAxis tickCount={ 5 } type={ 'number' } domain={ ['auto', 'auto'] } dataKey="timestamp"
+                               tickFormatter={ (tick) => {
+                                   return moment(tick).format('HH:mm:ss');
+                               } }>
+                            <Label value="Time" offset={ -16 } position="insideBottom" />
+                        </XAxis>
+                        <YAxis label={ {value: 'Rounds Per Minute', angle: -90, position: 'insideLeft', offset: 10} } />
                     </LineChart>
                 </ResponsiveContainer>
             </HotSpotCard>
         </div>
     );
 };
+

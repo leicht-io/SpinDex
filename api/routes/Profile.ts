@@ -1,40 +1,51 @@
-export class Profile {
-    private static databaseName = 'profile';
+import { BaseRoute } from '../core/BaseRoute';
 
-    private static uuidv4() {
-        return 'xxxx-xxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16).toUpperCase();
-        });
-    }
+export class Profile extends BaseRoute {
+    private static tableName = 'profile';
 
-    public static createProfile(name: string, database: any) {
+    public static createProfile(name: string) {
         return new Promise((resolve, reject) => {
             const now = Date.now();
 
-            const statement2 = database.prepare('UPDATE ' + this.databaseName + ' SET finish = ' + now + ', active = false WHERE finish IS NULL');
-            statement2.run().finalize();
+            this.ORM.executeStatement('UPDATE ' + this.tableName + ' SET finish = ' + now + ', active = false WHERE finish IS NULL');
 
-            const statement = database.prepare('INSERT INTO ' + this.databaseName + ' VALUES (?, ?, ?, ?, ?)');
-            statement.run(name, this.uuidv4(), now, null, true).finalize();
+            const statement = this.database.prepare('INSERT INTO ' + this.tableName + ' VALUES (?, ?, ?, ?, ?)');
+            statement.run(name, this.generateUUID(), now, null, true).finalize();
 
             resolve({status: 'OK'});
         });
     }
 
-    public static deleteProfile(id: string, database: any) {
+    public static deleteProfile(id: string) {
         return new Promise(((resolve, reject) => {
             // TODO: delete data
-            const statement2 = database.prepare('DELETE FROM ' + this.databaseName + ' WHERE id = "' + id + '"');
-            statement2.run().finalize();
+            this.ORM.executeStatement('DELETE FROM ' + this.tableName + ' WHERE id = "' + id + '"');
 
             resolve();
         }));
     }
 
-    public static getProfiles(database: any) {
+    public static hasActiveProfile(): Promise<{ active: boolean, id: string | null }> {
         return new Promise((resolve, reject) => {
-            database.all('SELECT * FROM ' + this.databaseName, (error: any, data: any) => {
+            this.database.all('SELECT * FROM ' + this.tableName, (error: any, data: any) => {
+                let hasActiveProfile: boolean = false;
+                let id: string | null = null;
+
+                (data as []).forEach((profile) => {
+                    if ((profile as any).finish === null) {
+                        hasActiveProfile = true;
+                        id = (profile as any).id;
+                    }
+                });
+
+                resolve({active: hasActiveProfile, id: id});
+            });
+        });
+    }
+
+    public static getProfiles() {
+        return new Promise((resolve, reject) => {
+            this.database.all('SELECT * FROM ' + this.tableName, (error: any, data: any) => {
                 const profiles = {type: 'profiles', data: data};
 
                 resolve(profiles);

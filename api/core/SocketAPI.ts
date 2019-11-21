@@ -1,16 +1,17 @@
 import * as http from 'http';
+import { Database } from 'sqlite3';
 import * as WebSocket from 'ws';
 import { Profile } from '../routes/Profile';
 import { RPM } from '../routes/RPM';
+import { ORM } from './ORM';
 
 export class SocketAPI {
-    private database: any;
+    private database: Database = ORM.getInstance().getDatabase();
     private app: any;
     private portNumber: number = 3000;
     private deviceInfo = null;
 
-    constructor(database: any, app: any) {
-        this.database = database;
+    constructor(app: any) {
         this.app = app;
     }
 
@@ -22,9 +23,14 @@ export class SocketAPI {
             ws.on('message', (message: string) => {
                 const parsedMessage: any = JSON.parse(message);
                 if (parsedMessage.type === 'add') {
-                    RPM.add(parsedMessage.value, this.database).then((response) => {
+                    Profile.hasActiveProfile().then((activeProfile) => {
+                        if (activeProfile.active) {
+                            RPM.add(parsedMessage.value, activeProfile.id).then((response) => {
+                            });
+                        }
+
                         wss.clients.forEach(function each(client) {
-                            client.send(JSON.stringify(response));
+                            client.send(JSON.stringify({value: parsedMessage.value, timestamp: Date.now()}));
                         });
                     });
                 }
@@ -34,9 +40,8 @@ export class SocketAPI {
                 }
 
                 if (parsedMessage.type === 'createProfile') {
-                    Profile.createProfile(parsedMessage.name, this.database).then((response) => {
-                        console.log('created profile');
-                        Profile.getProfiles(this.database).then((profiles) => {
+                    Profile.createProfile(parsedMessage.name).then((response) => {
+                        Profile.getProfiles().then((profiles) => {
                             wss.clients.forEach((client) => {
                                 client.send(JSON.stringify(profiles));
                             });
@@ -45,7 +50,7 @@ export class SocketAPI {
                 }
 
                 if (parsedMessage.type === 'getProfiles') {
-                    Profile.getProfiles(this.database).then((profiles) => {
+                    Profile.getProfiles().then((profiles) => {
                         wss.clients.forEach((client) => {
                             client.send(JSON.stringify(profiles));
                         });
@@ -53,7 +58,7 @@ export class SocketAPI {
                 }
 
                 if (parsedMessage.type === 'deleteProfile') {
-                    Profile.deleteProfile(parsedMessage.id, this.database).then((profiles) => {
+                    Profile.deleteProfile(parsedMessage.id).then((profiles) => {
                         wss.clients.forEach((client) => {
                             client.send(JSON.stringify(profiles));
                         });
@@ -101,7 +106,7 @@ export class SocketAPI {
         this.database.serialize(() => {
             // tslint:disable-next-line:no-console
             console.log('RPM database created.');
-            this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, timestamp NUMBER)');
+            this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, id: TEXT, timestamp NUMBER)');
             this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start INTEGER, finish INTEGER, active BOOLEAN)');
         });
     }
