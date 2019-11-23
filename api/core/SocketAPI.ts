@@ -105,7 +105,6 @@ export class SocketAPI {
     private createDatabase() {
         this.database.serialize(() => {
             // tslint:disable-next-line:no-console
-            console.log('RPM database created.');
             this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, id: TEXT, timestamp NUMBER)');
             this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start INTEGER, finish INTEGER, active BOOLEAN)');
         });

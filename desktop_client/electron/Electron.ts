@@ -10,7 +10,7 @@ export class Electron {
     private parser = new Readline();
     private webAPI: API = new API();
     private timeout: any;
-    private sendMockData: boolean = true;
+    private sendMockData: boolean = false;
 
     constructor() {
 
@@ -110,7 +110,13 @@ export class Electron {
             this.parser.on('data', (line: string) => {
                 const value = JSON.stringify({type: 'add', value: line});
 
-                this.webSocket.send(value);
+                if (this.webSocket.readyState === WebSocket.OPEN) {
+                    if (Number(line) < 60) {
+                        this.webSocket.send(value);
+                    } else {
+                        console.log('false positive detected: ', line);
+                    }
+                }
             });
         }
     }

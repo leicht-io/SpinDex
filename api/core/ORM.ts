@@ -25,7 +25,11 @@ export class ORM {
     }
 
     public getDatabase() {
-        return this.database;
+        if (this.database) {
+            return this.database;
+        } else {
+            throw Error('Database is null');
+        }
     }
 
     public executeStatement(sql: string) {
