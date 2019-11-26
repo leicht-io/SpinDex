@@ -1,5 +1,6 @@
 import EnvironmentPath from 'env-paths';
 import fs from 'fs';
+import * as path from 'path';
 import { Database, verbose } from 'sqlite3';
 
 const sqlite3 = verbose();
@@ -20,7 +21,11 @@ export class ORM {
                 fs.mkdirSync(this.paths.data, {recursive: true});
             }
 
-            this.database = new Database(this.paths.data + '/astraeus.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
+            const databasePath = path.normalize(this.paths.data + '/astraeus.db');
+
+            console.log('path', databasePath);
+
+            this.database = new Database(databasePath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
         }
     }
 

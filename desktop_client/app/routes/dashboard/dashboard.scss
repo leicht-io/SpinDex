@@ -1,0 +1,12 @@
+.x-label, .y-label {
+  font-size: 12px;
+  fill: #757575;
+}
+
+.x-label {
+  transform: translate(0, 3px);
+}
+
+.y-label {
+  transform: translate(180px, 100px) rotate(90deg);
+}

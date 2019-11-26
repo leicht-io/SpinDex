@@ -10,7 +10,7 @@ export class Electron {
     private parser = new Readline();
     private webAPI: API = new API();
     private timeout: any;
-    private sendMockData: boolean = false;
+    private sendMockData: boolean = true;
 
     constructor() {
 
@@ -99,16 +99,23 @@ export class Electron {
     private sendDataToAPI() {
         if (this.sendMockData) {
             setInterval(() => {
-                const value = JSON.stringify({
-                    type: 'add',
+                const rpm = JSON.stringify({
+                    type: 'addRPM',
                     value: Number((Math.random() * (32.12 - 33.52) + 33.52).toFixed(2))
+                });
+
+                this.webSocket.send(rpm);
+
+                const value = JSON.stringify({
+                    type: 'addTemperature',
+                    value: Number((Math.random() * (20.52 - 55.52) + 20.52).toFixed(2))
                 });
 
                 this.webSocket.send(value);
             }, 1000);
         } else {
             this.parser.on('data', (line: string) => {
-                const value = JSON.stringify({type: 'add', value: line});
+                const value = JSON.stringify({type: 'addRPM', value: line});
 
                 if (this.webSocket.readyState === WebSocket.OPEN) {
                     if (Number(line) < 60) {

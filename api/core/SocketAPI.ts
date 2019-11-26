@@ -22,7 +22,7 @@ export class SocketAPI {
         wss.on('connection', (ws: WebSocket) => {
             ws.on('message', (message: string) => {
                 const parsedMessage: any = JSON.parse(message);
-                if (parsedMessage.type === 'add') {
+                if (parsedMessage.type === 'addRPM') {
                     Profile.hasActiveProfile().then((activeProfile) => {
                         if (activeProfile.active) {
                             RPM.add(parsedMessage.value, activeProfile.id).then((response) => {
@@ -33,6 +33,10 @@ export class SocketAPI {
                             client.send(JSON.stringify({value: parsedMessage.value, timestamp: Date.now()}));
                         });
                     });
+                }
+
+                if (parsedMessage.type === 'addTemperature') {
+
                 }
 
                 if (parsedMessage.type === 'setDeviceInfo') {
@@ -104,8 +108,8 @@ export class SocketAPI {
 
     private createDatabase() {
         this.database.serialize(() => {
-            // tslint:disable-next-line:no-console
-            this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, id: TEXT, timestamp NUMBER)');
+            this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, id TEXT, timestamp NUMBER)');
+            this.database.run('CREATE TABLE IF NOT EXISTS temperature (value NUMBER, id TEXT, timestamp NUMBER)');
             this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start INTEGER, finish INTEGER, active BOOLEAN)');
         });
     }

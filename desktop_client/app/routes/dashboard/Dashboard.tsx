@@ -3,6 +3,7 @@ import * as React from 'react';
 import { CartesianGrid, Label, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { Divider } from '../../components/Divider';
 import { HotSpotCard } from '../../components/HotSpotCard';
+import './dashboard.scss';
 
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
@@ -39,9 +40,9 @@ export const Dashboard = () => {
                                tickFormatter={ (tick) => {
                                    return moment(tick).format('HH:mm:ss');
                                } }>
-                            <Label value="Time" offset={ -16 } position="insideBottom" />
+                            <Label value={ 'Time' } className={ 'x-label' } offset={ -16 } position="insideBottom" />
                         </XAxis>
-                        <YAxis label={ {value: 'Rounds Per Minute', angle: -90, position: 'insideLeft', offset: 10} } />
+                        <YAxis label={ {className: 'y-label', value: 'Rounds Per Minute', angle: -90, position: 'insideLeft', offset: 10} } />
                     </LineChart>
                 </ResponsiveContainer>
             </HotSpotCard>
