@@ -10,7 +10,7 @@ export class Electron {
     private parser = new Readline();
     private webAPI: API = new API();
     private timeout: any;
-    private sendMockData: boolean = true;
+    private sendMockData: boolean = false;
 
     constructor() {
 
