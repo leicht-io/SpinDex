@@ -58,7 +58,7 @@ export class Electron {
                     clearTimeout(this.timeout);
                     deviceFound = true;
 
-                    this.port = new SerialPort(device.path, {baudRate: 9600});
+                    this.port = new SerialPort(device.path, {baudRate: 38400});
 
                     if (this.port) {
                         // @ts-ignore
@@ -114,15 +114,22 @@ export class Electron {
                 this.webSocket.send(value);
             }, 1000);
         } else {
-            this.parser.on('data', (line: string) => {
-                const value = JSON.stringify({type: 'addRPM', value: line});
+            this.parser.on('data', (data: string) => {
+                const parsedData = JSON.parse(data);
+                if (parsedData.speed !== null && parsedData.speed !== undefined) {
+                    const speed = parsedData.speed;
 
-                if (this.webSocket.readyState === WebSocket.OPEN) {
-                    if (Number(line) < 60) {
-                        this.webSocket.send(value);
-                    } else {
-                        console.log('false positive detected: ', line);
+                    const value = JSON.stringify({type: 'addRPM', value: speed});
+
+                    if (this.webSocket.readyState === WebSocket.OPEN) {
+                        if (Number(speed) < 60) {
+                            this.webSocket.send(value);
+                        } else {
+                            console.log('false positive detected: ', speed);
+                        }
                     }
+                } else if (parsedData.temperature !== null && parsedData.temperature !== undefined) {
+                    JSON.stringify({type: 'addTemperature', value: parsedData.temperature});
                 }
             });
         }
