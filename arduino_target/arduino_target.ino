@@ -3,6 +3,8 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <TimerOne.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 const int IRSensorPin = 2;  // the number of the IR sensor input pin
 
@@ -15,14 +17,20 @@ long endTime;
 long startTime;
 float RPM = 0.0;
 float lnTime = 0;
-boolean logRPMToScreen = false;
 unsigned int graph[66];
 unsigned int nextGraphIndex = 0;
+unsigned long lastTime = millis();
+
+#define ONE_WIRE_BUS 4
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&oneWire);
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
 
-#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin) // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET 4 // Reset pin # (or -1 if sharing Arduino reset pin) // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 static const unsigned char PROGMEM logo_bmp[] ={
@@ -73,14 +81,61 @@ static const unsigned char PROGMEM thumbsDown[] = {
 0xc0, 0x38, 0x03, 0x80, 0x00, 0x00, 0x00
 };
 
+void setup(void) {
+    pinMode(IRSensorPin, INPUT);
+
+    Serial.begin(38400);
+
+    initializeTimer1();
+
+    initializeDisplay();
+
+    sensors.begin();
+}
+
+void loop(void) {
+  time = millis();
+  int currentSwitchState = digitalRead(IRSensorPin);
+
+  if (currentSwitchState != lastInputState) {
+    lastDebounceTime = millis();
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (currentSwitchState != inputState) {
+      inputState = currentSwitchState;
+      if (inputState == LOW) {
+        calculateRPM();
+      }
+    }
+  }
+  lastInputState = currentSwitchState;
+
+  if(millis() > lastTime + 1000) {
+    updateScreen(RPM);
+
+    sensors.requestTemperatures();
+    sendData("temperature", sensors.getTempCByIndex(0));
+
+    lastTime = millis();
+  }
+}
+
+void initializeTimer1() {
+    endTime = 0;
+
+    Timer1.initialize(1000000);
+    Timer1.attachInterrupt(timerIsr);
+}
+
 String zeroPad(double RPM) {
  String RPMToReturn = String(RPM);
 
  if(RPMToReturn.length() == 4) {
-  int indexOfSeperator = RPMToReturn.indexOf(".");
-  if(indexOfSeperator == 1) {
+  int indexOfSeparator = RPMToReturn.indexOf(".");
+  if(indexOfSeparator == 1) {
     return "0" + RPMToReturn;
-  } else if(indexOfSeperator == 2) {
+  } else if(indexOfSeparator == 2) {
     return RPMToReturn + "0";
   }
  }
@@ -88,26 +143,13 @@ String zeroPad(double RPM) {
 return RPMToReturn;
 }
 
-void setup(void) {
-  pinMode(IRSensorPin, INPUT);
-
-  Serial.begin(9600);
-
-  endTime = 0;
-  Timer1.initialize(1000000);  // Set the timer to 60 rpm, 1,000,000 microseconds (1 second)
-  Timer1.attachInterrupt(timerIsr);  // Attach the service routine here
-
-  initializeDisplay();
-}
-
-
 void updateScreen(float RPM) {
   display.clearDisplay();
 
-  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextSize(2);
   display.setTextColor(WHITE);
   display.setCursor(2, 2);
-  display.println(zeroPad(RPM));
+  display.println(RPM);
 
   display.setTextSize(1);
   display.setCursor(65, 2);
@@ -161,27 +203,6 @@ void initializeDisplay() {
   updateScreen(0.0);
 }
 
-// ---------------------------------------------------------------
-void loop(void) {
-  time = millis();
-  int currentSwitchState = digitalRead(IRSensorPin);
-
-  if (currentSwitchState != lastInputState) {
-    lastDebounceTime = millis();
-  }
-
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (currentSwitchState != inputState) {
-      inputState = currentSwitchState;
-      if (inputState == LOW) {
-        calculateRPM(); // Real RPM from sensor
-      }
-    }
-  }
-  lastInputState = currentSwitchState;
-}
-
-// ---------------------------------------------------------------
 void calculateRPM() {
   startTime = lastDebounceTime;
   lnTime = startTime - endTime;
@@ -189,16 +210,15 @@ void calculateRPM() {
   endTime = startTime;
 }
 
-void timerIsr()
-{
-  time = millis() / 1000;
+void sendData(String name, float value) {
+    Serial.println("{\"" + name + "\": "+ String(value) + " }");
+}
 
-  Serial.println(RPM);
+void timerIsr() {
+    time = millis() / 1000;
+    sendData("speed", RPM);
 
-  logRPMToScreen = true;
+    delay(500);
 
-   delay(500);
-
-
-  RPM = 0.0;
+    RPM = 0.0;
 }
