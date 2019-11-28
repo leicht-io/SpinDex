@@ -1,42 +1,63 @@
 import * as http from 'http';
-import { Database } from 'sqlite3';
+import { Server } from 'http';
 import * as WebSocket from 'ws';
 import { Profile } from '../routes/Profile';
 import { RPM } from '../routes/RPM';
-import { ORM } from './ORM';
+import { Temperature } from '../routes/Temperature';
 
 export class SocketAPI {
-    private database: Database = ORM.getInstance().getDatabase();
     private app: any;
-    private portNumber: number = 3000;
+    private portNumber = 3000;
     private deviceInfo = null;
+    private httpServer: Server;
+    private webSocketServer: WebSocket.Server;
 
     constructor(app: any) {
         this.app = app;
+
+        const server: any = http.createServer(this.app);
+        this.httpServer = server;
+        this.webSocketServer = new WebSocket.Server({server});
     }
 
-    public startAPI() {
-        const server: any = http.createServer(this.app);
-        const wss: any = new WebSocket.Server({server});
-
-        wss.on('connection', (ws: WebSocket) => {
+    public startSocket() {
+        this.webSocketServer.on('connection', (ws: WebSocket) => {
             ws.on('message', (message: string) => {
                 const parsedMessage: any = JSON.parse(message);
                 if (parsedMessage.type === 'addRPM') {
                     Profile.hasActiveProfile().then((activeProfile) => {
                         if (activeProfile.active) {
                             RPM.add(parsedMessage.value, activeProfile.id).then((response) => {
+
                             });
                         }
 
-                        wss.clients.forEach(function each(client) {
-                            client.send(JSON.stringify({value: parsedMessage.value, timestamp: Date.now()}));
+                        this.webSocketServer.clients.forEach(function each(client) {
+                            client.send(JSON.stringify({
+                                type: 'rpm',
+                                value: parsedMessage.value,
+                                timestamp: Date.now()
+                            }));
                         });
                     });
                 }
 
                 if (parsedMessage.type === 'addTemperature') {
+                    Profile.hasActiveProfile().then((activeProfile) => {
+                        if (activeProfile.active) {
+                            Temperature.add(parsedMessage.value, activeProfile.id).then((response) => {
 
+                            });
+                        }
+
+                        this.webSocketServer.clients.forEach(function each(client) {
+                            client.send(JSON.stringify({
+                                type: 'temperature',
+                                value: parsedMessage.value,
+                                timestamp: Date.now()
+                            }));
+                        });
+                    });
                 }
 
                 if (parsedMessage.type === 'setDeviceInfo') {
@@ -46,7 +67,7 @@ export class SocketAPI {
                 if (parsedMessage.type === 'createProfile') {
                     Profile.createProfile(parsedMessage.name).then((response) => {
                         Profile.getProfiles().then((profiles) => {
-                            wss.clients.forEach((client) => {
+                            this.webSocketServer.clients.forEach((client) => {
                                 client.send(JSON.stringify(profiles));
                             });
                         });
@@ -55,7 +76,7 @@ export class SocketAPI {
 
                 if (parsedMessage.type === 'getProfiles') {
                     Profile.getProfiles().then((profiles) => {
-                        wss.clients.forEach((client) => {
+                        this.webSocketServer.clients.forEach((client) => {
                             client.send(JSON.stringify(profiles));
                         });
                     });
@@ -63,7 +84,7 @@ export class SocketAPI {
 
                 if (parsedMessage.type === 'deleteProfile') {
                     Profile.deleteProfile(parsedMessage.id).then((profiles) => {
-                        wss.clients.forEach((client) => {
+                        this.webSocketServer.clients.forEach((client) => {
                             client.send(JSON.stringify(profiles));
                         });
                     });
@@ -72,13 +93,13 @@ export class SocketAPI {
                 if (parsedMessage.type === 'deviceRemoved') {
                     this.deviceInfo = null;
 
-                    wss.clients.forEach((client) => {
+                    this.webSocketServer.clients.forEach((client) => {
                         client.send(JSON.stringify({type: 'deviceRemoved'}));
                     });
                 }
 
                 if (parsedMessage.type === 'getDeviceInfo') {
-                    wss.clients.forEach((client) => {
+                    this.webSocketServer.clients.forEach((client) => {
                         if (this.deviceInfo) {
                             // @ts-ignore
                             this.deviceInfo.type = 'deviceInfo';
@@ -95,22 +116,15 @@ export class SocketAPI {
             });
         });
 
-        server.listen(this.portNumber, () => {
-            console.log(`Server started on port ${this.portNumber}.`);
-
-            this.createDatabase();
+        this.httpServer.listen(this.portNumber, () => {
+            // tslint:disable-next-line:no-console
+            console.log('HTTP server started on port 3000');
         });
     }
 
-    public stopAPI() {
-        this.database.close();
+    public stopSocket() {
+        this.webSocketServer.close();
+        this.httpServer.close();
     }
 
-    private createDatabase() {
-        this.database.serialize(() => {
-            this.database.run('CREATE TABLE IF NOT EXISTS rpm (value NUMBER, id TEXT, timestamp NUMBER)');
-            this.database.run('CREATE TABLE IF NOT EXISTS temperature (value NUMBER, id TEXT, timestamp NUMBER)');
-            this.database.run('CREATE TABLE IF NOT EXISTS profile (name TEXT, id TEXT, start INTEGER, finish INTEGER, active BOOLEAN)');
-        });
-    }
 }

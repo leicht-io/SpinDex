@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
     "lib": [
       "es6",
@@ -16,11 +16,14 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,
+    "strictPropertyInitialization": false,
     "forceConsistentCasingInFileNames": true,
     "suppressImplicitAnyIndexErrors": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "desktop_client/electron/**/*.ts"

@@ -1,34 +1,38 @@
 import { BaseRoute } from '../core/BaseRoute';
+import { Profile as ProfileModel } from '../models/Profile';
 
 export class Profile extends BaseRoute {
-    private static tableName = 'profile';
-
     public static createProfile(name: string) {
         return new Promise((resolve, reject) => {
             const now = Date.now();
 
-            this.ORM.executeStatement('UPDATE ' + this.tableName + ' SET finish = ' + now + ', active = false WHERE finish IS NULL');
-
-            const statement = this.database.prepare('INSERT INTO ' + this.tableName + ' VALUES (?, ?, ?, ?, ?)');
-            statement.run(name, this.generateUUID(), now, null, true).finalize();
-
-            resolve({status: 'OK'});
+            ProfileModel.update({finish: now, active: false}, {where: {finish: null}}).then(() => {
+                ProfileModel.create({
+                    name: name,
+                    profileId: this.generateUUID(),
+                    start: now,
+                    finish: null,
+                    active: true
+                }).then(() => {
+                    resolve({status: 'OK'});
+                });
+            });
         });
     }
 
     public static deleteProfile(id: string) {
         return new Promise(((resolve, reject) => {
             // TODO: delete data
-            this.ORM.executeStatement('DELETE FROM ' + this.tableName + ' WHERE id = "' + id + '"');
-
-            resolve();
+            ProfileModel.destroy({where: {id: id}}).then(() => {
+                resolve();
+            });
         }));
     }
 
     public static hasActiveProfile(): Promise<{ active: boolean, id: string | null }> {
         return new Promise((resolve, reject) => {
-            this.database.all('SELECT * FROM ' + this.tableName, (error: any, data: any) => {
-                let hasActiveProfile: boolean = false;
+            ProfileModel.findAll().then((data) => {
+                let hasActiveProfile = false;
                 let id: string | null = null;
 
                 (data as []).forEach((profile) => {
@@ -45,9 +49,8 @@ export class Profile extends BaseRoute {
 
     public static getProfiles() {
         return new Promise((resolve, reject) => {
-            this.database.all('SELECT * FROM ' + this.tableName, (error: any, data: any) => {
+            ProfileModel.findAll().then((data) => {
                 const profiles = {type: 'profiles', data: data};
-
                 resolve(profiles);
             });
         });

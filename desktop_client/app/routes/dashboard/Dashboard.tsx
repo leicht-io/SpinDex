@@ -9,31 +9,58 @@ const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
 export const Dashboard = () => {
     const [currentRPM, setCurrentRPM] = React.useState<number>(0.00);
-    const [currentData, setCurrentData] = React.useState<any>([]);
+    const [currentTemperature, setCurrentTemperature] = React.useState<number>(0.00);
+    const [currentData, setCurrentData] = React.useState<{ rpm: number, temperature: number, timestamp: number }[]>([]);
 
     webSocket.onopen = () => {
         console.log('socket open!');
     };
 
-    webSocket.onmessage = (event) => {
-        const value = Number(JSON.parse(event.data).value);
-        if (!isNaN(value)) {
-            setCurrentRPM(value);
+    webSocket.onmessage = (event: any) => {
+        const parsedEvent = JSON.parse(event.data);
+        if (parsedEvent.type === 'rpm') {
+            const value = Number(parsedEvent.value);
+            if (!isNaN(value)) {
+                setCurrentRPM(value);
 
-            setCurrentData(currentData.concat([{value: value, timestamp: Date.now()}]));
+                const lastEntry = currentData[currentData.length - 1];
+                setCurrentData(currentData.concat([{
+                    rpm: value,
+                    temperature: lastEntry !== undefined ? lastEntry.temperature : 0.0,
+                    timestamp: Date.now()
+                }]));
+            }
+        } else if (parsedEvent.type === 'temperature') {
+            const value = Number(parsedEvent.value);
+            if (!isNaN(value)) {
+                setCurrentTemperature(value);
+
+                const lastEntry = currentData[currentData.length - 1];
+                setCurrentData(currentData.concat([{
+                    rpm: lastEntry !== undefined ? lastEntry.rpm : 0.0,
+                    temperature: value,
+                    timestamp: Date.now()
+                }]));
+            }
         }
     };
 
     return (
         <div>
-            <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
+            <div style={ {display: 'flex'} }>
+                <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
+                <HotSpotCard title="Temperature" value={ currentTemperature.toFixed(2) } />
+            </div>
 
             <Divider />
 
             <HotSpotCard>
                 <ResponsiveContainer height={ 385 } width="100%">
                     <LineChart data={ currentData } baseValue={ 0 } margin={ {bottom: 20, left: -0} }>
-                        <Line type="linear" dataKey="value" stroke="#8884d8" strokeWidth={ 2 } isAnimationActive={ false }
+                        <Line type="linear" dataKey="rpm" stroke="#8884d8" strokeWidth={ 1 } isAnimationActive={ false }
+                              dot={ false } />
+                        <Line type="linear" dataKey="temperature" stroke="#8bc34a" strokeWidth={ 1 }
+                              isAnimationActive={ false }
                               dot={ false } />
                         <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
                         <XAxis tickCount={ 5 } type={ 'number' } domain={ ['auto', 'auto'] } dataKey="timestamp"
@@ -42,11 +69,16 @@ export const Dashboard = () => {
                                } }>
                             <Label value={ 'Time' } className={ 'x-label' } offset={ -16 } position="insideBottom" />
                         </XAxis>
-                        <YAxis label={ {className: 'y-label', value: 'Rounds Per Minute', angle: -90, position: 'insideLeft', offset: 10} } />
+                        <YAxis label={ {
+                            className: 'y-label',
+                            value: 'Rounds Per Minute',
+                            angle: -90,
+                            position: 'insideLeft',
+                            offset: 10
+                        } } />
                     </LineChart>
                 </ResponsiveContainer>
             </HotSpotCard>
         </div>
     );
 };
-

@@ -1,10 +1,4 @@
-import { Database } from 'sqlite3';
-import { ORM } from './ORM';
-
 export class BaseRoute {
-    public static database: Database = ORM.getInstance().getDatabase();
-    public static ORM: ORM = ORM.getInstance();
-
     public static generateUUID() {
         return 'xxxx-xxxx'.replace(/[xy]/g, (c) => {
             // tslint:disable-next-line:one-variable-per-declaration
