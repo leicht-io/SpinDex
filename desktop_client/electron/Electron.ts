@@ -4,16 +4,17 @@ import SerialPort from 'serialport';
 import WebSocket from 'ws';
 import { API } from '../../api/API';
 
+const nativeImage = require('electron').nativeImage;
+
 export class Electron {
     private webSocket: WebSocket = new WebSocket('ws://localhost:3000');
     private port = null;
     private parser = new Readline();
     private webAPI: API = new API();
     private timeout: any;
-    private sendMockData: boolean = true;
+    private sendMockData = true;
 
     constructor() {
-
         app.on('ready', () => {
             this.startWebClient();
             this.createWindow();
@@ -37,14 +38,18 @@ export class Electron {
     private createWindow() {
         Menu.setApplicationMenu(null);
 
+        // TODO: Handle different icons for different OS (.png, .ico)
+        const image = nativeImage.createFromPath(app.getAppPath() + '/assets/icons/favicon.ico');
+
         const browserWindow = new BrowserWindow({
             width: 1280,
             height: 760,
             resizable: false,
             title: 'Astraeus',
+            icon: image,
             webPreferences: {
                 nodeIntegration: true,
-            }
+            },
         });
 
         browserWindow.loadURL('http://localhost:1234');
@@ -52,7 +57,7 @@ export class Electron {
 
     private checkDevices() {
         SerialPort.list().then((devices) => {
-            let deviceFound: boolean = false;
+            let deviceFound = false;
             devices.forEach((device) => {
                 if (device.vendorId === '1A86' && device.productId === '7523') {
                     clearTimeout(this.timeout);
@@ -122,10 +127,9 @@ export class Electron {
                     const value = JSON.stringify({type: 'addRPM', value: speed});
 
                     if (this.webSocket.readyState === WebSocket.OPEN) {
+                        // TODO: This should be handled by the API
                         if (Number(speed) < 60) {
                             this.webSocket.send(value);
-                        } else {
-                            console.log('false positive detected: ', speed);
                         }
                     }
                 } else if (parsedData.temperature !== null && parsedData.temperature !== undefined) {
