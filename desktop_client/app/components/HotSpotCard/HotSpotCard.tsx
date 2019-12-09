@@ -3,12 +3,18 @@ import './hotspot-card.scss';
 
 export const HotSpotCard = (props: any) => {
 
+    const getContent = (): any => {
+        if (props.value) {
+            return <p>{ props.value }</p>;
+        } else {
+            return props.children;
+        }
+    };
+
     return (
         <div className="hotspot-card">
-            <div>
-                { props.title }
-            </div>
-            { props.value || props.children }
+            <h3>{ props.title }</h3>
+            { getContent() }
         </div>
     );
 };

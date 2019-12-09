@@ -3,6 +3,7 @@ import * as React from 'react';
 import { CartesianGrid, Label, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { Divider } from '../../components/Divider';
 import { HotSpotCard } from '../../components/HotSpotCard';
+import { HotSpotCardContainer } from '../../components/HotSpotCardContainer';
 import './dashboard.scss';
 
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
@@ -46,11 +47,11 @@ export const Dashboard = () => {
     };
 
     return (
-        <div>
-            <div style={ {display: 'flex'} }>
+        <React.Fragment>
+            <HotSpotCardContainer>
                 <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
-                <HotSpotCard title="Temperature" value={ currentTemperature.toFixed(2) } />
-            </div>
+                <HotSpotCard title="Temperature" value={ currentTemperature.toFixed(2) + ' °C' } />
+            </HotSpotCardContainer>
 
             <Divider />
 
@@ -79,6 +80,6 @@ export const Dashboard = () => {
                     </LineChart>
                 </ResponsiveContainer>
             </HotSpotCard>
-        </div>
+        </React.Fragment>
     );
 };

@@ -53,7 +53,8 @@ export const Footer = () => {
 
     return (
         <div className="footer">
-            { footerContent }
+            <small><b>{ footerContent }</b></small>
+            <small><b>Astraeus v0.0.1</b></small>
         </div>
     );
 };

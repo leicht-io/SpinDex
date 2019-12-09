@@ -92,6 +92,7 @@ export const Sidebar = () => {
             { !profiles || profiles.length === 0 ? <div className="no-profile-yet">No profiles yet...</div> : '' }
 
             <ProfileButtons
+                disabled={ !profiles || profiles.length === 0 }
                 selectedProfile={ profiles && profiles[selectedProfile] }
                 onDelete={ () => {
                     webSocket.send(JSON.stringify({type: 'deleteProfile', id: profiles[selectedProfile].id}));

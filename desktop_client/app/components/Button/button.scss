@@ -23,6 +23,13 @@
       background: darken(#689F38, 15%);
       color: darken(#fff, 15%);
     }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #689F38;
+      color: #fff;
+    }
   }
 
   &--danger {
