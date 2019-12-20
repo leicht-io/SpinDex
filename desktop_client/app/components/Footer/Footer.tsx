@@ -26,9 +26,7 @@ export const Footer = () => {
                     // webSocket.close();
                 }
 
-                console.log('deviceRemoved', parsedEvent);
                 if (parsedEvent.type === 'deviceRemoved') {
-                    console.log('deviceRemoved');
                     setInitial(false);
                     setDevicePath(null);
                 }

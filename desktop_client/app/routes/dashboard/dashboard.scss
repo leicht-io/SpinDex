@@ -1,5 +1,10 @@
-.x-label, .y-label {
+.x-label, .y-label,  {
   font-size: 12px;
+  fill: #757575;
+}
+
+.recharts-cartesian-axis-tick-value tspan {
+  font-size: 13px;
   fill: #757575;
 }
 
@@ -10,3 +15,4 @@
 .y-label {
   transform: translate(180px, 100px) rotate(90deg);
 }
+

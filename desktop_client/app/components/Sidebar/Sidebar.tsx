@@ -51,7 +51,7 @@ export const Sidebar = () => {
                             onClick={ () => {
                                 setSelectedProfile(index);
                             } }
-                            className={ `sidebar-item sidebar-item-${profile.active === 1 ? 'active' : 'inactive'} ${selectedProfile === index ? 'sidebar-item--selected' : ''} ` }
+                            className={ `sidebar-item sidebar-item-${profile.active === true ? 'active' : 'inactive'} ${selectedProfile === index ? 'sidebar-item--selected' : ''} ` }
                             key={ index }>
                             <p>{ profile.name } ({ profile.id })</p>
 
@@ -60,7 +60,7 @@ export const Sidebar = () => {
                                     <td>
                                         <small><b>Status:</b></small>
                                     </td>
-                                    <td><small>{ `${profile.active === 1 ? 'Running' : 'Done'} ` }</small></td>
+                                    <td><small>{ `${profile.active === true ? 'Running' : 'Done'} ` }</small></td>
                                 </tr>
                                 <tr>
                                     <td>
@@ -99,6 +99,7 @@ export const Sidebar = () => {
                     webSocket.send(JSON.stringify({type: 'getProfiles'}));
                 } }
                 onStop={ () => {
+                    webSocket.send(JSON.stringify({type: 'stopProfile', id: profiles[selectedProfile].id}));
                     webSocket.send(JSON.stringify({type: 'getProfiles'}));
                 } } />
         </div>

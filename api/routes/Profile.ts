@@ -29,6 +29,18 @@ export class Profile extends BaseRoute {
         }));
     }
 
+    public static stopProfile(id: string) {
+        return new Promise(((resolve, reject) => {
+            ProfileModel.findByPk(id).then((data) => {
+                if (data) {
+                    ProfileModel.update({active: false, finish: Date.now()}, {where: {id: id}}).then(() => {
+                        resolve(this.getProfiles());
+                    });
+                }
+            });
+        }));
+    }
+
     public static hasActiveProfile(): Promise<{ active: boolean, id: string | null }> {
         return new Promise((resolve, reject) => {
             ProfileModel.findAll().then((data) => {

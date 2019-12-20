@@ -6,6 +6,7 @@ import { Footer } from './components/Footer';
 import { Page } from './components/Page';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
+import './core/styles/main.scss';
 import { Dashboard } from './routes/dashboard';
 
 const renderApp = () => {

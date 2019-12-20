@@ -1,15 +1,15 @@
+@import "../../core/styles/main";
+
 .footer {
   position: absolute;
-  display: flex;
-  align-content: stretch;
   right: 0;
   bottom: 0;
-  width: calc(100vw - 360px);
+  width: calc(100vw - #{$sidebarWidth});
   box-sizing: border-box;
   padding: 0 24px;
   background: #cfcfcf;
-  height: 64px;
-  left: 360px;
+  height: $footerHeight;
+  left: $sidebarWidth;
 
   display: flex;
   flex-direction: row;

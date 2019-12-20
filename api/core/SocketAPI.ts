@@ -90,6 +90,14 @@ export class SocketAPI {
                     });
                 }
 
+                if (parsedMessage.type === 'stopProfile') {
+                    Profile.stopProfile(parsedMessage.id).then((profiles) => {
+                        this.webSocketServer.clients.forEach((client) => {
+                            client.send(JSON.stringify(profiles));
+                        });
+                    });
+                }
+
                 if (parsedMessage.type === 'deviceRemoved') {
                     this.deviceInfo = null;
 

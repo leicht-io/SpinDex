@@ -1,0 +1,17 @@
+@import "./dimensions/dimensions";
+@import "./colors/colors";
+@import "./typography/font-face";
+
+body, html {
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  margin: 0;
+
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+}

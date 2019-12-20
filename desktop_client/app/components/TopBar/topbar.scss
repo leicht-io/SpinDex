@@ -1,9 +1,11 @@
+@import "../../core/styles/main";
+
 .topbar {
   width: 100vw;
-  height: 64px;
+  height: $topBarHeight;
   background: #212121;
   color: #fff;
-  box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   z-index: 3;
   padding: 0 16px;
 
@@ -25,7 +27,7 @@
     justify-content: space-between;
     align-items: center;
     align-content: stretch;
-    width: calc(360px - 16px);
+    width: calc(#{$sidebarWidth} - 16px);
     margin-right: 8px;
   }
 

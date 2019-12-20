@@ -39,7 +39,7 @@ export const TopBar = () => {
                     <Typography>Profiles</Typography>
 
                     <Button
-                        type="success"
+                        type="default"
                         onClick={ () => {
                             setShowDialog(true);
                         } }>

@@ -1,3 +1,5 @@
+@import "../../core/styles/main";
+
 .button {
   font-family: 'Open Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -11,39 +13,91 @@
   cursor: pointer;
 
   &--success {
-    background: #689F38;
+    background: $buttonSuccess;
     color: #fff;
 
     &:hover {
-      background: darken(#689F38, 5%);
+      background: darken($buttonSuccess, 5%);
       color: darken(#fff, 5%);
     }
 
     &:active {
-      background: darken(#689F38, 15%);
+      background: darken($buttonSuccess, 15%);
       color: darken(#fff, 15%);
     }
 
     &[disabled] {
       opacity: 0.5;
       cursor: not-allowed;
-      background: #689F38;
+      background: $buttonSuccess;
+      color: #fff;
+    }
+  }
+
+  &--default {
+    background: $buttonDefault;
+    color: #fff;
+
+    &:hover {
+      background: darken($buttonDefault, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken($buttonDefault, 15%);
+      color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonDefault;
       color: #fff;
     }
   }
 
   &--danger {
-    background: #9f383c;
+    background: $buttonDanger;
     color: #fff;
 
     &:hover {
-      background: darken(#9f383c, 5%);
+      background: darken($buttonDanger, 5%);
       color: darken(#fff, 5%);
     }
 
     &:active {
-      background: darken(#9f383c, 15%);
+      background: darken($buttonDanger, 15%);
       color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonDanger;
+      color: #fff;
+    }
+  }
+
+
+  &--warning {
+    background: $buttonWarning;
+    color: #fff;
+
+    &:hover {
+      background: darken($buttonWarning, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken($buttonWarning, 15%);
+      color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonWarning;
+      color: #fff;
     }
   }
 

@@ -63,7 +63,7 @@ export const Dashboard = () => {
                         <Line type="linear" dataKey="temperature" stroke="#8bc34a" strokeWidth={ 1 }
                               isAnimationActive={ false }
                               dot={ false } />
-                        <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+                        <CartesianGrid stroke="#d8d8d8" strokeDasharray="5 5" strokeWidth={ 1 } />
                         <XAxis tickCount={ 5 } type={ 'number' } domain={ ['auto', 'auto'] } dataKey="timestamp"
                                tickFormatter={ (tick) => {
                                    return moment(tick).format('HH:mm:ss');

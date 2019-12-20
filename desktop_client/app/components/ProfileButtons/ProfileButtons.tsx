@@ -9,14 +9,14 @@ export const ProfileButtons = (props: any) => {
             <div className="profile-buttons">
                 <Button
                     disabled={ props.selectedProfile && props.selectedProfile.finish !== null || props.disabled }
-                    type="success"
+                    type="warning"
                     onClick={ props.onStop }>
                     Stop Profile
                 </Button>
 
                 <Button
                     disabled={ props.disabled }
-                    type="success"
+                    type="danger"
                     onClick={ props.onDelete }>
                     Delete Profile
                 </Button>
