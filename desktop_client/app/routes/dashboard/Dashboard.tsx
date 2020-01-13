@@ -49,15 +49,15 @@ export const Dashboard = () => {
     return (
         <React.Fragment>
             <HotSpotCardContainer>
-                <HotSpotCard title="RPM" value={ currentRPM.toFixed(2) } />
-                <HotSpotCard title="Temperature" value={ currentTemperature.toFixed(2) + ' °C' } />
+                <HotSpotCard theme='light' title="RPM" value={ currentRPM.toFixed(2) } />
+                <HotSpotCard theme='light' title="Temperature" value={ currentTemperature.toFixed(2) + ' °C' } />
             </HotSpotCardContainer>
 
             <Divider />
 
-            <HotSpotCard>
-                <ResponsiveContainer height={ 385 } width="100%">
-                    <LineChart data={ currentData } baseValue={ 0 } margin={ {bottom: 20, left: -0} }>
+            <HotSpotCard theme='light'>
+                <ResponsiveContainer height={ 324 } width="100%">
+                    <LineChart data={ currentData } baseValue={ 0 } margin={ {bottom: -10, top: 0, right: 0, left: -35} }>
                         <Line type="linear" dataKey="rpm" stroke="#8884d8" strokeWidth={ 1 } isAnimationActive={ false }
                               dot={ false } />
                         <Line type="linear" dataKey="temperature" stroke="#8bc34a" strokeWidth={ 1 }

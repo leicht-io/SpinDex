@@ -1,8 +1,11 @@
+@import "../../core/styles/main";
+
 .profile-buttons--wrapper {
   position: fixed;
   bottom: 0;
-  width: 360px;
+  width: $sidebarWidth;
   left: 0;
+  height: $footerHeight;
   box-sizing: border-box;
 
   .profile-buttons {

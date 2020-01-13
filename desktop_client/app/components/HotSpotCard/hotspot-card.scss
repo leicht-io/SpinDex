@@ -1,8 +1,10 @@
+@import "../../core/styles/main";
+
 .hotspot-card {
   border-radius: 3px;
   background: #fff;
   box-sizing: border-box;
-  padding: 24px;
+  padding:  $base * 3;
 
   display: block;
 
@@ -11,6 +13,10 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.10);
 
   text-align: center;
+
+  &--light {
+    padding:  $base * 2;
+  }
 
   h3 {
     font-weight: 700;

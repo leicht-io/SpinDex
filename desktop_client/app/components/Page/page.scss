@@ -2,7 +2,7 @@
 
 .page {
   width: calc(100vw - #{$sidebarWidth});
-  padding: 24px;
+  padding: $base * 2;
   box-sizing: border-box;
   margin-top: $topBarHeight;
   background: #F1F5F9;

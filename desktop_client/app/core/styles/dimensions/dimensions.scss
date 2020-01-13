@@ -3,9 +3,9 @@ $base: 8px;
 // Top Bar
 $topBarHeight: $base * 8; // 64px
 
-// Sidebar
-$sidebarWidth: 360px;
-$sidebarHeight: calc(100vh - #{$topBarHeight} * 2);
-
 // Footer
-$footerHeight: $base * 8; // 64px
+$footerHeight: $base * 6; // 64px
+
+// Sidebar
+$sidebarWidth: 280px;
+$sidebarHeight: calc(100vh - #{$topBarHeight} - #{$footerHeight});

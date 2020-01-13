@@ -42,8 +42,9 @@ export class Electron {
         const image = nativeImage.createFromPath(app.getAppPath() + '/assets/icons/favicon.ico');
 
         const browserWindow = new BrowserWindow({
-            width: 1280,
-            height: 760,
+            width: 1024,
+            height: 600,
+            useContentSize: true,
             resizable: false,
             title: 'Astraeus',
             icon: image,
@@ -52,7 +53,7 @@ export class Electron {
             },
         });
 
-        browserWindow.loadURL('http://localhost:1234');
+         browserWindow.loadURL('http://localhost:1234');
     }
 
     private checkDevices() {
