@@ -12,7 +12,7 @@ export class Electron {
     private parser = new Readline();
     private webAPI: API = new API();
     private timeout: any;
-    private sendMockData = true;
+    private sendMockData = false;
 
     constructor() {
         app.on('ready', () => {
@@ -53,7 +53,7 @@ export class Electron {
             },
         });
 
-         browserWindow.loadURL('http://localhost:1234');
+        browserWindow.loadURL('http://localhost:1234');
     }
 
     private checkDevices() {
@@ -121,20 +121,15 @@ export class Electron {
             }, 1000);
         } else {
             this.parser.on('data', (data: string) => {
-                const parsedData = JSON.parse(data);
-                if (parsedData.speed !== null && parsedData.speed !== undefined) {
-                    const speed = parsedData.speed;
-
+                const speed = JSON.parse(data);
+                if (speed) {
                     const value = JSON.stringify({type: 'addRPM', value: speed});
 
                     if (this.webSocket.readyState === WebSocket.OPEN) {
-                        // TODO: This should be handled by the API
-                        if (Number(speed) < 60) {
-                            this.webSocket.send(value);
-                        }
+                        this.webSocket.send(value);
                     }
-                } else if (parsedData.temperature !== null && parsedData.temperature !== undefined) {
-                    JSON.stringify({type: 'addTemperature', value: parsedData.temperature});
+                } else if (speed.temperature !== null && speed.temperature !== undefined) {
+                    JSON.stringify({type: 'addTemperature', value: speed.temperature});
                 }
             });
         }
