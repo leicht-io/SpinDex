@@ -151,7 +151,7 @@ void updateScreen(float RPM) {
   display.drawLine(0 , 18, 128, 18, WHITE);
   display.drawLine(90 , 2, 90, 15, WHITE);
 
-  if(RPM > 33 && RPM < 33.5) {
+  if(RPM > 33 && RPM < 33.5 || RPM > 44 && RPM < 46) {
     display.drawBitmap(100,3,thumbsUp, 19, 13, 1);
     } else {
     display.drawBitmap(100,3,thumbsDown, 19, 13, 1);
