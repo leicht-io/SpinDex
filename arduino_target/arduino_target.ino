@@ -3,8 +3,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <TimerOne.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
 const int IRSensorPin = 2;  // the number of the IR sensor input pin
 
@@ -22,11 +20,11 @@ unsigned int graph[66];
 unsigned int nextGraphIndex = 0;
 unsigned long lastTime = millis();
 
-#define ONE_WIRE_BUS 4
+// #define ONE_WIRE_BUS 4
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
-OneWire oneWire(ONE_WIRE_BUS);
+// OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature.
-DallasTemperature sensors(&oneWire);
+// DallasTemperature sensors(&oneWire);
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
@@ -34,8 +32,8 @@ DallasTemperature sensors(&oneWire);
 #define OLED_RESET 4 // Reset pin # (or -1 if sharing Arduino reset pin) // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-static const unsigned char PROGMEM logo_bmp[] ={
- 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+static const unsigned char PROGMEM logo_bmp[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x03, 0xbc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x1d, 0xbd, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x3d, 0xfd, 0xe8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -69,28 +67,22 @@ static const unsigned char PROGMEM logo_bmp[] ={
 };
 
 
-static const unsigned char PROGMEM thumbsUp[] = {
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xc0, 0x00, 0x07, 0xc0, 0x00, 0x0f, 0x00, 0x30,
-0x3e, 0x00, 0x78, 0x7c, 0x00, 0x3f, 0xf0, 0x00, 0x1f, 0xe0, 0x00, 0x07, 0x80, 0x00, 0x03, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
+//   
+static const unsigned char PROGMEM thumbsUp[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xc0, 0x00, 0x07, 0xc0, 0x00, 0x0f, 0x00, 0x30,0x3e, 0x00, 0x78, 0x7c, 0x00, 0x3f, 0xf0, 0x00, 0x1f, 0xe0, 0x00, 0x07, 0x80, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static const unsigned char PROGMEM thumbsDown[] = {
-0x00, 0x00, 0x00, 0x38, 0x03, 0x80, 0x7e, 0x0f, 0xc0, 0x3f, 0x1f, 0x80, 0x0f, 0xfe, 0x00, 0x07,
-0xfc, 0x00, 0x03, 0xf8, 0x00, 0x07, 0xfc, 0x00, 0x0f, 0xfe, 0x00, 0x3f, 0x1f, 0x80, 0x7c, 0x07,
-0xc0, 0x38, 0x03, 0x80, 0x00, 0x00, 0x00
-};
+// 
+static const unsigned char PROGMEM thumbsDown[] = {0x00, 0x00, 0x00, 0x38, 0x03, 0x80, 0x7e, 0x0f, 0xc0, 0x3f, 0x1f, 0x80, 0x0f, 0xfe, 0x00, 0x07,0xfc, 0x00, 0x03, 0xf8, 0x00, 0x07, 0xfc, 0x00, 0x0f, 0xfe, 0x00, 0x3f, 0x1f, 0x80, 0x7c, 0x07,0xc0, 0x38, 0x03, 0x80, 0x00, 0x00, 0x00};
 
 void setup(void) {
-    pinMode(IRSensorPin, INPUT);
+  pinMode(IRSensorPin, INPUT);
 
-    Serial.begin(38400);
+  Serial.begin(38400);
 
-    initializeTimer1();
+  initializeTimer1();
 
-    initializeDisplay();
+  initializeDisplay();
 
-    sensors.begin();
+//  sensors.begin();
 }
 
 void loop(void) {
@@ -111,9 +103,9 @@ void loop(void) {
   }
   lastInputState = currentSwitchState;
 
-  if(millis() > lastTime + 1000) {
-    // updateScreen(RPM);
-
+  if (millis() > lastTime + 1000) {
+    updateScreen(RPM);
+    sendData("speed", RPM);
     // sensors.requestTemperatures();
     //sendData("temperature", sensors.getTempCByIndex(0));
 
@@ -122,84 +114,85 @@ void loop(void) {
 }
 
 void initializeTimer1() {
-    endTime = 0;
+  endTime = 0;
 
-    Timer1.initialize(1000000);
-    Timer1.attachInterrupt(timerIsr);
+  Timer1.initialize(1000000);
+  Timer1.attachInterrupt(timerIsr);
 }
 
 String zeroPad(double RPM) {
- String RPMToReturn = String(RPM);
+  String RPMToReturn = String(RPM);
 
- if(RPMToReturn.length() == 4) {
-  int indexOfSeparator = RPMToReturn.indexOf(".");
-  if(indexOfSeparator == 1) {
-    return "0" + RPMToReturn;
-  } else if(indexOfSeparator == 2) {
-    return RPMToReturn + "0";
+  if (RPMToReturn.length() == 4) {
+    int indexOfSeparator = RPMToReturn.indexOf(".");
+    if (indexOfSeparator == 1) {
+      return "0" + RPMToReturn;
+    } else if (indexOfSeparator == 2) {
+      return RPMToReturn + "0";
+    }
   }
- }
 
-return RPMToReturn;
+  return RPMToReturn;
 }
 
 void updateScreen(float RPM) {
-  display.clearDisplay();
-
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(2, 2);
-  display.println(RPM);
-
-  display.setTextSize(1);
-  display.setCursor(65, 2);
-  display.println("RPM");
+    display.clearDisplay();
+  
+    display.setTextSize(2);
+    display.setCursor(2, 2);
+    display.setTextColor(WHITE);
+    display.println(RPM);
+     
+    display.setTextSize(1);
+    display.setCursor(65, 2);
+    display.println("RPM");
+    
 
   display.drawLine(0 , 18, 128, 18, WHITE);
   display.drawLine(90 , 2, 90, 15, WHITE);
 
   if(RPM > 33 && RPM < 33.5) {
     display.drawBitmap(100,3,thumbsUp, 19, 13, 1);
-  } else {
+    } else {
     display.drawBitmap(100,3,thumbsDown, 19, 13, 1);
-  }
+    }
 
   if(RPM <= 10) {
-   graph[nextGraphIndex] = 1;
-  } else if(RPM > 10  && RPM <= 20) {
+    graph[nextGraphIndex] = 1;
+    } else if(RPM > 10  && RPM <= 20) {
     graph[nextGraphIndex] = 2;
-  } else if(RPM > 20 && RPM <= 30){
+    } else if(RPM > 20 && RPM <= 30){
     graph[nextGraphIndex] = 4;
-  } else if(RPM > 30 && RPM <= 40) {
+    } else if(RPM > 30 && RPM <= 40) {
     graph[nextGraphIndex] = 6;
-  }else if(RPM > 40) {
+    }else if(RPM > 40) {
     graph[nextGraphIndex] = 8;
-  }
+    }
 
-  nextGraphIndex++;
-  if(nextGraphIndex > 67) {
+    nextGraphIndex++;
+    if(nextGraphIndex > 67) {
     nextGraphIndex = 0;
-  }
+    }
 
-  for(int i = 0; i < 66; i++) {
+    for(int i = 0; i < 66; i++) {
     display.drawLine((1 * i) * 2 + 1, 28, (1 * i * 2) + 1,  28 - graph[i], WHITE);
-  }
+    }
 
-  display.display();
+    display.display();
 }
 
 void initializeDisplay() {
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32, SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32, SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+    for (;;); // Don't proceed, loop forever
   }
 
-  display.clearDisplay();
-  display.drawBitmap(0, 0, logo_bmp, 128, 32, 1);
-  display.display();
-  delay(5000);
+   display.clearDisplay();
+   display.drawBitmap(0, 0, logo_bmp, 128, 32, 1);
+   display.display();
+   delay(5000);
 
-  display.clearDisplay();
+   display.clearDisplay();
   updateScreen(0.0);
 }
 
@@ -208,24 +201,24 @@ void calculateRPM() {
   lnTime = startTime - endTime;
   RPM = (60000 / (lnTime)) / 24.0; // 24 dark bars on BG4002
 
-  
-  
+
+
   prevRPM = RPM;
-  
+
   endTime = startTime;
 }
 
 void sendData(String name, float value) {
-    // Serial.println("{\"" + name + "\": "+ String(value) + " }");
-    Serial.print(value, 3);
-    Serial.print("\n");
+  // Serial.println("{\"" + name + "\": "+ String(value) + " }");
+  Serial.print(value, 3);
+  Serial.print("\n");
 }
 
 void timerIsr() {
-    time = millis() / 1000;
-    sendData("speed", RPM);
+  time = millis() / 1000;
+  
 
-    // delay(500);
+  // delay(500);
 
-    // RPM = 0.0;
+  // RPM = 0.0;
 }
