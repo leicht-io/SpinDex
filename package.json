@@ -34,7 +34,8 @@
     "sequelize-typescript": "^1.0.0",
     "serialport": "^8.0.5",
     "sqlite3": "^4.1.1",
-    "ws": "^7.2.0"
+    "ws": "^7.2.0",
+    "react-simple-keyboard": "^2.1.113"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.4",

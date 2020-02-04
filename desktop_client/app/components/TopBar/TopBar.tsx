@@ -8,12 +8,16 @@ const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
 export const TopBar = () => {
     const [showDialog, setShowDialog] = React.useState<boolean>(false);
-    const [profileName, setProfileName] = React.useState<string | null>(null);
+    const [profileName, setProfileName] = React.useState<string>('');
 
     return (
         <React.Fragment>
             { showDialog &&
             <Dialog
+                showKeyboard={ showDialog }
+                onKeyboardChange={ (value) => {
+                    setProfileName(value);
+                } }
                 title="Create Profile"
                 acceptDisabled={ profileName === null }
                 onAccept={ () => {
@@ -21,16 +25,16 @@ export const TopBar = () => {
                         webSocket.send(JSON.stringify({type: 'createProfile', name: profileName}));
                         webSocket.send(JSON.stringify({type: 'getProfiles', name: profileName}));
                         setShowDialog(false);
+                        setProfileName('');
                     }
                 } }
                 onCancel={ () => {
                     setShowDialog(false);
+                    setProfileName('');
                 } }>
-                <p>Enter the profile name below (e.g. Beogram 4002, first test) and click accept.</p><p>Creating a new
-                profile will stop all running profiles.</p>
-                <input type="text" autoFocus={ true } onChange={ (event) => {
-                    setProfileName(event.target.value);
-                } } />
+                <p>Enter the profile name below and click accept. <b>Creating a new
+                    profile will stop all running profiles.</b></p>
+                <input type="text" value={ profileName } autoFocus={ true } readOnly={ true } />
             </Dialog>
             }
 
