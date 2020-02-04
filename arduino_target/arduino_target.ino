@@ -8,14 +8,18 @@ const int IRSensorPin = 2;  // the number of the IR sensor input pin
 
 int inputState;                          // the current state from the input pin
 int lastInputState = LOW;        // the previous InputState from the input pin
-long lastDebounceTime = 0;   // the last time the output pin was toggled
+
 long debounceDelay = 5;        // the debounce time; increase if the output flickers
-long time;
-long endTime;
-long startTime;
-float RPM = 0.0;
-float prevRPM = 0.0;
-float lnTime = 0;
+
+unsigned long lastDebounceTime = 0;   // the last time the output pin was toggled
+unsigned long time;
+unsigned long endTime;
+unsigned long startTime;
+unsigned long lnTime = 0;
+
+double RPM = 0.0;
+double prevRPM = 0.0;
+
 unsigned int graph[66];
 unsigned int nextGraphIndex = 0;
 unsigned long lastTime = millis();
@@ -105,7 +109,7 @@ void loop(void) {
 
   if (millis() > lastTime + 1000) {
     updateScreen(RPM);
-    sendData("speed", RPM);
+     sendData("speed", RPM);
     // sensors.requestTemperatures();
     //sendData("temperature", sensors.getTempCByIndex(0));
 
@@ -135,7 +139,7 @@ String zeroPad(double RPM) {
   return RPMToReturn;
 }
 
-void updateScreen(float RPM) {
+void updateScreen(double RPM) {
     display.clearDisplay();
   
     display.setTextSize(2);
@@ -199,10 +203,8 @@ void initializeDisplay() {
 void calculateRPM() {
   startTime = lastDebounceTime;
   lnTime = startTime - endTime;
-  RPM = (60000 / (lnTime)) / 24.0; // 24 dark bars on BG4002
-
-
-
+  RPM = (60000.0 / (double) lnTime) / 24.0; // 24 dark bars on BG4002
+  
   prevRPM = RPM;
 
   endTime = startTime;
