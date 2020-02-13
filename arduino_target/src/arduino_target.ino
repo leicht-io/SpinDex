@@ -28,6 +28,8 @@ unsigned long lastTime = millis();
 Display display;
 SerialComm serialComm;
 
+// TODO: Reset to zero when Boegram is turned off.
+
 void setup(void)
 {
   initialDevice();
