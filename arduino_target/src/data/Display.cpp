@@ -77,7 +77,7 @@ void Display::update(double RPM)
   }
 
   nextGraphIndex++;
-  if (nextGraphIndex > 64)
+  if (nextGraphIndex > 65)
   {
     nextGraphIndex = 0;
   }
