@@ -25,8 +25,8 @@ double prevRPM = 0.0;
 
 unsigned long lastTime = millis();
 
-Display display;
-SerialComm serialComm;
+Display display = Display();
+SerialComm serialComm = SerialComm();
 
 // TODO: Reset to zero when Boegram is turned off.
 
