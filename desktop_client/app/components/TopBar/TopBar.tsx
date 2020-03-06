@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from '../Button';
 import { Dialog } from '../Dialog';
+import { Icon } from '../Icon';
 import { Typography } from '../Typography/Typography';
 import './topbar.scss';
 
@@ -50,7 +51,17 @@ export const TopBar = () => {
                         New Profile
                     </Button>
                 </div>
+                <div className="topbar--right">
+                    <Icon icon="shutdown" onClick={ () => {
+                        // Show dialog
+
+                    } } />
+                </div>
             </div>
         </React.Fragment>
     );
 };
+
+
+
+
