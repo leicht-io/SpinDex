@@ -1,0 +1,35 @@
+@import "../../core/styles/main";
+
+.profile-buttons--wrapper {
+  position: fixed;
+  bottom: 0;
+  width: $sidebarWidth;
+  left: 0;
+  height: $footerHeight;
+  box-sizing: border-box;
+
+  .profile-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+
+    background: #eee;
+    padding: 11px 16px;
+    box-sizing: border-box;
+
+    .button {
+      width: calc(50% - 4px);
+    }
+
+    .button:first-child {
+      margin-right: 4px;
+    }
+
+    .button:last-child {
+      margin-left: 4px;
+    }
+  }
+}

@@ -26,7 +26,7 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "desktop_client/electron/**/*.ts"
+    "desktop_source/electron/**/*.ts"
   ],
   "exclude": [
     "node_modules"

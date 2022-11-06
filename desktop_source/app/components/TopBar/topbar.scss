@@ -1,0 +1,46 @@
+@import "../../core/styles/main";
+
+.topbar {
+  width: 100vw;
+  height: $topBarHeight;
+  background: #212121;
+  color: #fff;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  z-index: 3;
+  padding: 0 16px;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  align-content: stretch;
+
+  box-sizing: border-box;
+
+  position: absolute;
+
+  .topbar--left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: stretch;
+    width: calc(#{$sidebarWidth} - 16px);
+    margin-right: 8px;
+  }
+
+  .topbar--right {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: stretch;
+    margin-right: 8px;
+  }
+
+  h1 {
+  }
+}

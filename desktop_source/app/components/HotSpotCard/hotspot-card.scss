@@ -1,0 +1,30 @@
+@import "../../core/styles/main";
+
+.hotspot-card {
+  border-radius: 3px;
+  background: #fff;
+  box-sizing: border-box;
+  padding:  $base * 3;
+
+  display: block;
+
+  overflow: hidden;
+
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.10);
+
+  text-align: center;
+
+  &--light {
+    padding:  $base * 2;
+  }
+
+  h3 {
+    font-weight: 700;
+    font-size: 18px;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}

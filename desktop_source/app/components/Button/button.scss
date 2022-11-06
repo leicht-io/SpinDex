@@ -1,0 +1,111 @@
+@import "../../core/styles/main";
+
+.button {
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  border-radius: 3px;
+  outline: none;
+  height: 42px;
+  font-weight: 700;
+  padding: 0 16px;
+  border: none;
+  cursor: pointer;
+
+  &--success {
+    background: $buttonSuccess;
+    color: #fff;
+
+    &:hover {
+      background: darken($buttonSuccess, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken($buttonSuccess, 15%);
+      color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonSuccess;
+      color: #fff;
+    }
+  }
+
+  &--default {
+    background: $buttonDefault;
+    color: #fff;
+
+    &:hover {
+      background: darken($buttonDefault, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken($buttonDefault, 15%);
+      color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonDefault;
+      color: #fff;
+    }
+  }
+
+  &--danger {
+    background: $buttonDanger;
+    color: #fff;
+
+    &:hover {
+      background: darken($buttonDanger, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken($buttonDanger, 15%);
+      color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonDanger;
+      color: #fff;
+    }
+  }
+
+
+  &--warning {
+    background: $buttonWarning;
+    color: #fff;
+
+    &:hover {
+      background: darken($buttonWarning, 5%);
+      color: darken(#fff, 5%);
+    }
+
+    &:active {
+      background: darken($buttonWarning, 15%);
+      color: darken(#fff, 15%);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: $buttonWarning;
+      color: #fff;
+    }
+  }
+
+  transition: all linear 150ms;
+  will-change: background, color;
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
