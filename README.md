@@ -32,6 +32,7 @@ Please note that this is a proof of concept and the following is missing for it 
 
 - tests
 - refactoring the codebase
+- 
 
 The following features would be nice to have in the future:
 - bigger screen.
@@ -43,5 +44,6 @@ Feel free to develop further on the project and create PRs if, necessary. I woul
 
 Blog posts with more pictures:
 
-https://leicht.io/articles/beotac-a-tachometer-for-the-beogram-4000-series
-https://leicht.io/articles/updates-to-beotac
+- https://leicht.io/articles/beotac-a-tachometer-for-the-beogram-4000-series
+
+- https://leicht.io/articles/updates-to-beotac
