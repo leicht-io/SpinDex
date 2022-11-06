@@ -19,7 +19,7 @@ A desktop client made with Electron receives the output from the controller and 
 ---
 
 ### µController Source Code (controller_source) 
-Source code for the microcontroller.
+Source code for the microcontroller. 
 
 ---
 
@@ -32,7 +32,7 @@ Please note that this is a proof of concept and the following is missing for it 
 
 - tests
 - refactoring the codebase
-- 
+- schematics
 
 The following features would be nice to have in the future:
 - bigger screen.
