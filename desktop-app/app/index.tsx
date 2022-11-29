@@ -13,17 +13,19 @@ const renderApp = () => {
     const container = document.getElementById('app');
     const root = createRoot(container);
 
-    root.render(<App>
-        <TopBar/>
+    root.render(
+        <App>
+            <TopBar/>
 
-        <Container>
-            <Sidebar/>
-            <Page>
-                <Dashboard/>
-            </Page>
-            <Footer/>
-        </Container>
-    </App>);
+            <Container>
+                <Sidebar/>
+                <Page>
+                    <Dashboard/>
+                </Page>
+                <Footer/>
+            </Container>
+        </App>
+    );
 };
 
 renderApp();
