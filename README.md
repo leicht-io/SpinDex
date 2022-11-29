@@ -14,8 +14,8 @@ TO BE RELEASED. I am finetuning the 3D drawings and will make them available lat
 ---
 
 ### Desktop App (desktop-app)
-A desktop client made with Electron receives the output from the controller and shows a temporal line graph with the results.
-Still needs filetuning.
+A desktop client made with Electron receives the output from the controller and shows a temporal line graph with the results. Still needs filetuning.
+
 ---
 
 ### µController Source Code (controller-source) 
