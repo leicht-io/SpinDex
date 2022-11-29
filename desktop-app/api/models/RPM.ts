@@ -8,7 +8,9 @@ export class RPM extends Model<RPM> {
     })
     public value: number;
 
-    @Column
+    @Column({
+        type: DataType.TEXT
+    })
     public profileId: string;
 
     @Column({

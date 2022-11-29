@@ -1,15 +1,15 @@
-import Readline from '@serialport/parser-readline';
 import { app, BrowserWindow, Menu } from 'electron';
-import SerialPort from 'serialport';
 import WebSocket from 'ws';
-import { API } from '../../api/API';
+import { API } from '../api/API';
+import { SerialPort } from "serialport";
+import { ReadlineParser } from '@serialport/parser-readline'
 
 const nativeImage = require('electron').nativeImage;
 
 export class Electron {
     private webSocket: WebSocket = new WebSocket('ws://localhost:3000');
-    private port = null;
-    private parser = new Readline();
+    private port: any = null;
+    private parser = new ReadlineParser();
     private webAPI: API = new API();
     private timeout: any;
     private sendMockData = false;
@@ -64,7 +64,7 @@ export class Electron {
                     clearTimeout(this.timeout);
                     deviceFound = true;
 
-                    this.port = new SerialPort(device.path, {baudRate: 38400});
+                    this.port = new SerialPort({ path: device.path, baudRate: 38400 });
 
                     if (this.port) {
                         // @ts-ignore

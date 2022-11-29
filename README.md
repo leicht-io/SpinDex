@@ -8,22 +8,22 @@ It is currently written to run on the Arduino Nano but could easily be ported to
 This mono repository is divided into multiple sub repositories explained below:
 
 
-### 3D Files (3d_files):
+### 3D Files (3d-files):
 TO BE RELEASED. I am finetuning the 3D drawings and will make them available later this year.
 
 ---
 
-### Desktop Client (desktop_source)
+### Desktop App (desktop-app)
 A desktop client made with Electron receives the output from the controller and shows a temporal line graph with the results.
 
 ---
 
-### µController Source Code (controller_source) 
+### µController Source Code (controller-source) 
 Source code for the microcontroller. 
 
 ---
 
-### Documentation (docs)
+### Documentation (documentation)
 Circuit diagrams showing how the screen and IR sensor is attached.
 
 ---

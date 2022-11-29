@@ -7,7 +7,7 @@ import { RPM } from '../models/RPM';
 import { Temperature } from '../models/Temperature';
 
 export class Database {
-    private database: Sequelize;
+    private database: Sequelize | undefined = undefined;
     private paths = EnvironmentPath('Astraeus', {suffix: ''});
 
     public initialize() {
@@ -37,6 +37,8 @@ export class Database {
     }
 
     public close() {
-        this.database.close();
+        if (this.database) {
+            this.database.close();
+        }
     }
 }

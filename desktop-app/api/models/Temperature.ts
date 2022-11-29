@@ -8,7 +8,9 @@ export class Temperature extends Model<Temperature> {
     })
     public value: number;
 
-    @Column
+    @Column({
+        type: DataType.TEXT
+    })
     public profileId: string;
 
     @Column({

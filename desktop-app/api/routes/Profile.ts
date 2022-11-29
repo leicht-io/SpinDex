@@ -24,7 +24,7 @@ export class Profile extends BaseRoute {
         return new Promise(((resolve, reject) => {
             // TODO: delete data
             ProfileModel.destroy({where: {id: id}}).then(() => {
-                resolve();
+                resolve('');
             });
         }));
     }

@@ -2,10 +2,14 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({tableName: 'profiles', freezeTableName: true, timestamps: false})
 export class Profile extends Model<Profile> {
-    @Column
+    @Column({
+        type: DataType.TEXT
+    })
     public name: string;
 
-    @Column
+    @Column({
+        type: DataType.TEXT
+    })
     public profileId: string;
 
     @Column({

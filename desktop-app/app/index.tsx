@@ -8,24 +8,23 @@ import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import './core/styles/main.scss';
 import { Dashboard } from './routes/dashboard';
+import { createRoot } from 'react-dom/client';
 
 const renderApp = () => {
-    render(
-        <React.Fragment>
-            <App>
-                <TopBar />
+    const container = document.getElementById('app');
+    const root = createRoot(container);
 
-                <Container>
-                    <Sidebar />
-                    <Page>
-                        <Dashboard />
-                    </Page>
-                    <Footer />
-                </Container>
-            </App>
-        </React.Fragment>,
-        document.getElementById('app')
-    );
+    root.render( <App>
+        <TopBar />
+
+        <Container>
+            <Sidebar />
+            <Page>
+                <Dashboard />
+            </Page>
+            <Footer />
+        </Container>
+    </App>);
 };
 
 renderApp();

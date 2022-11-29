@@ -2,7 +2,7 @@ import * as http from 'http';
 import * as WebSocket from 'ws';
 
 export class WebSocketServer {
-    private port: number = 1337;
+    private port = 1337;
 
     constructor(port: number) {
         this.port = port;
@@ -12,9 +12,11 @@ export class WebSocketServer {
 
     private createHttpServer(): any {
         const httpServer = http.createServer((request, response) => {
+            // Do nothing
         });
 
         httpServer.listen(this.port, () => {
+            // Do nothing
         });
 
         return httpServer;
@@ -33,7 +35,7 @@ export class WebSocketServer {
             });
 
             connection.on('close', (connection) => {
-
+                // Do nothing
             });
         });
     }
