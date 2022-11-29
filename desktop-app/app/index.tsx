@@ -1,28 +1,27 @@
 import * as React from 'react';
-import { render } from 'react-dom';
-import { App } from './components/App';
-import { Container } from './components/Container';
-import { Footer } from './components/Footer';
-import { Page } from './components/Page';
-import { Sidebar } from './components/Sidebar';
-import { TopBar } from './components/TopBar';
+import {App} from './components/App';
+import {Container} from './components/Container';
+import {Footer} from './components/Footer';
+import {Page} from './components/Page';
+import {Sidebar} from './components/Sidebar';
+import {TopBar} from './components/TopBar';
 import './core/styles/main.scss';
-import { Dashboard } from './routes/dashboard';
-import { createRoot } from 'react-dom/client';
+import {Dashboard} from './routes/dashboard';
+import {createRoot} from 'react-dom/client';
 
 const renderApp = () => {
     const container = document.getElementById('app');
     const root = createRoot(container);
 
-    root.render( <App>
-        <TopBar />
+    root.render(<App>
+        <TopBar/>
 
         <Container>
-            <Sidebar />
+            <Sidebar/>
             <Page>
-                <Dashboard />
+                <Dashboard/>
             </Page>
-            <Footer />
+            <Footer/>
         </Container>
     </App>);
 };
