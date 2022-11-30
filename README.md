@@ -9,7 +9,15 @@ This mono repository is divided into multiple sub repositories explained below:
 
 
 ### 3D Files (3d-files):
-TO BE RELEASED. I am finetuning the 3D drawings and will make them available later this year.
+The model consists of three models:
+- astreaus_body_v1.stl
+- astreaus_bottom_v1.stl
+- astreaus_led_v1.stl
+
+![alt text](https://ni.leicht.io/updates-to-beotac-a256b3fc-64fd-464c-9166-10d07f8a27e8.jpg)
+
+
+I usually print them in black PLA.
 
 ---
 
@@ -17,6 +25,7 @@ TO BE RELEASED. I am finetuning the 3D drawings and will make them available lat
 A desktop client made with Electron receives the output from the controller and shows a temporal line graph with the results. Still needs filetuning.
 
 Note: On Ubuntu based OS you might need to remove brltty: sudo apt remove brltty
+
 ---
 
 ### µController Source Code (controller-source) 
