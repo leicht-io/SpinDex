@@ -1,4 +1,4 @@
-import EnvironmentPath from 'env-paths';
+// import EnvironmentPath from 'env-paths';
 import fs from 'fs';
 import * as path from 'path';
 import { Sequelize } from 'sequelize-typescript';
@@ -8,7 +8,8 @@ import { Temperature } from '../models/Temperature';
 
 export class Database {
     private database: Sequelize | undefined = undefined;
-    private paths = EnvironmentPath('Astraeus', {suffix: ''});
+    // private paths = EnvironmentPath('Astraeus', {suffix: ''});
+    private paths = {data: "./"};
 
     public initialize() {
         if (!fs.existsSync(this.paths.data)) {

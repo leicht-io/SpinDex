@@ -6,14 +6,14 @@ export class Profile extends BaseRoute {
         return new Promise((resolve, reject) => {
             const now = Date.now();
 
-            ProfileModel.update({finish: now, active: false}, {where: {finish: null}}).then(() => {
+            ProfileModel.update({finish: now, active: false}, {where: {finish: null} as any}).then(() => {
                 ProfileModel.create({
                     name: name,
                     profileId: this.generateUUID(),
                     start: now,
                     finish: null,
                     active: true
-                }).then(() => {
+                } as any).then(() => {
                     resolve({status: 'OK'});
                 });
             });

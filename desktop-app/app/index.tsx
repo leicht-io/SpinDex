@@ -1,8 +1,5 @@
 import * as React from 'react';
-import {App} from './components/App';
-import {Container} from './components/Container';
 import {Footer} from './components/Footer';
-import {Page} from './components/Page';
 import {Sidebar} from './components/Sidebar';
 import {TopBar} from './components/TopBar';
 import './core/styles/main.scss';
@@ -14,17 +11,28 @@ const renderApp = () => {
     const root = createRoot(container);
 
     root.render(
-        <App>
+        <>
             <TopBar/>
 
-            <Container>
+            <div
+                style={{
+                    marginTop: "48px",
+                    zIndex: 0,
+                    width: "100vw",
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                    alignItems: "stretch",
+                    alignContent: "stretch",
+                }}>
                 <Sidebar/>
-                <Page>
-                    <Dashboard/>
-                </Page>
-                <Footer/>
-            </Container>
-        </App>
+                <Dashboard/>
+            </div>
+
+            <Footer/>
+        </>
     );
 };
 

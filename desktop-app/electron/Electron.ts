@@ -7,7 +7,7 @@ import { ReadlineParser } from '@serialport/parser-readline'
 const nativeImage = require('electron').nativeImage;
 
 export class Electron {
-    private webSocket: WebSocket = new WebSocket('ws://localhost:3000');
+    private webSocket: WebSocket;
     private port: any = null;
     private parser = new ReadlineParser();
     private webAPI: API = new API();
@@ -58,9 +58,11 @@ export class Electron {
 
     private checkDevices() {
         SerialPort.list().then((devices) => {
+
             let deviceFound = false;
             devices.forEach((device) => {
-                if (device.vendorId === '1A86' && device.productId === '7523') {
+
+                if (device.vendorId?.toUpperCase() === '1A86' && device.productId?.toUpperCase() === '7523') {
                     clearTimeout(this.timeout);
                     deviceFound = true;
 
@@ -136,6 +138,7 @@ export class Electron {
     }
 
     private startAPI() {
+        this.webSocket = new WebSocket('ws://localhost:3000')
         this.webAPI.startAPI();
     }
 

@@ -2,12 +2,12 @@ import { BaseRoute } from '../core/BaseRoute';
 import { RPM as RPMModel } from '../models/RPM';
 
 export class RPM extends BaseRoute {
-    public static add(value: string, id: string | null) {
+    public static add(value: number, id: string) {
         return new Promise((resolve, reject) => {
             if (value !== null && !isNaN(Number(value))) {
                 const now = Date.now();
 
-                RPMModel.create({profileId: id, value: value, timestamp: now}).then(() => {
+                RPMModel.create({profileId: id, value: value, timestamp: now} as any).then(() => {
                     resolve({value, id: id, timestamp: now});
                 });
             }

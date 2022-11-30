@@ -7,7 +7,7 @@ export class Temperature extends BaseRoute {
             if (value !== null && !isNaN(Number(value))) {
                 const now = Date.now();
 
-                TemperatureModel.create({profileId: id, value: value, timestamp: now}).then(() => {
+                TemperatureModel.create({profileId: id, value: value, timestamp: now} as any).then(() => {
                     resolve({value, id: id, timestamp: now});
                 });
             }

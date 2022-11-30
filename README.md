@@ -16,6 +16,7 @@ TO BE RELEASED. I am finetuning the 3D drawings and will make them available lat
 ### Desktop App (desktop-app)
 A desktop client made with Electron receives the output from the controller and shows a temporal line graph with the results. Still needs filetuning.
 
+Note: On Ubuntu based OS you might need to remove brltty: sudo apt remove brltty
 ---
 
 ### µController Source Code (controller-source) 
@@ -37,7 +38,7 @@ Please note that this is a proof of concept and the following is missing for it 
 The following features would be nice to have in the future:
 - bigger screen.
 - support for other turntables.
-- headless edition with Bluetooth support.
+- headless edition with battery, Bluetooth and mobile app.
 - custom-made PCB.
 
 Feel free to develop further on the project and create PRs if, necessary. I would be happy to cooperate with others on the device.

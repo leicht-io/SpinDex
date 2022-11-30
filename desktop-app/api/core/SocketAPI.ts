@@ -27,7 +27,7 @@ export class SocketAPI {
                 if (parsedMessage.type === 'addRPM') {
                     Profile.hasActiveProfile().then((activeProfile) => {
                         if (activeProfile.active) {
-                            RPM.add(parsedMessage.value, activeProfile.id).then((response) => {
+                            RPM.add(parsedMessage.value, activeProfile.id || "").then((response) => {
 // Do nothing
                             });
                         }

@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Button } from '../Button';
 import { Dialog } from '../Dialog';
-import { Icon } from '../Icon';
 import { Typography } from '../Typography/Typography';
-import './topbar.scss';
+import {AppBar, Fab, IconButton, Toolbar} from "@mui/material";
+import NavigationIcon from '@mui/icons-material/Navigation';
+import AddIcon from '@mui/icons-material/Add';
 
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
@@ -12,7 +13,7 @@ export const TopBar = () => {
     const [profileName, setProfileName] = React.useState<string>('');
 
     return (
-        <React.Fragment>
+        <>
             { showDialog &&
             <Dialog
                 showKeyboard={ showDialog }
@@ -39,29 +40,34 @@ export const TopBar = () => {
             </Dialog>
             }
 
-            <div className="topbar">
-                <div className="topbar--left">
-                    <Typography>Profiles</Typography>
+            <AppBar position="fixed">
+                <Toolbar variant="dense">
+                    <NavigationIcon sx={{ mr: 1 }} />
 
-                    <Button
-                        type="default"
-                        onClick={ () => {
-                            setShowDialog(true);
-                        } }>
-                        New Profile
-                    </Button>
-                </div>
-                <div className="topbar--right">
-                    <Icon icon="shutdown" onClick={ () => {
-                        // Show dialog
+                    <Typography variant="h6" color="inherit" component="div">
+                        Astreaus
+                    </Typography>
+                </Toolbar>
+            </AppBar>
 
-                    } } />
-                </div>
-            </div>
-        </React.Fragment>
+            <Fab
+                onClick={ () => {
+                    setShowDialog(true);
+                } }
+                style={{
+                    margin: 0,
+                    top: 'auto',
+                    right: 20,
+                    bottom: 20,
+                    left: 'auto',
+                    position: 'fixed',
+                }}
+                variant="extended" color="primary" aria-label="add">
+                <NavigationIcon sx={{ mr: 1 }} />
+                New Profile
+            </Fab>
+        </>
     );
 };
-
-
 
 
