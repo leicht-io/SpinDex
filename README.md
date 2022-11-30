@@ -14,7 +14,7 @@ The model consists of three models:
 - astreaus_bottom_v1.stl
 - astreaus_led_v1.stl
 
-![alt text](https://ni.leicht.io/updates-to-beotac-a256b3fc-64fd-464c-9166-10d07f8a27e8.jpg)
+![alt text](https://github.com/leicht-io/astraeus/blob/master/3d-files/rendering_1.png?raw=true)
 
 
 I usually print them in black PLA.
