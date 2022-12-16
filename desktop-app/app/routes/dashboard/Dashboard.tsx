@@ -72,20 +72,25 @@ export const Dashboard = () => {
 
                 {currentData.length > 0 && (
                     <ResponsiveContainer height={ 324 } width="100%">
-                        <LineChart data={ currentData } baseValue={0} margin={ {bottom: -10, top: 0, right: 0, left: -35} }>
+                        <LineChart data={ currentData } margin={ {bottom: -10, top: 0, right: 0, left: -35} }>
                             <Line type="linear" dataKey="rpm" stroke="#8884d8" strokeWidth={ 1 } isAnimationActive={ false }
                                   dot={ false } />
                             <Line type="linear" dataKey="temperature" stroke="#8bc34a" strokeWidth={ 1 }
                                   isAnimationActive={ false }
                                   dot={ false } />
                             <CartesianGrid stroke="#d8d8d8" strokeDasharray="5 5" strokeWidth={ 1 } />
-                            <XAxis tickCount={ 5 } type={ 'number' } domain={ ['auto', 'auto'] } dataKey="timestamp"
+                            <XAxis
+                                tickCount={ 5 }
+                                type={ 'number' }
+                                domain={ ['dataMin', 'dataMax'] }
+                                dataKey="timestamp"
                                    tickFormatter={ (tick) => {
                                        return moment(tick).format('HH:mm:ss');
                                    } }>
-                                <Label value={ 'Time' } className={ 'x-label' } offset={ -16 } position="insideBottom" />
+                                <Label value={ 'Time' } className={ 'x-label' } position="insideBottom" />
                             </XAxis>
-                            <YAxis label={ {
+                            <YAxis
+                                label={ {
                                 className: 'y-label',
                                 value: 'RPM',
                                 angle: -90,
