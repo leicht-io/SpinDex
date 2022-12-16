@@ -30,6 +30,11 @@ Note: On Ubuntu-based OS you might need to remove brltty: *sudo apt remove brltt
 
 ---
 
+### Android App (android-app)
+Android application with bluetooth support. (WIP).
+
+---
+
 ### µController Source Code (controller-source)
 Source code for the microcontroller.
 
