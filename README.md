@@ -31,7 +31,7 @@ Note: On Ubuntu-based OS you might need to remove brltty: *sudo apt remove brltt
 ---
 
 ### Android App (android-app)
-Android application with bluetooth support. (WIP).
+Android application with bluetooth support. (WIP, needs new controller with support for BLE).
 
 ---
 
@@ -51,10 +51,11 @@ Please note that this is a proof of concept and the following is missing for it 
 - refactoring the codebase
 - schematics
 
-The following features would be nice to have in the future:
+The following features would be needed or to have in the future:
+- ESP32-C3 (for BLE and WiFi support) (https://gist.github.com/sekcompsci/2bf39e715d5fe47579fa184fa819f421)
 - bigger screen.
 - support for other turntables.
-- headless edition with battery, Bluetooth and mobile app.
+- headless edition with battery, Bluetooth and mobile application.
 - custom-made PCB.
 
 Feel free to develop further on the project and create PRs if, necessary. I would be happy to cooperate with others on the device.
