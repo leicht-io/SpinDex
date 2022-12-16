@@ -24,7 +24,9 @@ I usually print them in black PLA.
 ### Desktop App (desktop-app)
 A desktop client made with Electron receives the output from the controller and shows a temporal line graph with the results. Still needs filetuning.
 
-Note: On Ubuntu based OS you might need to remove brltty: sudo apt remove brltty
+![alt text](https://github.com/leicht-io/astraeus/blob/master/documentation/images/desktop-screenshot.png?raw=true)
+
+Note: On Ubuntu based OS you might need to remove brltty: *sudo apt remove brltty*
 
 ---
 

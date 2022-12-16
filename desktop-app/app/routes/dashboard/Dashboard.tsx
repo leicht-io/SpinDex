@@ -51,12 +51,12 @@ export const Dashboard = () => {
     return (
         <Page>
                 <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid item xs={12}>
                         <HotSpotCard theme='light' title="RPM" value={ currentRPM.toFixed(2) } />
                     </Grid>
-                    <Grid item xs={6}>
+                    {/* <Grid item xs={6}>
                         <HotSpotCard theme='light' title="Temperature" value={ currentTemperature.toFixed(2) + ' °C' } />
-                    </Grid>
+                    </Grid> */ }
                 </Grid>
 
 
