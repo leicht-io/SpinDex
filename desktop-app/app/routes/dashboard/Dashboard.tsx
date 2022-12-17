@@ -41,7 +41,7 @@ export const Dashboard = () => {
                 <Card style={{height: 620}}>
                     <CardContent>
                         <ResponsiveContainer height={580} width="100%">
-                            <LineChart data={data} margin={{bottom: -10, top: 0, right: 0, left: -35}}>
+                            <LineChart data={data} margin={{bottom: -10, top: 0, right: 0, left: 0}}>
                                 <Line
                                     type="linear"
                                     dataKey="rpm"
@@ -54,14 +54,18 @@ export const Dashboard = () => {
                                     strokeDasharray="3 3"
                                     strokeWidth={1}/>
                                 <XAxis
-                                    tickCount={5}
+                                    scale={"linear"}
                                     type={'number'}
                                     domain={['dataMin', "dataMax"]}
                                     dataKey="timestamp"
                                     tickFormatter={(tick) => {
                                         return moment(tick).format('HH:mm');
                                     }}/>
-                                <YAxis domain={[0, 50]}/>
+                                <YAxis
+                                    unit={" RPM"}
+                                    scale={"linear"}
+                                    ticks={[0, 33.33, 45, 50]}
+                                    domain={[0, 50]}/>
                                 <ReferenceLine y={33.33} stroke="#969696" strokeDasharray="5 5"/>
                                 <ReferenceLine y={45} stroke="#969696" strokeDasharray="5 5"/>
                             </LineChart>
