@@ -1,9 +1,9 @@
 import * as React from 'react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
-import { Button } from '../Button';
 import './dialog.scss';
 import * as T from './types';
+import {Button} from "@mui/material";
 
 export const Dialog = (props: T.IProps) => {
     const classes: string = 'dialog-wrapper ' + (props.showKeyboard ? 'dialog-with-keyboard' : '');
@@ -55,8 +55,8 @@ export const Dialog = (props: T.IProps) => {
                     { props.children }
                 </div>
                 <div className="dialog-buttons">
-                    <Button type="danger" onClick={ props.onCancel }>Cancel</Button>
-                    <Button type="success" disabled={ props.acceptDisabled } onClick={ props.onAccept }>Accept</Button>
+                    <Button color="warning" onClick={ props.onCancel }>Cancel</Button>
+                    <Button color="success" disabled={ props.acceptDisabled } onClick={ props.onAccept }>Accept</Button>
                 </div>
             </div>
 

@@ -42,8 +42,8 @@ export class Electron {
         const image = nativeImage.createFromPath(app.getAppPath() + '/assets/icons/favicon.ico');
 
         const browserWindow = new BrowserWindow({
-            width: 1024,
-            height: 600,
+            width: 1280,
+            height: 700,
             useContentSize: true,
             resizable: false,
             title: 'Astraeus',
