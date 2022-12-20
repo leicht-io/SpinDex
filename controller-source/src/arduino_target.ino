@@ -19,7 +19,7 @@ unsigned long time;
 unsigned long startTime;
 unsigned long baudRate = 38400;
 
-double steps = 24.0; // 24 dark bars on BG4002
+double steps = 24.0; // 24 dark bars on BG4000-series/59xx-series
 double RPM = 0.0;
 double prevRPM = 0.0;
 
@@ -28,23 +28,20 @@ unsigned long lastTime = millis();
 Display display = Display();
 SerialComm serialComm = SerialComm();
 
-// TODO: Reset to zero when Boegram is turned off.
+// TODO: Reset to zero when Beogram is turned off.
 
-void setup(void)
-{
+void setup(void) {
   initialDevice();
 }
 
-void initialDevice()
-{
+void initialDevice() {
   pinMode(IRSensorPin, INPUT);
   Serial.begin(baudRate);
   initializeTimer1();
   display.initializeDisplay();
 }
 
-void loop(void)
-{
+void loop(void) {
   time = millis();
   int currentSwitchState = digitalRead(IRSensorPin);
 
@@ -75,14 +72,12 @@ void loop(void)
   }
 }
 
-void initializeTimer1()
-{
+void initializeTimer1() {
   Timer1.initialize(1000000);
   Timer1.attachInterrupt(timerIsr);
 }
 
-void calculateRPM()
-{
+void calculateRPM() {
   startTime = lastDebounceTime;
   unsigned long lnTime = startTime - endTime;
   RPM = (60000.0 / (double)lnTime) / steps;
@@ -92,7 +87,6 @@ void calculateRPM()
   endTime = startTime;
 }
 
-void timerIsr()
-{
+void timerIsr() {
   time = millis() / 1000;
 }

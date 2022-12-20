@@ -37,6 +37,8 @@ Android application with bluetooth support. (WIP, needs new controller with supp
 
 ### µController Source Code (controller-source)
 Source code for the microcontroller.
+Setup for CLion and PlatformIO:
+https://docs.platformio.org/en/latest/core/installation/shell-commands.html#piocore-install-shell-commands
 
 ---
 

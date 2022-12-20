@@ -1,7 +1,7 @@
 import moment = require('moment');
 import * as React from 'react';
 import './sidebar.scss';
-import {Button, Grid} from "@mui/material";
+import {Button, Stack} from "@mui/material";
 
 const webSocket: WebSocket = new WebSocket('ws://localhost:3000');
 
@@ -86,44 +86,38 @@ export const Sidebar = () => {
                             </table>
 
                             {profile.active && (
-                                <Grid container={true}>
-                                    <Grid item={true} xs={6}>
-                                        <Button
-                                            fullWidth={true}
-                                            variant="contained"
-                                            size={"small"}
-                                            disabled={profiles && profiles[selectedProfile] && profiles && profiles[selectedProfile].finish !== null || (!profiles || profiles && profiles.length === 0)}
-                                            color="warning"
-                                            onClick={() => {
-                                                console.log(1)
-                                                webSocket.send(JSON.stringify({
-                                                    type: 'stopProfile',
-                                                    id: profiles[selectedProfile].id
-                                                }));
-                                                webSocket.send(JSON.stringify({type: 'getProfiles'}));
-                                            }}>
-                                            Stop
-                                        </Button>
-                                    </Grid>
-
-                                    <Grid item={true} xs={6}>
-                                        <Button
-                                            fullWidth={true}
-                                            variant="contained"
-                                            size={"small"}
-                                            disabled={profiles && profiles[selectedProfile] && profiles && profiles[selectedProfile].finish !== null || (!profiles || profiles && profiles.length === 0)}
-                                            color="error"
-                                            onClick={() => {
-                                                webSocket.send(JSON.stringify({
-                                                    type: 'deleteProfile',
-                                                    id: profiles[selectedProfile].id
-                                                }));
-                                                webSocket.send(JSON.stringify({type: 'getProfiles'}));
-                                            }}>
-                                            Delete
-                                        </Button>
-                                    </Grid>
-                                </Grid>
+                                <Stack spacing={2} direction="row">
+                                    <Button
+                                        variant="contained"
+                                        size={"small"}
+                                        disabled={profiles && profiles[selectedProfile] && profiles && profiles[selectedProfile].finish !== null || (!profiles || profiles && profiles.length === 0)}
+                                        color="warning"
+                                        onClick={() => {
+                                            console.log(1)
+                                            webSocket.send(JSON.stringify({
+                                                type: 'stopProfile',
+                                                id: profiles[selectedProfile].id
+                                            }));
+                                            webSocket.send(JSON.stringify({type: 'getProfiles'}));
+                                        }}>
+                                        Stop
+                                    </Button>
+                                    <Button
+                                        fullWidth={true}
+                                        variant="outlined"
+                                        size={"small"}
+                                        disabled={profiles && profiles[selectedProfile] && profiles && profiles[selectedProfile].finish !== null || (!profiles || profiles && profiles.length === 0)}
+                                        color="error"
+                                        onClick={() => {
+                                            webSocket.send(JSON.stringify({
+                                                type: 'deleteProfile',
+                                                id: profiles[selectedProfile].id
+                                            }));
+                                            webSocket.send(JSON.stringify({type: 'getProfiles'}));
+                                        }}>
+                                        Delete
+                                    </Button>
+                                </Stack>
                             )}
                         </div>
                     );
