@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './sidebar.scss';
-import { Button, Drawer, Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import moment from 'moment';
 import { WSContext } from '../../context';
 

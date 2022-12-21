@@ -5,3 +5,4 @@ build
 dist
 astraeus.db
 .parcel-cache
+/controller-source/cmake-build-release/

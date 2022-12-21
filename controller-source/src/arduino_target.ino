@@ -2,88 +2,68 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <TimerOne.h>
 #include "data/StringUtils.h"
 #include "data/Display.h"
 #include "data/SerialComm.h"
 
-const int IRSensorPin = 2;
+const long baudRate = 115200;
+const byte irSensorPin = 2;
+byte previousIrSensorState = LOW;
+byte count = 0;
+unsigned long time = millis();
+unsigned long now = millis();
+unsigned long timeDiff = millis();
 
-int inputState;
-int lastInputState = LOW;
-
-unsigned long debounceDelay = 5;
-unsigned long lastDebounceTime = 0;
-unsigned long endTime = 0;
-unsigned long time;
-unsigned long startTime;
-unsigned long baudRate = 38400;
-
-double steps = 24.0; // 24 dark bars on BG4000-series/59xx-series
-double RPM = 0.0;
-double prevRPM = 0.0;
-
-unsigned long lastTime = millis();
+byte steps = 24; // 24 dark bars on BG4000-series/59xx-series
+double oneSecond = 60000.0;
 
 Display display = Display();
 SerialComm serialComm = SerialComm();
 
-// TODO: Reset to zero when Beogram is turned off.
-
-void setup(void) {
-  initialDevice();
+void initialDevice() {
+    Serial.begin(baudRate);
+    display.initializeDisplay();
 }
 
-void initialDevice() {
-  pinMode(IRSensorPin, INPUT);
-  Serial.begin(baudRate);
-  initializeTimer1();
-  display.initializeDisplay();
+void setup(void) {
+    initialDevice();
+}
+
+void resetStates() {
+    count = 0;
+    now = 0;
+    time = millis();
+}
+
+double calculateRPM() {
+    now = millis();
+
+    timeDiff = now - time;
+
+    return oneSecond / timeDiff;
+}
+
+void commit(double RPM) {
+    Serial.println(RPM);
+    // display.update(RPM);
 }
 
 void loop(void) {
-  time = millis();
-  int currentSwitchState = digitalRead(IRSensorPin);
+    int currentIrSensorState = digitalRead(irSensorPin);
+    if (currentIrSensorState != previousIrSensorState) {
+        previousIrSensorState = currentIrSensorState;
 
-  if (currentSwitchState != lastInputState) {
-    lastDebounceTime = millis();
-  }
+        if (currentIrSensorState == HIGH) {
+            count++;
+        }
 
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (currentSwitchState != inputState) {
-      inputState = currentSwitchState;
-
-      if (inputState == LOW) {
-        calculateRPM();
-      }
+        if (count == 1) {
+            // time = millis();
+        }
+        if (count == steps) {
+            double RPM = calculateRPM();
+            commit(RPM);
+            resetStates();
+        }
     }
-  }
-
-  lastInputState = currentSwitchState;
-
-  if (millis() > lastTime + 1000) {
-    display.update(RPM);
-    serialComm.send(RPM);
-
-    lastTime = millis();
-  }
-}
-
-void initializeTimer1() {
-  Timer1.initialize(1000000);
-  Timer1.attachInterrupt(timerIsr);
-}
-
-void calculateRPM() {
-  startTime = lastDebounceTime;
-  unsigned long lnTime = startTime - endTime;
-  RPM = (60000.0 / (double)lnTime) / steps;
-
-  prevRPM = RPM;
-
-  endTime = startTime;
-}
-
-void timerIsr() {
-  time = millis() / 1000;
 }
