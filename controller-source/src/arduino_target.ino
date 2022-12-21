@@ -45,26 +45,23 @@ void loop(void) {
   time = millis();
   int currentSwitchState = digitalRead(IRSensorPin);
 
-  if (currentSwitchState != lastInputState)
-  {
+  if (currentSwitchState != lastInputState) {
     lastDebounceTime = millis();
   }
 
-  if ((millis() - lastDebounceTime) > debounceDelay)
-  {
-    if (currentSwitchState != inputState)
-    {
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (currentSwitchState != inputState) {
       inputState = currentSwitchState;
-      if (inputState == LOW)
-      {
+
+      if (inputState == LOW) {
         calculateRPM();
       }
     }
   }
+
   lastInputState = currentSwitchState;
 
-  if (millis() > lastTime + 1000)
-  {
+  if (millis() > lastTime + 1000) {
     display.update(RPM);
     serialComm.send(RPM);
 

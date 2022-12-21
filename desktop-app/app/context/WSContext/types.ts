@@ -1,9 +1,9 @@
 export interface IProps {
-    children: any;
+  children: any;
 }
 
 export interface IContextProps {
-    devicePath: string;
-    deviceConnected: boolean;
-    webSocket: WebSocket;
+  devicePath: string | null;
+  deviceConnected: boolean;
+  webSocket: WebSocket;
 }

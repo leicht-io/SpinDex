@@ -1,151 +1,153 @@
 import { app, BrowserWindow, Menu } from 'electron';
-import WebSocket from 'ws';
+import { WebSocket } from 'ws';
 import { API } from '../api/API';
-import { SerialPort } from "serialport";
-import { ReadlineParser } from '@serialport/parser-readline'
-
-const nativeImage = require('electron').nativeImage;
+import { SerialPort } from 'serialport';
+import { ReadlineParser } from '@serialport/parser-readline';
+import { nativeImage } from 'electron/common';
 
 export class Electron {
-    private webSocket: WebSocket;
-    private port: any = null;
-    private parser = new ReadlineParser();
-    private webAPI: API = new API();
-    private timeout: any;
-    private sendMockData = false;
+  private webSocket: WebSocket | undefined;
+  private port: any = null;
+  private parser = new ReadlineParser();
+  private webAPI: API = new API();
+  private timeout: any;
+  private sendMockData = true;
 
-    constructor() {
-        app.on('ready', () => {
-            this.startWebClient();
-            this.createWindow();
-            this.checkDevices();
-            this.startAPI();
-            this.sendDataToAPI();
-        });
+  constructor() {
+    app.on('ready', () => {
+      this.webSocket = new WebSocket('ws://localhost:3000');
 
-        app.on('before-quit', () => {
-            this.webAPI.stopAPI();
-        });
+      this.startWebClient();
+      this.createWindow();
+      this.checkDevices();
+      this.startAPI();
+
+      this.webSocket.on('open', () => {
+        this.sendDataToAPI();
+      });
+    });
+
+    app.on('before-quit', () => {
+      this.webAPI.stopAPI();
+    });
+  }
+
+  private startSerialConnection() {
+    if (this.port !== null) {
+      this.port.pipe(this.parser);
     }
+  }
 
-    private startSerialConnection() {
-        if (this.port !== null) {
-            // @ts-ignore
-            this.port.pipe(this.parser);
-        }
-    }
+  private createWindow() {
+    Menu.setApplicationMenu(null);
 
-    private createWindow() {
-        Menu.setApplicationMenu(null);
+    // TODO: Handle different icons for different OS (.png, .ico)
+    const image = nativeImage.createFromPath(app.getAppPath() + '/assets/icons/favicon.ico');
 
-        // TODO: Handle different icons for different OS (.png, .ico)
-        const image = nativeImage.createFromPath(app.getAppPath() + '/assets/icons/favicon.ico');
+    const browserWindow = new BrowserWindow({
+      width: 1280,
+      height: 700,
+      useContentSize: true,
+      resizable: false,
+      title: 'Astraeus',
+      icon: image,
+      webPreferences: {
+        nodeIntegration: true,
+      },
+    });
 
-        const browserWindow = new BrowserWindow({
-            width: 1280,
-            height: 700,
-            useContentSize: true,
-            resizable: false,
-            title: 'Astraeus',
-            icon: image,
-            webPreferences: {
-                nodeIntegration: true,
-            },
-        });
+    browserWindow.loadURL('http://localhost:1234');
+  }
 
-        browserWindow.loadURL('http://localhost:1234');
-    }
+  private checkDevices() {
+    SerialPort.list().then((devices) => {
+      let deviceFound = false;
+      devices.forEach((device) => {
 
-    private checkDevices() {
-        SerialPort.list().then((devices) => {
+        if (device.vendorId?.toUpperCase() === '1A86' && device.productId?.toUpperCase() === '7523') {
+          clearTimeout(this.timeout);
+          deviceFound = true;
 
-            let deviceFound = false;
-            devices.forEach((device) => {
+          this.port = new SerialPort({ path: device.path, baudRate: 38400 });
 
-                if (device.vendorId?.toUpperCase() === '1A86' && device.productId?.toUpperCase() === '7523') {
-                    clearTimeout(this.timeout);
-                    deviceFound = true;
-
-                    this.port = new SerialPort({ path: device.path, baudRate: 38400 });
-
-                    if (this.port) {
-                        // @ts-ignore
-                        this.port.on('close', () => {
-                            if (this.webSocket.readyState === 0) {
-                                this.webSocket.on('open', () => {
-                                    this.webSocket.send(JSON.stringify({type: 'deviceRemoved'}));
-                                });
-                            } else if (this.webSocket.readyState === 1) {
-                                this.webSocket.send(JSON.stringify({type: 'deviceRemoved'}));
-                            }
-
-                            deviceFound = false;
-                            this.checkDevices();
-                        });
-                    }
-
-                    if (this.webSocket.readyState === 0) {
-                        this.webSocket.on('open', () => {
-                            this.webSocket.send(JSON.stringify({type: 'setDeviceInfo', value: device.path}));
-                        });
-                    } else if (this.webSocket.readyState === 1) {
-                        this.webSocket.send(JSON.stringify({type: 'setDeviceInfo', value: device.path}));
-                    }
-
-                    this.startSerialConnection();
-                }
-            });
-
-            if (!deviceFound) {
-                this.timeout = setTimeout(() => {
-                    this.checkDevices();
-                }, 1000);
-            }
-        });
-    }
-
-    private sendDataToAPI() {
-        if (this.sendMockData) {
-            setInterval(() => {
-                const rpm = JSON.stringify({
-                    type: 'addRPM',
-                    value: Number((Math.random() * (32.12 - 33.52) + 33.52).toFixed(2))
+          if (this.port) {
+            this.port.on('close', () => {
+              if (this.webSocket && this.webSocket.readyState === 0) {
+                this.webSocket.on('open', () => {
+                  this.webSocket?.send(JSON.stringify({ type: 'deviceRemoved' }));
                 });
+              } else if (this.webSocket && this.webSocket.readyState === 1) {
+                this.webSocket.send(JSON.stringify({ type: 'deviceRemoved' }));
+              }
 
-                this.webSocket.send(rpm);
-
-                const value = JSON.stringify({
-                    type: 'addTemperature',
-                    value: Number((Math.random() * (20.52 - 55.52) + 20.52).toFixed(2))
-                });
-
-                this.webSocket.send(value);
-            }, 1000);
-        } else {
-            this.parser.on('data', (data: string) => {
-                const speed = JSON.parse(data);
-                if (speed) {
-                    const value = JSON.stringify({type: 'addRPM', value: speed});
-
-                    if (this.webSocket.readyState === WebSocket.OPEN) {
-                        this.webSocket.send(value);
-                    }
-                } else if (speed.temperature !== null && speed.temperature !== undefined) {
-                    JSON.stringify({type: 'addTemperature', value: speed.temperature});
-                }
+              deviceFound = false;
+              this.checkDevices();
             });
+          }
+
+          if (this.webSocket?.readyState === 0) {
+            this.webSocket.on('open', () => {
+              this.webSocket?.send(JSON.stringify({ type: 'setDeviceInfo', value: device.path }));
+            });
+          } else if (this.webSocket?.readyState === 1) {
+            this.webSocket.send(JSON.stringify({ type: 'setDeviceInfo', value: device.path }));
+          }
+
+          this.startSerialConnection();
         }
-    }
+      });
 
-    private startAPI() {
-        this.webSocket = new WebSocket('ws://localhost:3000')
-        this.webAPI.startAPI();
-    }
+      if (!deviceFound) {
+        this.timeout = setTimeout(() => {
+          this.checkDevices();
+        }, 1000);
+      }
+    });
+  }
 
-    private startWebClient() {
+  private sendDataToAPI() {
+    if (this.sendMockData) {
+      this.webSocket?.send(JSON.stringify({ type: 'setDeviceInfo', value: '/dev/null' }));
 
+      setInterval(() => {
+
+        const rpm = JSON.stringify({
+          type: 'addRPM',
+          value: Number((Math.random() * (32.12 - 33.52) + 33.52).toFixed(2))
+        });
+
+        this.webSocket?.send(rpm);
+
+        const value = JSON.stringify({
+          type: 'addTemperature',
+          value: Number((Math.random() * (20.52 - 55.52) + 20.52).toFixed(2))
+        });
+
+        this.webSocket?.send(value);
+      }, 1000);
+    } else {
+      this.parser.on('data', (data: string) => {
+        const speed = JSON.parse(data);
+        if (speed) {
+          const value = JSON.stringify({ type: 'addRPM', value: speed });
+
+          if (this.webSocket?.readyState === WebSocket.OPEN) {
+            this.webSocket.send(value);
+          }
+        } else if (speed.temperature !== null && speed.temperature !== undefined) {
+          JSON.stringify({ type: 'addTemperature', value: speed.temperature });
+        }
+      });
     }
+  }
+
+  private startAPI() {
+    this.webAPI.startAPI();
+  }
+
+  private startWebClient() {
+    // Do noting
+  }
 }
 
-// tslint:disable-next-line:no-unused-expression
 new Electron();
