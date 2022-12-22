@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include "SerialComm.h"
 
-void SerialComm::send(float value)
-{
-    Serial.print(value, 3);
+void SerialComm::print(double value) {
+    Serial.print(value, 2);
     Serial.print("\n");
 }
