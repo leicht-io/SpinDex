@@ -19,7 +19,10 @@ double oneSecond = 60000.0;
 Display display = Display();
 SerialComm serialComm = SerialComm();
 
+// TODO: send 0 if no measured value.
+
 void initialDevice() {
+    // TODO: Send with Bluetooth as well
     Serial.begin(baudRate);
 
     display.initializeDisplay();
