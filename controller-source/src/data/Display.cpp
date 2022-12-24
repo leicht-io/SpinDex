@@ -341,6 +341,7 @@ splashScreen2[] = {
 
 unsigned int nextGraphIndex = 0;
 unsigned int graph[66];
+double prevRPM = 0.0;
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
@@ -353,62 +354,58 @@ void Display::initializeDisplay() {
 }
 
 void Display::update(double RPM) {
-    tft.fillScreen(ST7735_BLACK);
+    Display::printRPM(RPM);
 
+    /* tft.drawLine(0, 18, 160, 18, ST7735_WHITE);
+    tft.drawLine(90, 2, 90, 15, ST7735_WHITE);
+
+    if ((RPM > 33 && RPM < 34) || (RPM > 44 && RPM < 46)) {
+        tft.drawBitmap(100, 3, thumbsUp, 19, 13, 1);
+    } else {
+        tft.drawBitmap(100, 3, thumbsDown, 19, 13, 1);
+    }
+
+    if (RPM <= 10) {
+        graph[nextGraphIndex] = 1;
+    } else if (RPM > 10 && RPM <= 20) {
+        graph[nextGraphIndex] = 2;
+    } else if (RPM > 20 && RPM <= 30) {
+        graph[nextGraphIndex] = 4;
+    } else if (RPM > 30 && RPM <= 40) {
+        graph[nextGraphIndex] = 6;
+    } else if (RPM > 40) {
+        graph[nextGraphIndex] = 8;
+    }
+
+    nextGraphIndex++;
+    if (nextGraphIndex > 65) {
+        nextGraphIndex = 0;
+    }
+
+    for (int i = 0; i < 66; i++) {
+        tft.drawLine((1 * i) * 2 + 1, 28, (1 * i * 2) + 1, 28 - graph[i], ST7735_WHITE);
+    }*/
+
+    // tft.display();
+}
+
+// Writing new value to buffer without clearing the screen.
+void Display::printRPM(double RPM) {
+    tft.setTextSize(4);
+    tft.setCursor(10, 10);
+    tft.setTextColor(ST7735_BLACK);
+    tft.println(prevRPM);
     tft.setTextSize(4);
     tft.setCursor(10, 10);
     tft.setTextColor(ST7735_WHITE);
     tft.println(RPM);
 
+    // TODO: Only do this on first run
     tft.setTextSize(2);
     tft.setCursor(110, 10);
     tft.println("RPM");
 
-    /* tft.drawLine(0, 18, 128, 18, WHITE);
-    tft.drawLine(90, 2, 90, 15, WHITE);
-
-     if ((RPM > 33 && RPM < 34) || (RPM > 44 && RPM < 46))
-    {
-      tft.drawBitmap(100, 3, thumbsUp, 19, 13, 1);
-    }
-    else
-    {
-      tft.drawBitmap(100, 3, thumbsDown, 19, 13, 1);
-    }
-
-    if (RPM <= 10)
-    {
-      graph[nextGraphIndex] = 1;
-    }
-    else if (RPM > 10 && RPM <= 20)
-    {
-      graph[nextGraphIndex] = 2;
-    }
-    else if (RPM > 20 && RPM <= 30)
-    {
-      graph[nextGraphIndex] = 4;
-    }
-    else if (RPM > 30 && RPM <= 40)
-    {
-      graph[nextGraphIndex] = 6;
-    }
-    else if (RPM > 40)
-    {
-      graph[nextGraphIndex] = 8;
-    }
-
-    nextGraphIndex++;
-    if (nextGraphIndex > 65)
-    {
-      nextGraphIndex = 0;
-    }
-
-    for (int i = 0; i < 66; i++)
-    {
-      tft.drawLine((1 * i) * 2 + 1, 28, (1 * i * 2) + 1, 28 - graph[i], WHITE);
-    }
-
-    tft.display();  */
+    prevRPM = RPM;
 }
 
 void Display::showSplashScreen() {
@@ -421,5 +418,22 @@ void Display::showSplashScreen() {
     delay(1500);
 
     tft.fillScreen(ST7735_BLACK);
+
     this->update(0.0);
+    this->initGraph();
+}
+
+void Display::initGraph() {
+    tft.drawLine(15, 110, 150, 110, ST7735_WHITE); // x-axis
+    tft.drawLine(15, 50, 15, 110, ST7735_WHITE); // y-axis
+
+    // y-axis ticks
+    tft.drawLine(10, 50, 15, 50, ST7735_WHITE);
+    tft.drawLine(10, 60, 15, 60, ST7735_WHITE);
+    tft.drawLine(10, 70, 15, 70, ST7735_WHITE);
+    tft.drawLine(10, 80, 15, 80, ST7735_WHITE);
+    tft.drawLine(10, 90, 15, 90, ST7735_WHITE);
+    tft.drawLine(10, 100, 15, 100, ST7735_WHITE);
+
+    // x-axis ticks
 }

@@ -6,6 +6,8 @@ class Display
 public:
     void initializeDisplay();
     void update(double RPM);
+    void printRPM(double RPM);
+    void initGraph();
 
 private:
     unsigned int nextGraphIndex;
