@@ -5,13 +5,15 @@ const long baudRate = 115200;
 const byte irSensorPin = 14;
 byte previousIrSensorState = LOW;
 byte count = 0;
+
 unsigned long currentTime = millis();
 unsigned long now = millis();
 unsigned long timeDiff = millis();
+
 double lastRPM = 0.0;
 
-TaskHandle_t Task1;
-TaskHandle_t Task2;
+TaskHandle_t updateDisplayTask;
+TaskHandle_t mainLoopTask;
 
 byte steps = 24; // 24 dark bars on BG4000-series/59xx-series
 double oneSecond = 60000.0;
@@ -28,15 +30,18 @@ void initialDevice() {
     display.initializeDisplay();
 }
 
-void Task2code(void *pvParameters) {
+void updateDisplayLoop(void *pvParameters) {
     for (;;) {
-        commit();
+        serialComm.print(lastRPM);
+        display.update(lastRPM);
+
         delay(1000);
     }
 }
 
-void Task1code(void *pvParameters) {
+void mainLoop(void *pvParameters) {
     for (;;) {
+
         int currentIrSensorState = digitalRead(irSensorPin);
         if (currentIrSensorState != previousIrSensorState) {
             previousIrSensorState = currentIrSensorState;
@@ -45,9 +50,6 @@ void Task1code(void *pvParameters) {
                 count++;
             }
 
-            if (count == 1) {
-                // time = millis();
-            }
             if (count == steps) {
                 lastRPM = calculateRPM();
                 resetStates();
@@ -64,23 +66,8 @@ void setup(void) {
     digitalWrite(13, HIGH);
     initialDevice();
 
-    xTaskCreatePinnedToCore(
-            Task1code,   /* Task function. */
-            "Task1",     /* name of task. */
-            10000,       /* Stack size of task */
-            NULL,        /* parameter of the task */
-            1,           /* priority of the task */
-            &Task1,      /* Task handle to keep track of created task */
-            0);
-
-    xTaskCreatePinnedToCore(
-            Task2code,   /* Task function. */
-            "Task2",     /* name of task. */
-            10000,       /* Stack size of task */
-            NULL,        /* parameter of the task */
-            1,           /* priority of the task */
-            &Task2,      /* Task handle to keep track of created task */
-            1);          /* pin task to core 1 */
+    xTaskCreatePinnedToCore(mainLoop, "updateDisplayTask", 10000, NULL, 1, &updateDisplayTask, 0);
+    xTaskCreatePinnedToCore(updateDisplayLoop, "mainLoopTask", 10000, NULL, 1, &mainLoopTask, 1);
 }
 
 void resetStates() {
@@ -95,30 +82,4 @@ double calculateRPM() {
     timeDiff = now - currentTime;
 
     return oneSecond / timeDiff;
-}
-
-void commit() {
-    serialComm.print(lastRPM);
-    display.update(lastRPM);
-}
-
-void loop(void) {
-    /* int currentIrSensorState = digitalRead(irSensorPin);
-    if (currentIrSensorState != previousIrSensorState) {
-        previousIrSensorState = currentIrSensorState;
-
-        if (currentIrSensorState == HIGH) {
-            count++;
-        }
-
-        if (count == 1) {
-            // time = millis();
-        }
-        if (count == steps) {
-            lastRPM = calculateRPM();
-            resetStates();
-        }
-    }
-
-     delay(1); */
 }
