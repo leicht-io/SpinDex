@@ -1,12 +1,14 @@
 #include <Arduino.h>
-//#include <Adafruit_ST7735.h>
 
 class Display
 {
 public:
     void initializeDisplay();
     void update(double RPM);
-    void printRPM(double RPM);
+    void updateTime();
+    void printCurrentRPM(double RPM);
+    void printMaxRPM(double RPM);
+    void printMinRPM(double RPM);
     void initGraph();
 
 private:
