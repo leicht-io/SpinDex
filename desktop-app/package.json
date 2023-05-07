@@ -30,7 +30,7 @@
     "sequelize": "^6.28.0",
     "sequelize-typescript": "^2.1.5",
     "serialport": "^10.5.0",
-    "sqlite3": "^5.1.4",
+    "sqlite3": "^5.1.5",
     "ws": "^8.11.0"
   },
   "devDependencies": {
