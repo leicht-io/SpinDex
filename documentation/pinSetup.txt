@@ -1,8 +1,21 @@
 /**
     PIN LAYOUT:
-    D2 - IR INPUT
-    A4 - SDA
-    A5 - SCL
+
+    IR:
+    OUTPUT - D14
+    GND - GND
+    VCC - D13
+
+    DISPLAY:
+    GND - GND
+    VCC - 3V#
+    SCL - D18
+    SDA - D19
+    RES - D4
+    DC - D2
+    CS - D15
+    BL - N/A
+
 */
 
 /**

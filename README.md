@@ -1,4 +1,4 @@
-# astraeus
+# astraeus (WIP)
 Astraeus is a small RPM measurement tool mainly made for the Beogram 4000 series as a proof of concept.
 The main focus is to verify that the turntable is restored correctly and maintains the correct speed over a longer period.
 It is currently written to run on the Arduino Nano but could easily be ported to other microcontrollers, architectures and footprints.
