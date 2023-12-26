@@ -28,7 +28,7 @@ BluetoothSerial SerialBT;
 void initialDevice() {
     // TODO: Send with Bluetooth as well
     Serial.begin(baudRate);
-    SerialBT.begin("BeoTac");
+    SerialBT.begin("Astraeus");
 
     display.initializeDisplay();
 }

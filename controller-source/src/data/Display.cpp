@@ -359,10 +359,10 @@ void Display::initializeDisplay() {
 void Display::update(double RPM) {
     Display::printCurrentRPM(RPM);
 
-    Display::printMaxRPM(RPM);
+    //Display::printMaxRPM(RPM);
 
     if (RPM < minRPM) {
-        Display::printMinRPM(RPM);
+        //Display::printMinRPM(RPM);
         minRPM = RPM;
     }
     /* tft.drawLine(0, 18, 160, 18, ST7735_WHITE);
@@ -400,11 +400,11 @@ void Display::update(double RPM) {
 
 // Writing new value to buffer without clearing the screen.
 void Display::printCurrentRPM(double RPM) {
-    tft.setTextSize(4);
+    tft.setTextSize(3);
     tft.setCursor(10, 10);
     tft.setTextColor(ST7735_BLACK);
     tft.println(prevRPM);
-    tft.setTextSize(4);
+    tft.setTextSize(3);
     tft.setCursor(10, 10);
     tft.setTextColor(ST7735_WHITE);
     tft.println(RPM);
