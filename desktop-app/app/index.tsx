@@ -2,7 +2,7 @@ import * as React from 'react';
 import './core/styles/main.scss';
 import { Dashboard } from './routes';
 import { createRoot } from 'react-dom/client';
-import { WSProvider } from './context';
+import { BLEProvider, DataProvider } from './context';
 import { createTheme, ThemeProvider } from '@mui/material';
 import { Sidebar, TopBar } from './components';
 
@@ -29,26 +29,28 @@ const renderApp = (): void => {
 
   root.render(
     <ThemeProvider theme={ theme }>
-      <WSProvider>
-        <TopBar />
+      <DataProvider>
+        <BLEProvider>
+          <TopBar />
 
-        <div
-          style={ {
-            marginTop: '48px',
-            zIndex: 0,
-            width: '100vw',
-            padding: 0,
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'stretch',
-            alignContent: 'stretch',
-          } }>
-          <Sidebar />
-          <Dashboard />
-        </div>
-      </WSProvider>
+          <div
+            style={ {
+              marginTop: '48px',
+              zIndex: 0,
+              width: '100vw',
+              height: 'calc(100vh - 48px)',
+              padding: 0,
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'stretch',
+              alignContent: 'stretch',
+            } }>
+            <Dashboard />
+          </div>
+        </BLEProvider>
+      </DataProvider>
     </ThemeProvider>
   );
 };

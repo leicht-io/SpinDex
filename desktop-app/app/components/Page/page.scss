@@ -1,7 +1,7 @@
 @import "../../core/styles/main";
 
 .page {
-  width: calc(100vw - #{$sidebarWidth});
+  width: calc(100vw);
   padding: $base * 2;
   box-sizing: border-box;
   background: #F1F5F9;

@@ -2,66 +2,41 @@ import * as React from 'react';
 import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import './dashboard.scss';
 import { Box, Card, CardContent, CircularProgress, Grid, Typography } from '@mui/material';
-
 import { Page } from '../../components';
-import { WSContext } from '../../context';
 import moment from 'moment';
+import { BLEContext, DataContext } from '../../context';
 
 export const Dashboard = () => {
-  const { deviceConnected, webSocket } = React.useContext(WSContext);
+  const { connected, status } = React.useContext(BLEContext);
+  const { data } = React.useContext(DataContext);
 
-  const [data, setData] = React.useState<{ rpm: number; temperature: number; timestamp: number }[]>([]);
   const [latestPoint, setLatestPoint] = React.useState<number>();
   const [minValue, setMinValue] = React.useState<number>(99);
   const [maxValue, setMaxValue] = React.useState<number>(-1);
-  const [errorRate, setErrorRate] = React.useState<number>(-1);
 
   React.useEffect(() => {
-    let errors: number = 0;
-    data.forEach(item => {
-      const rpm = item.rpm;
-      const deviation = 0.05;
-      if(Math.abs((rpm - 33.33)) > deviation) {
-        errors++;
+    if(data.length > 0) {
+      const newestPoint = data[data.length - 1].value;
+      setLatestPoint(newestPoint);
+      if (newestPoint < minValue) {
+        setMinValue(newestPoint);
       }
-    });
-
-    const errorPercentage = (data.length / 100) * errors;
-    setErrorRate(errorPercentage);
-  }, [data]);
-
-  webSocket.onmessage = (event: any) => {
-    const parsedEvent = JSON.parse(event.data);
-    if (parsedEvent.type === 'rpm') {
-      setLatestPoint(parsedEvent.value);
-      if(parsedEvent.value < minValue) {
-        setMinValue(parsedEvent.value);
-      }
-      if(parsedEvent.value > maxValue) {
-        setMaxValue(parsedEvent.value);
-      }
-
-      const value = Number(parsedEvent.value);
-      if (!isNaN(value)) {
-        const lastEntry = data[data.length - 1];
-        setData(data.concat([{
-          rpm: value,
-          temperature: lastEntry !== undefined ? lastEntry.temperature : 0.0,
-          timestamp: Date.now()
-        }]));
+      if (newestPoint > maxValue) {
+        setMaxValue(newestPoint);
       }
     }
-  };
+  }, [data]);
 
   return (
     <Page>
-      {!deviceConnected && (
+      {!connected && (
         <Box sx={ { display: 'flex', height: 620, width: '100%', justifyContent: 'center', alignItems: 'center' } }>
           <CircularProgress />
+          <p>{status}</p>
         </Box>
       )}
 
-      {deviceConnected && data.length > 0 && (
+      {connected && data.length > 0 && (
         <>
           <Grid container={ true }
             spacing={ 2 }>
@@ -87,7 +62,6 @@ export const Dashboard = () => {
                     color="text.secondary"
                     gutterBottom={ true }>
                     Min: {minValue}
-                    Max: {maxValue}
                   </Typography>
                 </CardContent>
               </Card>
@@ -101,7 +75,7 @@ export const Dashboard = () => {
                     sx={ { fontSize: 14 } }
                     color="text.secondary"
                     gutterBottom={ true }>
-                    Error rate: {errorRate} %
+                    Max: {maxValue}
                   </Typography>
                 </CardContent>
               </Card>
@@ -119,7 +93,7 @@ export const Dashboard = () => {
                       margin={ { bottom: -10, top: 0, right: 0, left: 0 } }>
                       <Line
                         type="linear"
-                        dataKey="rpm"
+                        dataKey="value"
                         stroke="#8884d8"
                         strokeWidth={ 1 }
                         isAnimationActive={ false }

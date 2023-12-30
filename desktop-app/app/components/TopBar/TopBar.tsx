@@ -3,19 +3,20 @@ import {
   AppBar,
   Box,
   Button,
-  Dialog, DialogActions,
+  Dialog,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
-  Fab, TextField,
+  DialogTitle, Fab,
+  TextField,
   Toolbar,
   Typography
 } from '@mui/material';
 import NavigationIcon from '@mui/icons-material/Navigation';
-import { WSContext } from '../../context';
+import { BLEContext } from '../../context';
 
 export const TopBar = (): React.ReactElement => {
-  const { devicePath, deviceConnected, webSocket } = React.useContext(WSContext);
+  const { initBluetooth, connected, device } = React.useContext(BLEContext);
 
   const [showDialog, setShowDialog] = React.useState<boolean>(false);
   const [profileName, setProfileName] = React.useState<string>('');
@@ -63,9 +64,6 @@ export const TopBar = (): React.ReactElement => {
             disabled={ profileName.trim().length === 0 }
             onClick={ () => {
               if (profileName) {
-                webSocket.send(JSON.stringify({ type: 'createProfile', name: profileName }));
-                webSocket.send(JSON.stringify({ type: 'getProfiles', name: profileName }));
-
                 setShowDialog(false);
                 setProfileName('');
               }
@@ -85,28 +83,16 @@ export const TopBar = (): React.ReactElement => {
               Astreaus
             </Typography>
 
-            <Button color="inherit">{(deviceConnected && devicePath) ? `Connected on ${ devicePath }` : 'Waiting for device'}</Button>
+            <Button
+              onClick={ () => {
+                if(!connected) {
+                  initBluetooth();
+                }
+              } }
+              color="inherit">{(connected) ? `Connected to ${ device.name }` : 'Connect'}</Button>
           </Toolbar>
         </AppBar>
       </Box>
-
-      <Fab
-        onClick={ () => {
-          setShowDialog(true);
-        } }
-        style={ {
-          margin: 0,
-          top: 'auto',
-          right: 20,
-          bottom: 20,
-          left: 'auto',
-          position: 'fixed',
-        } }
-        variant="extended"
-        color="primary"
-        aria-label="add">
-        New Profile
-      </Fab>
     </>
   );
 };
