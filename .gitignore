@@ -6,3 +6,4 @@ dist
 astraeus.db
 .parcel-cache
 /controller-source/cmake-build-release/
+/controller-source/src/arduino_target.ino.cpp
