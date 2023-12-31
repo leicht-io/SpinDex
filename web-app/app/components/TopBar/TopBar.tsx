@@ -7,7 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle, Fab,
+  DialogTitle,
   TextField,
   Toolbar,
   Typography
@@ -82,7 +82,6 @@ export const TopBar = (): React.ReactElement => {
               sx={ { flexGrow: 1 } }>
               Astraeus
             </Typography>
-
             <Button
               onClick={ () => {
                 if(!connected) {

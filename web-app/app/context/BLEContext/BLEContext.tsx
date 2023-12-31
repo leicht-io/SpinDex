@@ -32,8 +32,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
       filters: [{ name: deviceName }],
       optionalServices: [bleServiceId]
     }) .then(device => {
-      setStatus(`Device Selected: ${ device.name }`);
-      setStatus('device connected');
+      setStatus(`Device Connected: ${ device.name }`);
       device.addEventListener('gattservicedisconnected', onDisconnected);
       return device.gatt.connect();
     }).then(gattServer => {
@@ -50,7 +49,9 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
       setStatus('Notifications Started.');
       return characteristic.readValue();
     }).catch(error => {
-      setStatus(`Error: ${ error }`);
+      if(error && typeof error === "string" && error.indexOf("User cancelled") > 0) {
+        setStatus(`Error: ${ error }`);
+      }
     });
   };
 
@@ -84,7 +85,9 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
       setStatus('Notifications Started.');
       return characteristic.readValue();
     }).catch(error => {
-      setStatus(`Error: ${ error }`);
+      if(error && typeof error === "string" && error.indexOf("User cancelled") > 0) {
+        setStatus(`Error: ${ error }`);
+      }
     });
   };
 
