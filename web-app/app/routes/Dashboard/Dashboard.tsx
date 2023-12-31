@@ -117,14 +117,6 @@ export const Dashboard = () => {
                                             <ComposedChart
                                                 data={data}
                                                 margin={{bottom: -10, top: 0, right: 0, left: 0}}>
-                                                        <Line
-                                                            connectNulls={false}
-                                                            type="linear"
-                                                            dataKey="value"
-                                                            stroke="#8884d8"
-                                                            strokeWidth={1}
-                                                            isAnimationActive={false}
-                                                            dot={false}/>
                                                         <CartesianGrid
                                                             stroke="#d8d8d8"
                                                             strokeDasharray="3 3"
@@ -132,6 +124,8 @@ export const Dashboard = () => {
                                                         <XAxis
                                                             scale={'linear'}
                                                             type={'number'}
+                                                            interval={"preserveStartEnd"}
+                                                            tickCount={10}
                                                             domain={['dataMin', 'dataMax']}
                                                             dataKey="timestamp"
                                                             tickFormatter={(tick) => {
@@ -141,13 +135,21 @@ export const Dashboard = () => {
                                                             unit={' RPM'}
                                                             scale={'linear'}
                                                             ticks={[0, 33.33, 45, 50]}
-                                                            domain={[0, 50]}/>
+                                                            domain={[-1, 50]}/>
                                                         <ReferenceLine y={33.33}
                                                                        stroke="#969696"
                                                                        strokeDasharray="5 5"/>
                                                         <ReferenceLine y={45}
                                                                        stroke="#969696"
                                                                        strokeDasharray="5 5"/>
+                                                        <Line
+                                                            connectNulls={false}
+                                                            type="linear"
+                                                            dataKey="value"
+                                                            stroke="#8884d8"
+                                                            strokeWidth={1}
+                                                            isAnimationActive={false}
+                                                            dot={false}/>
                                             </ComposedChart>
                                         </ResponsiveContainer>
                                         )}
