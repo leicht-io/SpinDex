@@ -11,11 +11,10 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
   const [device, setDevice] = React.useState<any>();
   const [status, setStatus ] = React.useState<string>('');
 
-  const deviceName = 'ESP32';
-  const bleService = '19b10000-e8f2-537e-4f6c-d104768a1214';
-  const sensorCharacteristic = '19b10001-e8f2-537e-4f6c-d104768a1214';
+  const deviceName = 'Astraeus';
+  const bleServiceId = '8abb038d-5a8d-4d29-ae05-0c1fd42583ab';
+  const characteristicId = 'ea53154b-9815-4143-b717-d4e1de9f6cca';
   let bleServer;
-  // let sensorCharacteristicFound;
 
   const isWebBluetoothEnabled = () => {
     if (!(navigator as any).bluetooth) {
@@ -31,7 +30,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     setStatus('Initializing Bluetooth...');
     (navigator as any).bluetooth.requestDevice({
       filters: [{ name: deviceName }],
-      optionalServices: [bleService]
+      optionalServices: [bleServiceId]
     }) .then(device => {
       setStatus(`Device Selected: ${ device.name }`);
       setStatus('device connected');
@@ -40,13 +39,12 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     }).then(gattServer => {
       bleServer = gattServer;
       setStatus('Connected to GATT Server');
-      return bleServer.getPrimaryService(bleService);
+      return bleServer.getPrimaryService(bleServiceId);
     }).then(service => {
       setStatus(`Service discovered: ${ service.uuid }`);
-      return service.getCharacteristic(sensorCharacteristic);
+      return service.getCharacteristic(characteristicId);
     }).then(characteristic => {
       setStatus(`Characteristic discovered: ${ characteristic.uuid }`);
-      // sensorCharacteristicFound = characteristic;
       characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
       characteristic.startNotifications();
       setStatus('Notifications Started.');
@@ -64,7 +62,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     setStatus('Initializing Bluetooth...');
     (navigator as any).bluetooth.requestDevice({
       filters: [{ name: deviceName }],
-      optionalServices: [bleService]
+      optionalServices: [bleServiceId]
     }).then(device => {
       setStatus(`Device Selected: ${ device.name }`);
       setDeviceConnected(true);
@@ -75,13 +73,12 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     }).then(gattServer => {
       bleServer = gattServer;
       setStatus('Connected to GATT Server');
-      return bleServer.getPrimaryService(bleService);
+      return bleServer.getPrimaryService(bleServiceId);
     }).then(service => {
       setStatus(`Service discovered: ${ service.uuid }`);
-      return service.getCharacteristic(sensorCharacteristic);
+      return service.getCharacteristic(characteristicId);
     }).then(characteristic => {
       setStatus(`Characteristic discovered: ${ characteristic.uuid }`);
-      //     sensorCharacteristicFound = characteristic;
       characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
       characteristic.startNotifications();
       setStatus('Notifications Started.');

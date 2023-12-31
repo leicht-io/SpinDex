@@ -80,7 +80,7 @@ export const TopBar = (): React.ReactElement => {
             <Typography variant="h6"
               component="div"
               sx={ { flexGrow: 1 } }>
-              Astreaus
+              Astraeus
             </Typography>
 
             <Button
