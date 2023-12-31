@@ -12,6 +12,7 @@ byte count = 0;
 unsigned long currentTime = millis();
 unsigned long now = millis();
 unsigned long timeDiff = millis();
+unsigned long lastReading = millis();
 
 double lastRPM = 0.0;
 
@@ -25,7 +26,6 @@ Display display = Display();
 SerialComm serialComm = SerialComm();
 Bluetooth bluetooth = Bluetooth();
 
-// TODO: send 0 if no measured value.
 void initialDevice() {
     Serial.begin(baudRate);
 
@@ -53,19 +53,24 @@ void valueChangedLoop(void *pvParameters) {
 
 void mainLoop(void *pvParameters) {
     for (;;) {
-
         int currentIrSensorState = digitalRead(irSensorPin);
         if (currentIrSensorState != previousIrSensorState) {
             previousIrSensorState = currentIrSensorState;
 
             if (currentIrSensorState == HIGH) {
                 count++;
+                lastReading = millis();
             }
 
             if (count == steps) {
                 lastRPM = calculateRPM();
                 resetStates();
-            }
+            } 
+        }
+
+        // Send 0 if nothing is measured
+        if((millis() - lastReading) > 1000) {
+            lastRPM = 0.0;
         }
 
         delay(1);
