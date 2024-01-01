@@ -115,5 +115,4 @@ void emitRPM(float RPM) {
 }
 
 void loop() {
-  
 }

@@ -448,21 +448,7 @@ void Display::printMaxRPM(double RPM) {
 }
 
 void Display::printMinRPM(double RPM) {
-    /*  tft.setTextSize(4);
-     tft.setCursor(10, 10);
-     tft.setTextColor(ST7735_BLACK);
-     tft.println(prevRPM);
-     tft.setTextSize(4);
-     tft.setCursor(10, 10);
-     tft.setTextColor(ST7735_WHITE);
-     tft.println(RPM);
-
-     // TODO: Only do this on first run
-     tft.setTextSize(2);
-     tft.setCursor(110, 10);
-     tft.println("RPM");
-
-     prevRPM = RPM; */
+    // TODO
 }
 
 void Display::showSplashScreen() {
@@ -481,17 +467,5 @@ void Display::showSplashScreen() {
 }
 
 void Display::initGraph() {
-    /* tft.drawLine(15, 110, 150, 110, ST7735_WHITE); // x-axis
-    tft.drawLine(15, 50, 15, 110, ST7735_WHITE); // y-axis
-
-    // y-axis ticks
-    tft.drawLine(10, 50, 15, 50, ST7735_WHITE);
-    tft.drawLine(10, 60, 15, 60, ST7735_WHITE);
-    tft.drawLine(10, 70, 15, 70, ST7735_WHITE);
-    tft.drawLine(10, 80, 15, 80, ST7735_WHITE);
-    tft.drawLine(10, 90, 15, 90, ST7735_WHITE);
-    tft.drawLine(10, 100, 15, 100, ST7735_WHITE);
-
-    // x-axis ticks
-    tft.drawLine(10, 110, 10, 120, ST7735_WHITE);*/
+    // TODO
 }
