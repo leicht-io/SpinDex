@@ -1,3 +1,42 @@
+.dashboard {
+  width: 100vw;
+  height: 100%;
+  margin-bottom: 140px;
+
+  @media only screen and (min-width: 900px) {
+    height: calc(100vh - 64px - 80px);
+    margin-bottom: 0;
+  }
+
+  top: 64px;
+
+  padding: 24px;
+
+  background: #121212;
+  z-index: -1;
+}
+
+.dashboard-content {
+  width: 100%;
+
+  @media only screen and (min-width: 1280px) {
+    width: 70vw;
+  }
+
+  margin: 0 auto;
+}
+
+.chips-wrapper {
+  margin: 0 auto;
+  display: block;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+article.border {
+  border: 0 !important;
+}
+
 .x-label, .y-label,  {
   font-size: 12px;
   fill: #757575;
@@ -15,4 +54,3 @@
 .y-label {
   transform: translate(180px, 100px) rotate(90deg);
 }
-

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "parcel app/index.html --port 1234 --https",
+    "start": "parcel app/index.html --port 1238 --https",
     "build": "parcel build app/index.html"
   },
   "dependencies": {
@@ -12,6 +12,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.2",
     "@mui/material": "^5.15.2",
+    "beercss": "^3.4.11",
     "moment": "^2.30.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

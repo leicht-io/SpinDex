@@ -1,2 +1,2 @@
-export * from './Page';
 export * from './TopBar';
+export * from "./Footer"
