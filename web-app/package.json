@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "parcel app/index.html --port 1238 --https",
+    "start": "parcel app/index.html --port 1240 --https",
     "build": "parcel build app/index.html"
   },
   "dependencies": {

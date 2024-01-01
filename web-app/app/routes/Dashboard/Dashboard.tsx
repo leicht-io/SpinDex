@@ -7,12 +7,15 @@ import {BLEContext, DataContext} from '../../context';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
 
 export const Dashboard = () => {
-    const {connected, status} = React.useContext(BLEContext);
+    const {connected} = React.useContext(BLEContext);
     const {data} = React.useContext(DataContext);
 
     const [latestValue, setLatestValue] = React.useState<number>(0);
-    const [minValue, setMinValue] = React.useState<number>(0);
+    const [minValue, setMinValue] = React.useState<number>(99);
     const [maxValue, setMaxValue] = React.useState<number>(0);
+   // const [offsetMinPercentage, setOffsetMinPercentage] = React.useState<string>("0");
+  //  const [offsetMaxPercentage, setOffsetMaxPercentage] = React.useState<string>("0");
+   // const [offsetCurrentPercentage, setOffsetCurrentPercentage] = React.useState<string>("0");
 
     React.useEffect(() => {
         if (data.length > 0) {
@@ -26,6 +29,17 @@ export const Dashboard = () => {
             if (newestPoint > maxValue) {
                 setMaxValue(newestPoint);
             }
+
+
+            /* if(newestPoint > 40) {
+                setOffsetCurrentPercentage((Math.abs(45 - newestPoint) / ((45 + newestPoint) / 2)).toFixed(2) )
+                setOffsetMaxPercentage((Math.abs(45 - maxValue) / ((45 + maxValue) / 2)).toFixed(2) )
+                setOffsetMinPercentage((Math.abs(45 - minValue) / ((45 + minValue) / 2)).toFixed(2) )
+            } else {
+                setOffsetCurrentPercentage((Math.abs(33.33 - newestPoint) / ((33.33 + newestPoint) / 2)).toFixed(2) )
+                setOffsetMaxPercentage((Math.abs(33.33 - maxValue) / ((33.33 + maxValue) / 2)).toFixed(2) )
+                setOffsetMinPercentage((Math.abs(33.33 - minValue) / ((33.33 + minValue) / 2)).toFixed(2) )
+            }*/
         }
     }, [data]);
 
@@ -48,15 +62,18 @@ export const Dashboard = () => {
                     )}
 
                     {(connected && data.length > 0) && (
-                        <>
+                        <Box
+                            display="flex"
+                            flexDirection={"column"}
+                            height="calc(100vh - 224px)">
                             <div className={"chips-wrapper"}>
                                 <a className="chip fill">Current: {latestValue} RPM</a>
                                 <a className="chip fill">Min: {minValue} RPM</a>
-                             <a className="chip fill">Max: {maxValue} RPM</a>
+                                <a className="chip fill">Max: {maxValue} RPM</a>
                             </div>
 
                             <ResponsiveContainer
-                                height={580}
+                                height="90%"
                                 width="100%">
                                 <ComposedChart
                                     data={data}
@@ -100,7 +117,7 @@ export const Dashboard = () => {
                                         dot={false}/>
                                 </ComposedChart>
                             </ResponsiveContainer>
-                        </>
+                        </Box>
                     )}
                 </article>
             </div>
