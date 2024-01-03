@@ -11,16 +11,15 @@
 
 const long baudRate = 115200;
 const byte irSensorPin = 14;
-byte previousIrSensorState = LOW;
-byte count = 0;
+volatile byte previousIrSensorState = LOW;
+volatile byte count = 0;
 byte steps = 24; // 24 dark bars on BG4000-series/59xx-series
-
-unsigned long currentTime = millis();
-unsigned long now = millis();
-unsigned long timeDiff = millis();
-unsigned long lastReading = millis();
 double oneSecond = 60000.0;
-float RPM = 0;
+unsigned long currentTime = millis();
+unsigned long lastReading = millis();
+volatile unsigned long now = millis();
+volatile unsigned long timeDiff = millis();
+volatile float RPM = 0;
 
 TaskHandle_t emitRPMTask;
 Display display = Display();
@@ -52,7 +51,8 @@ void initialDevice() {
 } 
 
 bool IRAM_ATTR TimerHandler0(void * timerNo) {
-int currentIrSensorState = digitalRead(irSensorPin);
+    volatile int currentIrSensorState = digitalRead(irSensorPin);
+    
     if (currentIrSensorState != previousIrSensorState) {
         previousIrSensorState = currentIrSensorState;
 
@@ -84,10 +84,10 @@ void setup(void) {
 
 	// Setting up interrupt
 	if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 100, TimerHandler0)) {
-		Serial.print(F("Starting  ITimer0 OK, millis() = "));
+		Serial.print(F("Starting  ITimer0, millis() = "));
 		Serial.println(millis());
 	} else {
-		Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
+		Serial.println(F("Can't start ITimer0. Select another freq. or timer"));
     }
 
    xTaskCreatePinnedToCore(emitRPMLoop, "emitRPMTask", 10000, NULL, 1, &emitRPMTask, 1);

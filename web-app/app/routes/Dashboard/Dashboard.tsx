@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import './dashboard.scss';
-import {Box, Typography} from '@mui/material';
+import {Box, Grid, Typography} from '@mui/material';
 import moment from 'moment';
 import {BLEContext, DataContext} from '../../context';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
@@ -13,9 +13,10 @@ export const Dashboard = () => {
     const [latestValue, setLatestValue] = React.useState<number>(0);
     const [minValue, setMinValue] = React.useState<number>(99);
     const [maxValue, setMaxValue] = React.useState<number>(0);
-   // const [offsetMinPercentage, setOffsetMinPercentage] = React.useState<string>("0");
-  //  const [offsetMaxPercentage, setOffsetMaxPercentage] = React.useState<string>("0");
-   // const [offsetCurrentPercentage, setOffsetCurrentPercentage] = React.useState<string>("0");
+    const [offsetMinPercentage, setOffsetMinPercentage] = React.useState<string>("0");
+    const [offsetMaxPercentage, setOffsetMaxPercentage] = React.useState<string>("0");
+    const [offsetCurrentPercentage, setOffsetCurrentPercentage] = React.useState<string>("0");
+    const [detectedSpeed, setDetectedSpeed] = React.useState<33 | 45>(33);
 
     React.useEffect(() => {
         if (data.length > 0) {
@@ -30,18 +31,30 @@ export const Dashboard = () => {
                 setMaxValue(newestPoint);
             }
 
+            if(newestPoint > 40) {
+                if(detectedSpeed !== 45) {
+                    setDetectedSpeed(45);
+                }
 
-            /* if(newestPoint > 40) {
                 setOffsetCurrentPercentage((Math.abs(45 - newestPoint) / ((45 + newestPoint) / 2)).toFixed(2) )
                 setOffsetMaxPercentage((Math.abs(45 - maxValue) / ((45 + maxValue) / 2)).toFixed(2) )
                 setOffsetMinPercentage((Math.abs(45 - minValue) / ((45 + minValue) / 2)).toFixed(2) )
             } else {
+                if(detectedSpeed !== 33) {
+                    setDetectedSpeed(33);
+                }
+
                 setOffsetCurrentPercentage((Math.abs(33.33 - newestPoint) / ((33.33 + newestPoint) / 2)).toFixed(2) )
                 setOffsetMaxPercentage((Math.abs(33.33 - maxValue) / ((33.33 + maxValue) / 2)).toFixed(2) )
                 setOffsetMinPercentage((Math.abs(33.33 - minValue) / ((33.33 + minValue) / 2)).toFixed(2) )
-            }*/
+            }
         }
     }, [data]);
+
+    React.useEffect(() => {
+        setMinValue(99);
+        setMaxValue(0);
+    }, [detectedSpeed]);
 
     return (
         <div className={"dashboard"}>
@@ -67,9 +80,20 @@ export const Dashboard = () => {
                             flexDirection={"column"}
                             height="calc(100vh - 224px)">
                             <div className={"chips-wrapper"}>
-                                <a className="chip fill">Current: {latestValue} RPM</a>
-                                <a className="chip fill">Min: {minValue} RPM</a>
-                                <a className="chip fill">Max: {maxValue} RPM</a>
+                                <Grid container spacing={0.5}>
+                                    <Grid item md={4} xs={12}>
+                                        <a className="chip fill">Current: {latestValue} RPM
+                                            ({offsetCurrentPercentage} %)</a>
+                                    </Grid>
+                                    <Grid item md={4} xs={12}>
+                                        <a className="chip fill">Min: {minValue} RPM
+                                            ({offsetMinPercentage} %)</a>
+                                    </Grid>
+                                    <Grid item md={4} xs={12}>
+                                        <a className="chip fill">Max: {maxValue} RPM
+                                            ({offsetMaxPercentage} %)</a>
+                                    </Grid>
+                                </Grid>
                             </div>
 
                             <ResponsiveContainer
@@ -84,8 +108,7 @@ export const Dashboard = () => {
                                         }}
                                         labelFormatter={(value) => {
                                             return ""
-                                        }}
-                                    />
+                                        }} />
 
                                     <XAxis
                                         scale={'linear'}
