@@ -28,13 +28,13 @@ class CharacteristicCallbacks : public BLECharacteristicCallbacks {
         std::string value = ledCharacteristic->getValue();
         if (value.length() > 0) {
             Serial.print("Characteristic event, written: ");
-            Serial.println(static_cast<int>(value[0])); 
+            Serial.println(static_cast<int>(value[0]));
         }
     }
 };
 
 void Bluetooth::init() {
-    BLEDevice::init("Astraeus");
+    BLEDevice::init("SpinDex");
 
     // Creating the BLE Server
     bleServer = BLEDevice::createServer();
@@ -86,7 +86,7 @@ void Bluetooth::checkConnection() {
         Serial.println("Start advertising");
         oldDeviceConnected = deviceConnected;
     }
-    
+
     // connecting
     if (deviceConnected && !oldDeviceConnected) {
         // do stuff here on connecting
