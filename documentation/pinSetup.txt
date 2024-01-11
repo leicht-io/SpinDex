@@ -5,30 +5,4 @@
     OUTPUT - D14
     GND - GND
     VCC - D13
-
-    DISPLAY:
-    GND - GND
-    VCC - 3V#
-    SCL - D18
-    SDA - D19
-    RES - D4
-    DC - D2
-    CS - D15
-    BL - N/A
-
-*/
-
-/**
-    SCREWS:
-    Bottom:
-        2.9mm * 5mm screws
-        hole is 3.0mm
-
-    Arduino:
-        1.6mm * 5mm screws
-        hole is 1.6mm
-
-    Screen:
-        1.6mm * 4mm screws
-        hole is 1.6mm
 */

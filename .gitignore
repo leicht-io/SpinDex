@@ -6,3 +6,5 @@ dist
 .parcel-cache
 /controller-source/cmake-build-release/
 /controller-source/src/arduino_target.ino.cpp
+/controller-source/.vscode/
+/controller-source/.vscode/

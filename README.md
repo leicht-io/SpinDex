@@ -1,61 +1,43 @@
-# SpinDex (WIP)
-SpinDex is a small RPM measurement tool mainly made for the Beogram 4000 series as a proof of concept.
-The main focus is to verify that the turntable is restored correctly and maintains the correct speed over a longer period.
-It is currently written to run on the Arduino Nano but could easily be ported to other microcontrollers, architectures and footprints.
+# SpinDex
+SpinDex is a small RPM measurement tool for the Beogram 4000 series.
+The main focus is to verify that the turntable is restored correctly and maintains the correct speed over an extended period.
+The code is written to run on the ESP-S3-WROOM-U but could easily be ported to other microcontrollers and architectures.
 
 ![alt text](https://ni.leicht.io/updates-to-beotac-a256b3fc-64fd-464c-9166-10d07f8a27e8.jpg)
 
-This mono repository is divided into multiple sub-repositories explained below:
+This mono repository is divided into multiple sub-repositories, explained below:
 
 
 ### 3D Files (3d-files):
-The model consists of three models:
-- astreaus_body_v1.stl
-- astreaus_bottom_v1.stl
-- astreaus_led_v1.stl
+This folder contains all the 3D models. There are two models.
+- spindex_body_v1.stl
+- spindex_bottom_v1.stl
 
 ![alt text](https://github.com/leicht-io/astraeus/blob/master/3d-files/rendering_1.png?raw=true)
-
-
-I usually print them in black PLA.
 
 ---
 
 ### Web App (web-app)
-A webapp that receives the output from the controller and shows a temporal line graph with the results. Still needs finetuning. Hosted on (TODO: URL here)
+This folder contains the web app. The web app receives the controller's output via Bluetooth and shows a temporal line graph with the results. It is hosted right here: https://spindex.leicht.io/
 
 ![alt text](https://github.com/leicht-io/astraeus/blob/master/documentation/images/desktop-screenshot.png?raw=true)
 
 ---
 
-### Android App (android-app)
-Android application with bluetooth support. (WIP, needs new controller with support for BLE).
-
----
-
 ### µController Source Code (controller-source)
-Source code for the microcontroller.
-Setup for CLion and PlatformIO:
-https://docs.platformio.org/en/latest/core/installation/shell-commands.html#piocore-install-shell-commands
+This folder contains the source code for the microcontroller.
 
 ---
 
 ### Documentation (documentation)
-TO BE RELEASED. Circuit diagrams showing how the screen and IR sensor are attached.
+This folder contains the schematics and diagrams for the microcontroller PCB.
 
 ---
 
-Please note that this is a proof of concept and the following is missing for it to be considered finished:
+Please note that this project is in progress and prone to change. The following tasks needs to be implemented before i consider the SpinDex finished.
 
 - tests
-- refactoring the codebase
 - schematics
-
-The following features would be needed or to have in the future:
-- ESP32-C3 (for BLE and WiFi support) (https://gist.github.com/sekcompsci/2bf39e715d5fe47579fa184fa819f421)
-- bigger screen.
-- support for other turntables.
-- headless edition with battery, Bluetooth and mobile application.
 - custom-made PCB.
 
 Feel free to develop further on the project and create PRs if, necessary. I would be happy to cooperate with others on the device.
@@ -63,5 +45,4 @@ Feel free to develop further on the project and create PRs if, necessary. I woul
 Blog posts with more pictures:
 
 - https://leicht.io/articles/beotac-a-tachometer-for-the-beogram-4000-series
-
 - https://leicht.io/articles/updates-to-beotac
