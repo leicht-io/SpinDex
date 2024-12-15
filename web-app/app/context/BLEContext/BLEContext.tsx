@@ -11,7 +11,8 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     const [device, setDevice] = React.useState<any>();
     const [status, setStatus] = React.useState<string>('');
 
-    const deviceName = 'SpinDex';
+    // const deviceName = 'SpinDex';
+    const deviceName = 'Astraeus';
     const bleServiceId = '8abb038d-5a8d-4d29-ae05-0c1fd42583ab';
     const characteristicId = 'ea53154b-9815-4143-b717-d4e1de9f6cca';
     let bleServer;
