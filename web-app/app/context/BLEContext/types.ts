@@ -6,5 +6,5 @@ export interface IContextProps {
   connected: boolean;
   initBluetooth: () => void;
   status: string;
-  device: any;
+  device: BluetoothDevice | undefined;
 }

@@ -8,16 +8,16 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     const {setData} = React.useContext(DataContext);
 
     const [deviceConnected, setDeviceConnected] = React.useState(false);
-    const [device, setDevice] = React.useState<any>();
+    const [device, setDevice] = React.useState<BluetoothDevice | undefined>();
     const [status, setStatus] = React.useState<string>('');
 
     const deviceName = 'SpinDex';
     const bleServiceId = '8abb038d-5a8d-4d29-ae05-0c1fd42583ab';
     const characteristicId = 'ea53154b-9815-4143-b717-d4e1de9f6cca';
-    let bleServer;
+    let bleServer: BluetoothRemoteGATTServer;
 
-    const isWebBluetoothEnabled = () => {
-        if (!(navigator as any).bluetooth) {
+    const isWebBluetoothEnabled = (): boolean => {
+        if (!navigator.bluetooth) {
             setStatus('Web Bluetooth API is not available in this browser!');
             return false;
         }
@@ -26,57 +26,64 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     };
 
     // Connect to BLE Device and Enable Notifications
-    const connectToDevice = () => {
+    const connectToDevice = (): void => {
         setStatus('Initializing Bluetooth...');
-        (navigator as any).bluetooth.requestDevice({
+        navigator.bluetooth.requestDevice({
             filters: [{name: deviceName}],
             optionalServices: [bleServiceId]
-        }).then(device => {
-            setStatus(`Device Selected: ${device.name}`);
+        }).then((selectedDevice: BluetoothDevice) => {
+            setStatus(`Device Selected: ${selectedDevice.name}`);
             setDeviceConnected(true);
-            setDevice(device);
+            setDevice(selectedDevice);
 
-            device.addEventListener('gattserverdisconnected', onDisconnected);
-            return device.gatt.connect();
-        }).then(gattServer => {
+            selectedDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+            if (!selectedDevice.gatt) {
+                throw new Error('Selected device has no GATT server.');
+            }
+
+            return selectedDevice.gatt.connect();
+        }).then((gattServer: BluetoothRemoteGATTServer) => {
             bleServer = gattServer;
             setStatus('Connected to GATT Server');
             return bleServer.getPrimaryService(bleServiceId);
-        }).then(service => {
+        }).then((service: BluetoothRemoteGATTService) => {
             setStatus(`Service discovered: ${service.uuid}`);
             return service.getCharacteristic(characteristicId);
-        }).then(characteristic => {
+        }).then((characteristic: BluetoothRemoteGATTCharacteristic) => {
             setStatus(`Characteristic discovered: ${characteristic.uuid}`);
             characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
             characteristic.startNotifications();
             setStatus('Connection Established.');
             return characteristic.readValue();
-        }).catch(error => {
+        }).catch((error: unknown) => {
             // requestDevice()/gatt.connect() reject with a DOMException, not a
             // string, so read its .message (e.g. "User cancelled the
             // requestDevice() chooser." on cancel).
-            const message = error && typeof error.message === 'string' ? error.message : String(error);
+            const message = error instanceof Error ? error.message : String(error);
             setStatus(`Error: ${message}`);
             setDeviceConnected(false);
             setDevice(undefined);
         });
     };
 
-    const initBluetooth = async () => {
+    const initBluetooth = async (): Promise<void> => {
         if (isWebBluetoothEnabled()) {
             connectToDevice();
         }
     };
 
-    const onDisconnected = (event) => {
-        setStatus(`Device Disconnected: ${event.target.device.name}`);
+    const onDisconnected = (event: Event): void => {
+        const disconnectedDevice = event.target as BluetoothDevice;
+        setStatus(`Device Disconnected: ${disconnectedDevice.name}`);
         setDeviceConnected(false);
         setDevice(undefined)
         // connectToDevice();
     };
 
-    const handleCharacteristicChange = (event) => {
-        const newValueReceived = new TextDecoder().decode(event.target.value);
+    const handleCharacteristicChange = (event: Event): void => {
+        const characteristic = event.target as BluetoothRemoteGATTCharacteristic;
+        const newValueReceived = new TextDecoder().decode(characteristic.value);
         const latestValue = Number(newValueReceived);
         setData(latestValue);
     };
