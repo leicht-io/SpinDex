@@ -30,7 +30,7 @@ This folder contains the source code for the microcontroller.
 ---
 
 ### Documentation (documentation)
-This folder contains the schematics and diagrams for the microcontroller PCB.
+This folder contains the schematics and diagrams for the microcontroller PCB, including the [sensor pin setup and wiring diagram](documentation/pinSetup.md).
 
 ---
 

@@ -1,20 +1,24 @@
-#define DISPLAY_ENABLED             false
 #define BLUETOOTH_ENABLED           true
 #define SERIAL_ENABLED              true
 #define TIMER0_INTERVAL_MS          1
 #define _TIMERINTERRUPT_LOGLEVEL_   0
 
-#include "data/Display.h"
 #include "data/SerialComm.h"
 #include "data/Bluetooth.h"
 #include "ESP32TimerInterrupt.h"
 
 const long baudRate = 115200;
-const byte irSensorPin = 14;
+// Adafruit STEMMA Reflective Photo Interrupt Sensor (TCRT1000).
+// White (signal) wire -> G1. Red (VIN) wire -> 3V3 rail directly:
+// the onboard emitter trimmer can draw up to ~100mA, more than a
+// GPIO can safely source, so it is not powered from a pin.
+// Output idles HIGH (no reflection) and drops toward 0V when the
+// IR beam is bounced back by a reflective surface.
+const byte irSensorPin = 1; // G1 on M5Stack StampS3
 volatile byte previousIrSensorState = LOW;
 volatile byte count = 0;
 byte steps = 24; // 24 dark bars on BG4000-series/59xx-series
-double oneSecond = 60000.0;
+double msPerMinute = 60000.0;
 unsigned long currentTime = millis();
 unsigned long lastReading = millis();
 volatile unsigned long now = millis();
@@ -22,7 +26,6 @@ volatile unsigned long timeDiff = millis();
 volatile float RPM = 0;
 
 TaskHandle_t emitRPMTask;
-Display display = Display();
 SerialComm serialComm = SerialComm();
 Bluetooth bluetooth = Bluetooth();
 ESP32Timer ITimer0(0);
@@ -32,12 +35,8 @@ void initialDevice() {
         Serial.begin(baudRate);
     }
 
-    if(DISPLAY_ENABLED) {
-        display.initializeDisplay();
-    }
-
     if(BLUETOOTH_ENABLED) {
-        bluetooth.init(); 
+        bluetooth.init();
     }
 }
 
@@ -64,9 +63,9 @@ bool IRAM_ATTR TimerHandler0(void * timerNo) {
         if (count == steps) {
             now = millis();
             timeDiff = now - currentTime;
-            RPM = oneSecond / timeDiff;
+            RPM = msPerMinute / timeDiff;
             resetStates();
-        } 
+        }
     }
 
      if((millis() - lastReading) > 1000) {
@@ -77,9 +76,7 @@ bool IRAM_ATTR TimerHandler0(void * timerNo) {
 }
 
 void setup(void) {
-    // Using pin 13 as Vin for IR
-    pinMode(13, OUTPUT);
-    digitalWrite(13, HIGH);
+    pinMode(irSensorPin, INPUT);
     initialDevice();
 
 	// Setting up interrupt
@@ -106,11 +103,6 @@ void emitRPM(float RPM) {
 
     if(BLUETOOTH_ENABLED) {
         bluetooth.sendValue(RPM);
-    }
-
-    if(DISPLAY_ENABLED) {
-        display.update(RPM);
-        display.updateTime();
     }
 }
 
