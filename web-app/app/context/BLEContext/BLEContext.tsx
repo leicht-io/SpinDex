@@ -36,7 +36,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
             setDeviceConnected(true);
             setDevice(device);
 
-            device.addEventListener('gattservicedisconnected', onDisconnected);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
             return device.gatt.connect();
         }).then(gattServer => {
             bleServer = gattServer;
@@ -52,9 +52,13 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
             setStatus('Connection Established.');
             return characteristic.readValue();
         }).catch(error => {
-            if (error && typeof error === "string" && error.indexOf("User cancelled") > 0) {
-                setStatus(`Error: ${error}`);
-            }
+            // requestDevice()/gatt.connect() reject with a DOMException, not a
+            // string, so read its .message (e.g. "User cancelled the
+            // requestDevice() chooser." on cancel).
+            const message = error && typeof error.message === 'string' ? error.message : String(error);
+            setStatus(`Error: ${message}`);
+            setDeviceConnected(false);
+            setDevice(undefined);
         });
     };
 
