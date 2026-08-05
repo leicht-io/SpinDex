@@ -11,8 +11,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     const [device, setDevice] = React.useState<any>();
     const [status, setStatus] = React.useState<string>('');
 
-    // const deviceName = 'SpinDex';
-    const deviceName = 'Astraeus';
+    const deviceName = 'SpinDex';
     const bleServiceId = '8abb038d-5a8d-4d29-ae05-0c1fd42583ab';
     const characteristicId = 'ea53154b-9815-4143-b717-d4e1de9f6cca';
     let bleServer;
@@ -28,39 +27,6 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
 
     // Connect to BLE Device and Enable Notifications
     const connectToDevice = () => {
-        setStatus('Initializing Bluetooth...');
-        (navigator as any).bluetooth.requestDevice({
-            filters: [{name: deviceName}],
-            optionalServices: [bleServiceId]
-        }).then(device => {
-            setStatus(`Device Connected: ${device.name}`);
-            device.addEventListener('gattservicedisconnected', onDisconnected);
-            return device.gatt.connect();
-        }).then(gattServer => {
-            bleServer = gattServer;
-            setStatus('Connected to GATT Server');
-            return bleServer.getPrimaryService(bleServiceId);
-        }).then(service => {
-            setStatus(`Service discovered: ${service.uuid}`);
-            return service.getCharacteristic(characteristicId);
-        }).then(characteristic => {
-            setStatus(`Characteristic discovered: ${characteristic.uuid}`);
-            characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
-            characteristic.startNotifications();
-            setStatus('Connection Established.');
-            return characteristic.readValue();
-        }).catch(error => {
-            if (error && typeof error === "string" && error.indexOf("User cancelled") > 0) {
-                setStatus(`Error: ${error}`);
-            }
-        });
-    };
-
-    const initBluetooth = async () => {
-        if (isWebBluetoothEnabled()) {
-            connectToDevice();
-        }
-
         setStatus('Initializing Bluetooth...');
         (navigator as any).bluetooth.requestDevice({
             filters: [{name: deviceName}],
@@ -90,6 +56,12 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
                 setStatus(`Error: ${error}`);
             }
         });
+    };
+
+    const initBluetooth = async () => {
+        if (isWebBluetoothEnabled()) {
+            connectToDevice();
+        }
     };
 
     const onDisconnected = (event) => {

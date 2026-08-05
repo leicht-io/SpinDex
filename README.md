@@ -9,18 +9,19 @@ This mono repository is divided into multiple sub-repositories, explained below:
 
 
 ### 3D Files (3d-files):
-This folder contains all the 3D models. There are two models.
-- spindex_body_v1.stl
-- spindex_bottom_v1.stl
+This folder contains all the 3D models.
+- astreaus_body_v1.stl
+- astreaus_bottom_v1.stl
+- astreaus_led_v1.stl
 
-![alt text](https://github.com/leicht-io/astraeus/blob/master/3d-files/rendering_1.png?raw=true)
+![alt text](3d-files/rendering_1.png)
 
 ---
 
 ### Web App (web-app)
 This folder contains the web app. The web app receives the controller's output via Bluetooth and shows a temporal line graph with the results. It is hosted right here: https://spindex.leicht.io/
 
-![alt text](https://github.com/leicht-io/astraeus/blob/master/documentation/images/desktop-screenshot.png?raw=true)
+![alt text](documentation/images/desktop-screenshot.png)
 
 ---
 
