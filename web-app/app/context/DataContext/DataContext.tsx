@@ -4,7 +4,7 @@ import { IContextProps, IProps } from './types';
 export const DataContext = React.createContext({} as IContextProps);
 
 export const DataProvider = (props: IProps): React.ReactElement => {
-  const [internalData, setInternalData] = React.useState<{ rpm: number; timestamp: number }[]>([]);
+  const [internalData, setInternalData] = React.useState<{ value: number; timestamp: number }[]>([]);
 
   const setData = (value: number) => {
     setInternalData(internalData => {

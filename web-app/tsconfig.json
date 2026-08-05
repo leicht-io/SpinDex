@@ -28,14 +28,9 @@
   },
   "include": [
     "app/**/*.ts",
-    "app/**/*.tsx",
-    "api/**/*.ts",
-    "api/**/*.tsx",
-    "electron/**/*.ts",
-    "electron/**/*.tsx",
+    "app/**/*.tsx"
   ],
   "exclude": [
-    "node_modules",
-    "api/models"
+    "node_modules"
   ]
 }
