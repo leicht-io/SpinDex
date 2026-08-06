@@ -8,12 +8,16 @@
     margin-bottom: 0;
   }
 
-  top: 64px;
-
+  // `top` and a negative `z-index` were previously set here, but with no
+  // `position` on this element neither one does anything per spec — the
+  // fixed topbar (4rem) actually overlapped the first ~40px of scrollable
+  // content, since only a flat 24px top padding was in effect. Padding is
+  // what works on a static element, so that's what pushes content clear of
+  // the fixed topbar now.
   padding: 24px;
+  padding-top: calc(64px + 24px);
 
-  background: #121212;
-  z-index: -1;
+  background: var(--background);
 }
 
 .dashboard-content {
@@ -26,31 +30,114 @@
   margin: 0 auto;
 }
 
-.chips-wrapper {
-  margin: 0 auto;
-  display: block;
-  margin-bottom: 24px;
-  text-align: center;
+.dashboard-panel {
+  border-top: .125rem solid var(--primary);
+}
 
-  .chip {
-    width: 184px;
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+
+  @media only screen and (max-width: 600px) {
+    grid-template-columns: 1fr;
   }
 }
 
-article.border {
-  border: 0 !important;
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+
+  padding: 1rem 1.25rem;
+  border-radius: .625rem;
+  background: var(--surface-container-high);
+  border: .0625rem solid var(--outline-variant);
 }
 
-.x-label, .y-label,  {
-  font-size: 12px;
-  fill: #757575;
+.stat-label {
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
 }
 
-.x-label {
-  transform: translate(0, 3px);
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-surface);
+
+  small {
+    margin-left: .3rem;
+    font-size: .8rem;
+    font-weight: 400;
+    color: var(--on-surface-variant);
+  }
 }
 
-.y-label {
-  transform: translate(180px, 100px) rotate(90deg);
+.stat-offset {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-surface-variant);
+
+  .status-dot {
+    display: inline-block;
+    width: .4375rem;
+    height: .4375rem;
+    border-radius: 50%;
+  }
+
+  &.status-good .status-dot { background: var(--good); }
+  &.status-warning .status-dot { background: var(--warning); }
+  &.status-serious .status-dot { background: var(--serious); }
+  &.status-critical .status-dot { background: var(--critical); }
 }
 
+.chart-wrapper {
+  flex: 1;
+  min-height: 0;
+
+  svg {
+    overflow: visible;
+  }
+}
+
+.empty-state {
+  color: var(--on-surface-variant);
+  gap: .5rem;
+
+  .empty-state-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    border: .0625rem solid var(--outline-variant);
+    color: var(--primary);
+    animation: empty-state-pulse 2.4s ease-in-out infinite;
+  }
+
+  .empty-state-hint {
+    color: var(--on-surface-variant);
+    opacity: .8;
+  }
+}
+
+@keyframes empty-state-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0.35); }
+  50% { box-shadow: 0 0 0 .875rem rgb(57 135 229 / 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state .empty-state-ring {
+    animation: none;
+  }
+}

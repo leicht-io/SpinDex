@@ -1,10 +1,53 @@
 import * as React from 'react';
 import './dashboard.scss';
-import {Box, Grid as CssGrid, Typography} from '@mui/material';
+import {Box, Typography} from '@mui/material';
 import moment from 'moment';
 import {BLEContext, DataContext} from '../../context';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
-import {AnimatedAxis, AnimatedLineSeries, Grid, XYChart} from "@visx/xychart";
+import {AnimatedAreaSeries, AnimatedAxis, AnimatedLineSeries, Grid, XYChart} from "@visx/xychart";
+
+const axisTickLabelProps = {
+    fill: '#898781',
+    fontSize: 11,
+    fontFamily: 'Roboto, sans-serif',
+};
+
+type Status = 'good' | 'warning' | 'serious' | 'critical';
+
+// Bands how far a reading sits from the nominal 33.33/45 RPM target. Tighter
+// than typical consumer wow-and-flutter specs (~±0.5-1%) so the tiles stay
+// meaningful at a glance rather than reading "good" for anything plausible.
+const statusFor = (offsetPercentage: string): Status => {
+    const offset = Number(offsetPercentage);
+
+    if (offset <= 0.5) {
+        return 'good';
+    }
+    if (offset <= 1.5) {
+        return 'warning';
+    }
+    if (offset <= 3) {
+        return 'serious';
+    }
+    return 'critical';
+};
+
+interface StatTileProps {
+    label: string;
+    value: number;
+    offsetPercentage: string;
+}
+
+const StatTile = ({label, value, offsetPercentage}: StatTileProps): React.ReactElement => (
+    <div className={"stat-tile"}>
+        <span className={"stat-label"}>{label}</span>
+        <span className={"stat-value"}>{value}<small>RPM</small></span>
+        <span className={`stat-offset status-${statusFor(offsetPercentage)}`}>
+            <i className={"status-dot"}/>
+            {offsetPercentage}% off
+        </span>
+    </div>
+);
 
 export const Dashboard = () => {
     const {connected} = React.useContext(BLEContext);
@@ -64,17 +107,23 @@ export const Dashboard = () => {
     return (
         <div className={"dashboard"}>
             <div className={"dashboard-content"}>
-
-                <article className="border tertiary-container">
+                <article className="dashboard-panel">
                     {!connected && (
                         <Box
+                            className={"empty-state"}
                             display="flex"
+                            flexDirection={"column"}
                             justifyContent="center"
                             alignItems="center"
                             height="calc(100vh - 224px)">
-                            <BluetoothIcon sx={{mr: 1}}/>
-                            <Typography variant="h5" component="div">
+                            <span className={"empty-state-ring"}>
+                                <BluetoothIcon/>
+                            </span>
+                            <Typography variant="h6" component="div">
                                 Waiting for connection
+                            </Typography>
+                            <Typography variant="body2" component="div" className={"empty-state-hint"}>
+                                Use the button below to pair with SpinDex
                             </Typography>
                         </Box>
                     )}
@@ -84,90 +133,59 @@ export const Dashboard = () => {
                             display="flex"
                             flexDirection={"column"}
                             height="calc(100vh - 224px)">
-                            <div className={"chips-wrapper"}>
-                                <CssGrid container spacing={0.5}>
-                                    <CssGrid item md={4} xs={12}>
-                                        <a className="chip fill">Current: {latestValue} RPM
-                                            ({offsetCurrentPercentage} %)</a>
-                                    </CssGrid>
-                                    <CssGrid item md={4} xs={12}>
-                                        <a className="chip fill">Min: {minValue} RPM
-                                            ({offsetMinPercentage} %)</a>
-                                    </CssGrid>
-                                    <CssGrid item md={4} xs={12}>
-                                        <a className="chip fill">Max: {maxValue} RPM
-                                            ({offsetMaxPercentage} %)</a>
-                                    </CssGrid>
-                                </CssGrid>
+                            <div className={"stat-row"}>
+                                <StatTile label="Current" value={latestValue} offsetPercentage={offsetCurrentPercentage}/>
+                                <StatTile label="Min" value={minValue} offsetPercentage={offsetMinPercentage}/>
+                                <StatTile label="Max" value={maxValue} offsetPercentage={offsetMaxPercentage}/>
                             </div>
 
-                            <XYChart xScale={{type: 'band'}} yScale={{type: 'linear', domain: [0, detectedSpeed]}}>
-                                <AnimatedAxis
-                                    numTicks={5}
-                                    tickFormat={(d) => {
-                                        return moment(d).format('HH:mm');
-                                    }}
-                                    orientation="bottom"/>
-                                <AnimatedAxis
-                                    numTicks={6}
-                                    orientation="left"/>
+                            <div className={"chart-wrapper"}>
+                                <XYChart xScale={{type: 'band'}} yScale={{type: 'linear', domain: [0, detectedSpeed]}}>
+                                    <defs>
+                                        <linearGradient id="rpm-gradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#3987e5" stopOpacity={0.35}/>
+                                            <stop offset="100%" stopColor="#3987e5" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
 
-                                <Grid
-                                    strokeDasharray={"3 3"}
-                                    stroke={"#cdcdcd"}/>
+                                    <Grid
+                                        strokeDasharray={"2 4"}
+                                        stroke={"#2c2c2a"}
+                                        numTicks={5}/>
 
-                                <AnimatedLineSeries
-                                    stroke={"#eee"}
-                                    dataKey="RPM"
-                                    data={data}
-                                    {...accessors}
-                                />
-                            </XYChart>
+                                    <AnimatedAreaSeries
+                                        dataKey="RPM-area"
+                                        data={data}
+                                        {...accessors}
+                                        fill="url(#rpm-gradient)"
+                                        renderLine={false}
+                                    />
 
-                            {/*<ResponsiveContainer
-                                height="90%"
-                                width="100%">
-                                <ComposedChart
-                                    data={data}
-                                    margin={{bottom: -10, top: 0, right: 0, left: 0}}>
-                                    <Tooltip
-                                        formatter={(value) => {
-                                            return `${value} RPM`
-                                        }}
-                                        labelFormatter={(value) => {
-                                            return ""
-                                        }} />
-
-                                    <XAxis
-                                        scale={'linear'}
-                                        type={'number'}
-                                        interval={"preserveStartEnd"}
-                                        domain={['dataMin', 'dataMax']}
-                                        dataKey="timestamp"
-                                        tickFormatter={(tick) => {
-                                            return moment(tick).format('HH:mm');
-                                        }}/>
-                                    <YAxis
-                                        unit={' RPM'}
-                                        scale={'linear'}
-                                        ticks={[0, 33.33, 45, 50]}
-                                        domain={[-1, 50]}/>
-                                    <ReferenceLine y={33.33}
-                                                   stroke="#969696"
-                                                   strokeDasharray="5 5"/>
-                                    <ReferenceLine y={45}
-                                                   stroke="#969696"
-                                                   strokeDasharray="5 5"/>
-                                    <Line
-                                        connectNulls={false}
-                                        type="linear"
-                                        dataKey="value"
-                                        stroke="#ffffff"
+                                    <AnimatedLineSeries
+                                        stroke={"#3987e5"}
                                         strokeWidth={2}
-                                        isAnimationActive={false}
-                                        dot={false}/>
-                                </ComposedChart>
-                            </ResponsiveContainer>*/}
+                                        dataKey="RPM"
+                                        data={data}
+                                        {...accessors}
+                                    />
+
+                                    <AnimatedAxis
+                                        numTicks={5}
+                                        tickFormat={(d) => {
+                                            return moment(d).format('HH:mm');
+                                        }}
+                                        stroke={"#383835"}
+                                        tickStroke={"#383835"}
+                                        tickLabelProps={() => axisTickLabelProps}
+                                        orientation="bottom"/>
+                                    <AnimatedAxis
+                                        numTicks={6}
+                                        stroke={"#383835"}
+                                        tickStroke={"#383835"}
+                                        tickLabelProps={() => axisTickLabelProps}
+                                        orientation="left"/>
+                                </XYChart>
+                            </div>
                         </Box>
                     )}
                 </article>
