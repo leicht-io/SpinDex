@@ -1,5 +1,6 @@
 import * as React from 'react';
 import "./topbar.scss"
+import {DevTools} from '../DevTools';
 
 export const TopBar = (): React.ReactElement => {
   return (
@@ -11,6 +12,7 @@ export const TopBar = (): React.ReactElement => {
                       <circle cx="12" cy="12" r="1.75" fill="currentColor"/>
                   </svg>
                   <h5 className="max">SpinDex</h5>
+                  <DevTools/>
               </nav>
           </header>
   );

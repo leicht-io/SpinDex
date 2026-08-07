@@ -78,13 +78,20 @@ const generateId = (): string =>
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-export const createTracking = async (name?: string): Promise<Tracking> => {
+// startedAt/stoppedAt are overridable so mock/backdated datasets (see
+// core/tracking/mock.ts) can declare a tracking's bounds up front instead
+// of always meaning "starting now".
+export const createTracking = async (
+    name?: string,
+    startedAt: number = Date.now(),
+    stoppedAt: number | null = null,
+): Promise<Tracking> => {
     const db = await openDb();
     const tracking: Tracking = {
         id: generateId(),
         name: name ?? `Tracking — ${new Date().toLocaleString()}`,
-        startedAt: Date.now(),
-        stoppedAt: null,
+        startedAt,
+        stoppedAt,
         sampleCount: 0,
         min: Infinity,
         max: -Infinity,
@@ -149,6 +156,43 @@ export const addSample = async (trackingId: string, timestamp: number, value: nu
             sampleCount: tracking.sampleCount + 1,
             min: Math.min(tracking.min, value),
             max: Math.max(tracking.max, value),
+        });
+    }
+
+    await promisifyTx(tx);
+};
+
+// Bulk variant for backfilling a large dataset in one shot (e.g. the mock
+// 24h dataset in dev tools) — one transaction and one min/max/count update
+// for the whole batch, instead of one transaction per sample. addSample()'s
+// per-sample transaction is fine at BLE's ~2/sec hot-path rate, but doing
+// that ~166k times in a loop for a bulk load would be needlessly slow.
+export const bulkAddSamples = async (trackingId: string, samples: Array<{ timestamp: number; value: number }>): Promise<void> => {
+    if (samples.length === 0) {
+        return;
+    }
+
+    const db = await openDb();
+    const tx = db.transaction([TRACKINGS_STORE, SAMPLES_STORE], 'readwrite');
+    const samplesStore = tx.objectStore(SAMPLES_STORE);
+
+    let min = Infinity;
+    let max = -Infinity;
+    for (const {timestamp, value} of samples) {
+        samplesStore.add({trackingId, timestamp, value} as Sample);
+        min = Math.min(min, value);
+        max = Math.max(max, value);
+    }
+
+    const trackingStore = tx.objectStore(TRACKINGS_STORE);
+    const tracking = await promisifyRequest<Tracking | undefined>(trackingStore.get(trackingId));
+
+    if (tracking) {
+        trackingStore.put({
+            ...tracking,
+            sampleCount: tracking.sampleCount + samples.length,
+            min: Math.min(tracking.min, min),
+            max: Math.max(tracking.max, max),
         });
     }
 

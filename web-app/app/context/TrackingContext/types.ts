@@ -32,4 +32,7 @@ export interface ITrackingContextProps {
     viewTracking: (id: string) => void;
 
     recordSample: (value: number) => void;
+
+    // Dev-tools only — see components/DevTools.
+    loadMockDataset: () => Promise<void>;
 }

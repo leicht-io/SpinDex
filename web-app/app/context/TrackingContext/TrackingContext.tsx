@@ -2,6 +2,7 @@ import * as React from 'react';
 import {ITrackingContextProps, ITrackingProviderProps, WindowOption} from './types';
 import {
     addSample,
+    bulkAddSamples,
     createTracking,
     deleteTracking as dbDeleteTracking,
     getActiveTracking,
@@ -13,6 +14,7 @@ import {
 } from '../../core/storage/db';
 import {Bucket, bucketDurationFor, Gap, resampleSamples} from '../../core/tracking/resample';
 import {downloadTrackingCsv} from '../../core/tracking/csv';
+import {generateMockSamples} from '../../core/tracking/mock';
 
 export const TrackingContext = React.createContext({} as ITrackingContextProps);
 
@@ -185,6 +187,38 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
         addSample(id, timestamp, value).catch(err => console.error('Failed to persist sample', err));
     };
 
+    // Dev-tools only (see components/DevTools): backfills a full 24h
+    // tracking with realistic mock samples — including gaps — in one bulk
+    // insert, then switches the view to it.
+    const loadMockDataset = async (): Promise<void> => {
+        const durationMs = 24 * 60 * 60 * 1000;
+        const startedAt = Date.now() - durationMs;
+        const stoppedAt = Date.now();
+
+        const tracking = await createTracking(`Mock 24h — ${new Date(startedAt).toLocaleString()}`, startedAt, stoppedAt);
+        const samples = generateMockSamples(startedAt, durationMs);
+        await bulkAddSamples(tracking.id, samples);
+
+        // Not Math.min(...values)/Math.max(...values) — spreading ~166k
+        // args into Math.min/max blows V8's call stack.
+        let min = Infinity;
+        let max = -Infinity;
+        for (const sample of samples) {
+            min = Math.min(min, sample.value);
+            max = Math.max(max, sample.value);
+        }
+
+        const populated: Tracking = {
+            ...tracking,
+            sampleCount: samples.length,
+            min,
+            max,
+        };
+
+        setTrackings(prev => [populated, ...prev]);
+        setViewingTrackingId(populated.id);
+    };
+
     return (
         <TrackingContext.Provider value={{
             trackings,
@@ -203,6 +237,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             exportTracking,
             viewTracking,
             recordSample,
+            loadMockDataset,
         }}>
             {props.children}
         </TrackingContext.Provider>
