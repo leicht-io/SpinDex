@@ -34,6 +34,38 @@
   border-top: .125rem solid var(--primary);
 }
 
+.tracking-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  button {
+    gap: .375rem;
+  }
+}
+
+.tracking-active-label {
+  font-size: .875rem;
+  color: var(--on-surface-variant);
+}
+
+.window-select {
+  margin-left: auto;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  border: .0625rem solid var(--outline-variant);
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  font-family: inherit;
+  font-size: .8125rem;
+
+  @media only screen and (max-width: 600px) {
+    margin-left: 0;
+  }
+}
+
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -140,4 +172,73 @@
   .empty-state .empty-state-ring {
     animation: none;
   }
+}
+
+.trackings-panel {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.trackings-title {
+  margin: 0 0 .75rem;
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.trackings-empty {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: .875rem;
+}
+
+.tracking-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .25rem;
+  border-radius: .625rem;
+
+  & + & {
+    margin-top: .25rem;
+  }
+
+  &.active {
+    background: var(--surface-container-high);
+  }
+}
+
+.tracking-row-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .125rem;
+  padding: .5rem .75rem;
+  text-align: left;
+  border-radius: .5rem;
+}
+
+.tracking-row-name {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9375rem;
+  color: var(--on-surface);
+}
+
+.tracking-row-live-dot {
+  display: inline-block;
+  width: .4375rem;
+  height: .4375rem;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+}
+
+.tracking-row-meta {
+  font-size: .8125rem;
+  color: var(--on-surface-variant);
 }
