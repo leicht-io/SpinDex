@@ -5,6 +5,7 @@ The code is written to run on the M5Stack StampS3 (ESP32-S3) but could easily be
 
 This mono repository is divided into multiple sub-repositories, explained below:
 
+![alt text](3d-files/in_use.jpg)
 
 ### 3D Files (3d-files):
 This folder contains all the 3D models.
