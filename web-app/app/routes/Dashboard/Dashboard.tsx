@@ -86,7 +86,13 @@ const GapBands = ({gaps}: { gaps: Gap[] }): React.ReactElement | null => {
     }
 
     return (
-        <Group left={margin.left} top={margin.top}>
+        // Only `top` here, not `left`: xScale's output range already spans
+        // the full absolute SVG width including the left margin (visx's
+        // Series/Grid/Axis children read it directly with no extra offset
+        // of their own), so also offsetting this Group by `margin.left`
+        // shifted every band that many pixels too far right of the data it
+        // was meant to sit under.
+        <Group top={margin.top}>
             {gaps.map((gap, i) => {
                 const x0 = (xScale as any)(new Date(gap.start));
                 const x1 = (xScale as any)(new Date(gap.end));
@@ -137,6 +143,16 @@ export const Dashboard = () => {
     const target = nominalTarget(currentValue);
     const segments = segmentBuckets(chartBuckets, chartGaps);
 
+    // @visx/xychart derives the x scale's domain from the data points
+    // registered by its Series children — with none mounted (a tracking
+    // that's just been started has no samples yet) that domain comes back
+    // `undefined` and the whole chart, axes included, renders as nothing.
+    // Falling back to the selected window's span keeps the empty frame
+    // visible while the first samples come in.
+    const xScaleConfig = chartBuckets.length > 0
+        ? {type: 'time' as const}
+        : {type: 'time' as const, domain: [new Date(Date.now() - (selectedWindow.ms ?? 10 * 60 * 1000)), new Date()]};
+
     const onWindowChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
         const option = windowOptions.find((o: WindowOption) => o.id === event.target.value);
         if (option) {
@@ -160,7 +176,11 @@ export const Dashboard = () => {
                                 <StopIcon fontSize={"small"}/> Stop Tracking
                             </button>
                         ) : (
-                            <button className={"primary"} onClick={() => startTracking()}>
+                            <button
+                                className={"primary"}
+                                onClick={() => startTracking()}
+                                disabled={!connected}
+                                title={connected ? undefined : "Pair with SpinDex before starting a tracking"}>
                                 <PlayArrowIcon fontSize={"small"}/> Start Tracking
                             </button>
                         )}
@@ -209,7 +229,7 @@ export const Dashboard = () => {
                             </div>
 
                             <div className={"chart-wrapper"}>
-                                <XYChart xScale={{type: 'time'}} yScale={{type: 'linear', domain: [0, target]}}>
+                                <XYChart xScale={xScaleConfig} yScale={{type: 'linear', domain: [0, target]}}>
                                     <defs>
                                         <linearGradient id="rpm-gradient" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stopColor="#3987e5" stopOpacity={0.35}/>

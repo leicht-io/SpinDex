@@ -1,0 +1,446 @@
+(kicad_symbol_lib
+	(version 20231120)
+	(generator "spindex")
+	(generator_version "9.0")
+	(symbol "STAMP-S3M"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "U"
+			(at -10.16 20.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "STAMP-S3M"
+			(at 10.16 20.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "spindex:STAMP-S3M_DIP28_P1.27mm"
+			(at 0 -20.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://m5stack-doc.oss-cn-shenzhen.aliyuncs.com/522/Sch_M5StampS3_v0.2.pdf"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "M5Stack STAMP-S3M module (ESP32-S3FN8), 28-pin 1.27mm DIP. Pinout verified from M5Stack's own module schematic; physical row-to-row pad spacing is an ESTIMATE pending caliper verification (see footprint + hardware/carrier-board/README.md)."
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "STAMP-S3M_0_1"
+			(rectangle (start -10.16 17.78) (end 10.16 -17.78)
+				(stroke (width 0.254) (type default))
+				(fill (type background))
+			)
+			(text "STAMP-S3M" (at 0 0 0) (effects (font (size 1.27 1.27))))
+		)
+		(symbol "STAMP-S3M_1_1"
+			(pin input line
+				(at -12.7 16.51 0)
+				(length 2.54)
+				(name "G1"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 13.970000000000002 0)
+				(length 2.54)
+				(name "G2"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 11.430000000000003 0)
+				(length 2.54)
+				(name "G3"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 8.890000000000004 0)
+				(length 2.54)
+				(name "G4"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 6.350000000000004 0)
+				(length 2.54)
+				(name "G5"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 3.810000000000004 0)
+				(length 2.54)
+				(name "G6"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 1.270000000000004 0)
+				(length 2.54)
+				(name "G7"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "7"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 -1.269999999999996 0)
+				(length 2.54)
+				(name "G8"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "8"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 -3.809999999999996 0)
+				(length 2.54)
+				(name "G9"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "9"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 -6.349999999999996 0)
+				(length 2.54)
+				(name "G10"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "10"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 -8.889999999999997 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "11"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 -11.429999999999996 0)
+				(length 2.54)
+				(name "G11"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "12"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin power_in line
+				(at -12.7 -13.969999999999995 0)
+				(length 2.54)
+				(name "5V"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "13"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at -12.7 -16.509999999999994 0)
+				(length 2.54)
+				(name "G12"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "14"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 16.51 180)
+				(length 2.54)
+				(name "G13"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "15"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 13.970000000000002 180)
+				(length 2.54)
+				(name "G14"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "16"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 11.430000000000003 180)
+				(length 2.54)
+				(name "G15"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "17"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 8.890000000000004 180)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "18"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 6.350000000000004 180)
+				(length 2.54)
+				(name "G39_MTCK"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "19"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 3.810000000000004 180)
+				(length 2.54)
+				(name "G0_BOOT"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "20"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 1.270000000000004 180)
+				(length 2.54)
+				(name "G40_MTDO"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "21"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 -1.269999999999996 180)
+				(length 2.54)
+				(name "EN"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "22"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 -3.809999999999996 180)
+				(length 2.54)
+				(name "G41_MTDI"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "23"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 -6.349999999999996 180)
+				(length 2.54)
+				(name "G44_RX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "24"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 -8.889999999999997 180)
+				(length 2.54)
+				(name "G42_MTMS"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "25"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 -11.429999999999996 180)
+				(length 2.54)
+				(name "G43_TX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "26"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin input line
+				(at 12.7 -13.969999999999995 180)
+				(length 2.54)
+				(name "G46"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "27"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin power_out line
+				(at 12.7 -16.509999999999994 180)
+				(length 2.54)
+				(name "3V3"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "28"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "TCRT5000"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "D"
+			(at -7.62 7.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TCRT5000"
+			(at 7.62 7.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "OptoDevice:Vishay_TCRT5000"
+			(at 0 -7.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.vishay.com/docs/83760/tcrt5000.pdf"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Reflective IR sensor, phototransistor output, 950nm emitter, integrated daylight filter"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "TCRT5000_0_1"
+			(polyline (pts (xy -5.08 2.54) (xy -5.08 -2.54)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(polyline (pts (xy -5.08 0) (xy -2.54 1.27) (xy -2.54 3.81)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(polyline (pts (xy -5.08 0) (xy -2.54 -1.27) (xy -2.54 -3.81)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(polyline (pts (xy -2.54 1.27) (xy -3.556 0.762) (xy -3.048 1.778) (xy -2.54 1.27)) (stroke (width 0.254) (type default)) (fill (type outline)))
+			(polyline (pts (xy 2.54 1.27) (xy 2.54 -1.27) (xy 5.08 0) (xy 2.54 1.27)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(polyline (pts (xy 5.08 1.27) (xy 5.08 -1.27)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(polyline (pts (xy 3.302 2.54) (xy 4.826 4.064)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(polyline (pts (xy 4.318 2.54) (xy 5.842 4.064)) (stroke (width 0.254) (type default)) (fill (type none)))
+			(text "phototransistor" (at -3.81 -5.08 0) (effects (font (size 0.8 0.8))))
+			(text "IR LED" (at 3.81 -5.08 0) (effects (font (size 0.8 0.8))))
+		)
+		(symbol "TCRT5000_1_1"
+			(pin passive line
+				(at -2.54 3.81 270)
+				(length 1.27)
+				(name "C"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -2.54 -3.81 90)
+				(length 1.27)
+				(name "E"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 5.08 3.81 270)
+				(length 1.27)
+				(name "A"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 5.08 -3.81 90)
+				(length 1.27)
+				(name "K"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+)

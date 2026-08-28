@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "spindex")(type "KiCad")(uri "${KIPRJMOD}/spindex.pretty")(options "")(descr "SpinDex custom footprints: STAMP-S3M"))
+)

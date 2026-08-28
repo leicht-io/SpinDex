@@ -8,12 +8,14 @@
 #include "ESP32TimerInterrupt.h"
 
 const long baudRate = 115200;
-// Adafruit STEMMA Reflective Photo Interrupt Sensor (TCRT1000).
-// White (signal) wire -> G1. Red (VIN) wire -> 3V3 rail directly:
-// the onboard emitter trimmer can draw up to ~100mA, more than a
-// GPIO can safely source, so it is not powered from a pin.
-// Output idles HIGH (no reflection) and drops toward 0V when the
-// IR beam is bounced back by a reflective surface.
+// FC-51 IR obstacle avoidance module (LM393 comparator, ~2-30cm
+// adjustable range via onboard trimpot).
+// OUT -> G1. VCC -> 3V3 rail directly: measured draw is ~23mA at
+// 3.3V, close enough to GPIO source limits that it's kept on the
+// dedicated rail rather than a pin, same as the TCRT1000 it replaced.
+// Output idles HIGH (no reflection) and drops LOW when a reflective
+// bar is detected -- same polarity as the TCRT1000, so no logic
+// change was needed here when swapping sensors.
 const byte irSensorPin = 1; // G1 on M5Stack StampS3
 volatile byte previousIrSensorState = LOW;
 volatile byte count = 0;

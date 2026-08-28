@@ -1,12 +1,6 @@
 .dashboard {
   width: 100vw;
-  height: 100%;
-  margin-bottom: 140px;
-
-  @media only screen and (min-width: 900px) {
-    height: calc(100vh - 64px - 80px);
-    margin-bottom: 0;
-  }
+  min-height: 100%;
 
   // `top` and a negative `z-index` were previously set here, but with no
   // `position` on this element neither one does anything per spec — the
@@ -14,8 +8,16 @@
   // content, since only a flat 24px top padding was in effect. Padding is
   // what works on a static element, so that's what pushes content clear of
   // the fixed topbar now.
+  //
+  // Same reasoning applies at the bottom: the footer is fixed (5rem min
+  // height) and was previously cleared by a flat margin-bottom that got
+  // zeroed out above 900px width, which left the last tracking row(s)
+  // rendering behind it whenever the page was exactly viewport-height or
+  // taller on a wide screen. Padding-bottom reserves that space
+  // unconditionally instead of guessing per breakpoint.
   padding: 24px;
   padding-top: calc(64px + 24px);
+  padding-bottom: calc(80px + 24px);
 
   background: var(--background);
 }
