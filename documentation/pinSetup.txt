@@ -1,8 +1,0 @@
-/**
-    PIN LAYOUT:
-
-    IR:
-    OUTPUT - D14
-    GND - GND
-    VCC - D13
-*/

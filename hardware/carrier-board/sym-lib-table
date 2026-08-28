@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "spindex")(type "KiCad")(uri "${KIPRJMOD}/spindex.kicad_sym")(options "")(descr "SpinDex custom parts: STAMP-S3M, TCRT5000"))
+)

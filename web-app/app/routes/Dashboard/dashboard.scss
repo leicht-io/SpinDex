@@ -1,19 +1,25 @@
 .dashboard {
   width: 100vw;
-  height: 100%;
-  margin-bottom: 140px;
+  min-height: 100%;
 
-  @media only screen and (min-width: 900px) {
-    height: calc(100vh - 64px - 80px);
-    margin-bottom: 0;
-  }
-
-  top: 64px;
-
+  // `top` and a negative `z-index` were previously set here, but with no
+  // `position` on this element neither one does anything per spec — the
+  // fixed topbar (4rem) actually overlapped the first ~40px of scrollable
+  // content, since only a flat 24px top padding was in effect. Padding is
+  // what works on a static element, so that's what pushes content clear of
+  // the fixed topbar now.
+  //
+  // Same reasoning applies at the bottom: the footer is fixed (5rem min
+  // height) and was previously cleared by a flat margin-bottom that got
+  // zeroed out above 900px width, which left the last tracking row(s)
+  // rendering behind it whenever the page was exactly viewport-height or
+  // taller on a wide screen. Padding-bottom reserves that space
+  // unconditionally instead of guessing per breakpoint.
   padding: 24px;
+  padding-top: calc(64px + 24px);
+  padding-bottom: calc(80px + 24px);
 
-  background: #121212;
-  z-index: -1;
+  background: var(--background);
 }
 
 .dashboard-content {
@@ -26,36 +32,215 @@
   margin: 0 auto;
 }
 
-.chips-wrapper {
-  margin: 0 auto;
-  display: block;
-  margin-bottom: 24px;
-  text-align: center;
+.dashboard-panel {
+  border-top: .125rem solid var(--primary);
+}
 
-  .chip {
-    width: 184px;
+.tracking-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  button {
+    gap: .375rem;
   }
 }
 
-article.border {
-  border: 0 !important;
+.tracking-active-label {
+  font-size: .875rem;
+  color: var(--on-surface-variant);
 }
 
-.x-label, .y-label,  {
-  font-size: 12px;
-  fill: #757575;
+.window-select {
+  margin-left: auto;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  border: .0625rem solid var(--outline-variant);
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  font-family: inherit;
+  font-size: .8125rem;
+
+  @media only screen and (max-width: 600px) {
+    margin-left: 0;
+  }
 }
 
-.recharts-cartesian-axis-tick-value tspan {
-  font-size: 13px;
-  fill: #757575;
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+
+  @media only screen and (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.x-label {
-  transform: translate(0, 3px);
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+
+  padding: 1rem 1.25rem;
+  border-radius: .625rem;
+  background: var(--surface-container-high);
+  border: .0625rem solid var(--outline-variant);
 }
 
-.y-label {
-  transform: translate(180px, 100px) rotate(90deg);
+.stat-label {
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
 }
 
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-surface);
+
+  small {
+    margin-left: .3rem;
+    font-size: .8rem;
+    font-weight: 400;
+    color: var(--on-surface-variant);
+  }
+}
+
+.stat-offset {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-surface-variant);
+
+  .status-dot {
+    display: inline-block;
+    width: .4375rem;
+    height: .4375rem;
+    border-radius: 50%;
+  }
+
+  &.status-good .status-dot { background: var(--good); }
+  &.status-warning .status-dot { background: var(--warning); }
+  &.status-serious .status-dot { background: var(--serious); }
+  &.status-critical .status-dot { background: var(--critical); }
+}
+
+.chart-wrapper {
+  flex: 1;
+  min-height: 0;
+
+  svg {
+    overflow: visible;
+  }
+}
+
+.empty-state {
+  color: var(--on-surface-variant);
+  gap: .5rem;
+
+  .empty-state-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    border: .0625rem solid var(--outline-variant);
+    color: var(--primary);
+    animation: empty-state-pulse 2.4s ease-in-out infinite;
+  }
+
+  .empty-state-hint {
+    color: var(--on-surface-variant);
+    opacity: .8;
+  }
+}
+
+@keyframes empty-state-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0.35); }
+  50% { box-shadow: 0 0 0 .875rem rgb(57 135 229 / 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state .empty-state-ring {
+    animation: none;
+  }
+}
+
+.trackings-panel {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.trackings-title {
+  margin: 0 0 .75rem;
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.trackings-empty {
+  margin: 0;
+  color: var(--on-surface-variant);
+  font-size: .875rem;
+}
+
+.tracking-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .25rem;
+  border-radius: .625rem;
+
+  & + & {
+    margin-top: .25rem;
+  }
+
+  &.active {
+    background: var(--surface-container-high);
+  }
+}
+
+.tracking-row-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .125rem;
+  padding: .5rem .75rem;
+  text-align: left;
+  border-radius: .5rem;
+}
+
+.tracking-row-name {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9375rem;
+  color: var(--on-surface);
+}
+
+.tracking-row-live-dot {
+  display: inline-block;
+  width: .4375rem;
+  height: .4375rem;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+}
+
+.tracking-row-meta {
+  font-size: .8125rem;
+  color: var(--on-surface-variant);
+}

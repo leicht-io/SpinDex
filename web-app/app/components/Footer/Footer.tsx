@@ -1,30 +1,28 @@
 import * as React from "react";
 import "./footer.scss"
 import BluetoothSearchingIcon from '@mui/icons-material/BluetoothSearching';
-// import RestartAltIcon from '@mui/icons-material/RestartAlt';
-// import StopIcon from '@mui/icons-material/Stop';
 import {BLEContext} from "../../context";
 
 export const Footer = () => {
-    const {initBluetooth, status} = React.useContext(BLEContext);
+    const {initBluetooth, status, connected} = React.useContext(BLEContext);
+
+    // The BLE status is a loose set of human-readable sentences (see
+    // BLEContext), not an enum, so this is a best-effort read of "an attempt
+    // is in flight" purely to drive the button's pulse animation.
+    const isSearching = !connected && status !== ''
+        && !status.startsWith('Error') && !status.includes('not available');
 
     return (
         <footer className={"footer"}>
             <nav>
-                {/* <button className="circle transparent">
-                    <RestartAltIcon/>
-                </button>
-                <button className="circle transparent">
-                    <StopIcon color={"secondary"}/>
-                </button> */ }
-                <div className="max"></div>
-
-                    <p>{status || "Not Connected"}</p>
+                <span className={`status-dot ${connected ? 'connected' : ''}`} aria-hidden="true"/>
+                <p className={"max status-text"}>{status || "Not Connected"}</p>
                 <button
                     onClick={() => {
                         initBluetooth();
                     }}
-                    className="square round extra primary">
+                    aria-label={connected ? "Connected" : "Connect to SpinDex"}
+                    className={`circle extra ${connected ? '' : 'primary'} ${isSearching ? 'searching' : ''}`}>
                     <BluetoothSearchingIcon/>
                 </button>
             </nav>

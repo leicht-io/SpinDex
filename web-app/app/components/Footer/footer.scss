@@ -2,10 +2,49 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  right: auto;
+  right: 0;
   width: 100vw;
+  z-index: 20;
 
-  .circle .MuiSvgIcon-root {
-    color:#fff;
+  background: rgb(13 13 13 / 0.72);
+  backdrop-filter: blur(.75rem) saturate(1.4);
+  -webkit-backdrop-filter: blur(.75rem) saturate(1.4);
+  border-top: .0625rem solid var(--outline-variant);
+  padding-inline: 1.5rem; // overrides beercss's default footer 0 1rem
+
+  .status-dot {
+    flex-shrink: 0;
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--outline);
+    transition: background var(--speed3, .2s), box-shadow var(--speed3, .2s);
+
+    &.connected {
+      background: var(--good);
+      box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+    }
+  }
+
+  .status-text {
+    margin: 0;
+    color: var(--on-surface-variant);
+    font-size: .875rem;
+  }
+
+  button.searching {
+    animation: footer-pulse 1.6s ease-out infinite;
+  }
+}
+
+@keyframes footer-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0.55); }
+  70% { box-shadow: 0 0 0 .75rem rgb(57 135 229 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer button.searching {
+    animation: none;
   }
 }

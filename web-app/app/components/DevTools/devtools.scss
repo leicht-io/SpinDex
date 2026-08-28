@@ -1,0 +1,39 @@
+// Deliberately styled differently from the rest of the app (dashed amber
+// outline, monospace label) so it reads unmistakably as a test affordance,
+// not a shipped feature.
+.dev-tools {
+  display: flex;
+  gap: .5rem;
+  margin-left: .5rem;
+}
+
+.dev-tools-button {
+  padding: .375rem .625rem;
+  border: .0625rem dashed var(--warning);
+  border-radius: .375rem;
+  background: transparent;
+  color: var(--warning);
+  font-family: monospace;
+  font-size: .6875rem;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(250 178 25 / 0.1);
+  }
+
+  &.active {
+    background: var(--warning);
+    color: var(--on-primary);
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: default;
+  }
+
+  @media only screen and (max-width: 700px) {
+    display: none;
+  }
+}
