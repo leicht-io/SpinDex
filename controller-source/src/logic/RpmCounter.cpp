@@ -8,7 +8,7 @@ RpmCounter::RpmCounter(uint8_t stepsPerRevolution, unsigned long stallTimeoutMs)
     : stepsPerRevolution_(stepsPerRevolution), stallTimeoutMs_(stallTimeoutMs) {
 }
 
-void RpmCounter::update(bool high, unsigned long nowMs) {
+void IRAM_ATTR RpmCounter::update(bool high, unsigned long nowMs) {
     if (high != previousHigh_) {
         previousHigh_ = high;
 
@@ -27,7 +27,7 @@ void RpmCounter::update(bool high, unsigned long nowMs) {
     }
 }
 
-void RpmCounter::completeRevolution(unsigned long nowMs) {
+void IRAM_ATTR RpmCounter::completeRevolution(unsigned long nowMs) {
     unsigned long timeDiff = nowMs - cycleStartMs_;
     rpm_ = timeDiff > 0 ? static_cast<float>(MS_PER_MINUTE / timeDiff) : 0.0f;
 
