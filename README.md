@@ -14,14 +14,23 @@ This folder contains all the 3D models.
 - astreaus_bottom_v1.stl
 - astreaus_led_v1.stl
 
-![alt text](3d-files/rendering_1.png)
-
 ---
 
 ### Web App (web-app)
-This folder contains the web app. The web app receives the controller's output via Bluetooth and shows a temporal line graph with the results. It is hosted right here: https://spindex.leicht.io/
+This folder contains the web app. It connects to the controller over Bluetooth (Web Bluetooth — Chrome/Edge on desktop or Android, no install needed) and displays the live RPM as a temporal line graph. It's hosted publicly, free to use, at **https://spindex.leicht.io/**.
 
-![alt text](documentation/images/desktop-screenshot.png)
+Features:
+- Pair with the controller over Web Bluetooth, with automatic reconnect on a dropped connection so an unattended run rides out a transient disconnect.
+- Start/stop tracking sessions, persisted locally in the browser (IndexedDB) — a page refresh or reconnect doesn't lose the running session.
+- Keep multiple tracking sessions around and switch between them from the Trackings list, including revisiting past (stopped) sessions.
+- Live stat tiles for current/min/max RPM and % deviation from the nominal 33⅓/45 RPM target, colour-coded by how far off spec.
+- Selectable chart time window (Live 10 min / 1h / 6h / 12h / 24h / All), auto-bucketed to a fixed point budget so even a 24h session stays smooth to render.
+- Gap-aware charting — a BLE disconnect or closed tab shows as a clearly marked gap in the plot rather than a misleading flat or interpolated line.
+- CSV export of any tracking session for offline analysis.
+- Delete old tracking sessions.
+- Single dark, "precision-instrument" themed UI.
+
+![alt text](documentation/images/desktop_screenshot.png)
 
 ---
 
