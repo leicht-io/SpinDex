@@ -5,6 +5,7 @@
 
 #include "data/SerialComm.h"
 #include "data/Bluetooth.h"
+#include "logic/RpmCounter.h"
 #include "ESP32TimerInterrupt.h"
 
 const long baudRate = 115200;
@@ -17,15 +18,12 @@ const long baudRate = 115200;
 // bar is detected -- same polarity as the TCRT1000, so no logic
 // change was needed here when swapping sensors.
 const byte irSensorPin = 1; // G1 on M5Stack StampS3
-volatile byte previousIrSensorState = LOW;
-volatile byte count = 0;
-byte steps = 24; // 24 dark bars on BG4000-series/59xx-series
-double msPerMinute = 60000.0;
-unsigned long currentTime = millis();
-unsigned long lastReading = millis();
-volatile unsigned long now = millis();
-volatile unsigned long timeDiff = millis();
-volatile float RPM = 0;
+
+// Edge-counting + RPM math itself lives in RpmCounter (src/logic), kept
+// free of Arduino.h so it can be unit-tested on the host (see
+// test/test_rpm_counter) -- this .ino only wires it up to the real GPIO
+// pin and clock.
+RpmCounter rpmCounter(/* stepsPerRevolution */ 24, /* stallTimeoutMs */ 1000);
 
 TaskHandle_t emitRPMTask;
 SerialComm serialComm = SerialComm();
@@ -44,35 +42,15 @@ void initialDevice() {
 
  void emitRPMLoop(void *pvParameters) {
     for (;;) {
-        emitRPM(RPM);
+        emitRPM(rpmCounter.rpm());
         bluetooth.checkConnection();
 
         delay(500);
     }
-} 
+}
 
 bool IRAM_ATTR TimerHandler0(void * timerNo) {
-    volatile int currentIrSensorState = digitalRead(irSensorPin);
-    
-    if (currentIrSensorState != previousIrSensorState) {
-        previousIrSensorState = currentIrSensorState;
-
-        if (currentIrSensorState == HIGH) {
-            count++;
-            lastReading = millis();
-        }
-
-        if (count == steps) {
-            now = millis();
-            timeDiff = now - currentTime;
-            RPM = msPerMinute / timeDiff;
-            resetStates();
-        }
-    }
-
-     if((millis() - lastReading) > 1000) {
-            RPM = 0.0;
-    }
+    rpmCounter.update(digitalRead(irSensorPin) == HIGH, millis());
 
     return true;
 }
@@ -91,12 +69,6 @@ void setup(void) {
 
    xTaskCreatePinnedToCore(emitRPMLoop, "emitRPMTask", 10000, NULL, 1, &emitRPMTask, 1);
 }
-
-void resetStates() {
-    count = 0;
-    now = 0;
-    currentTime = millis();
-} 
 
 void emitRPM(float RPM) {
     if(SERIAL_ENABLED) {

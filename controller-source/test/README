@@ -1,11 +1,15 @@
+Unit tests for the µController source.
 
-This directory is intended for PIO Unit Testing and project tests.
+Run on the host, no board or hardware attached:
 
-Unit Testing is a software testing method by which individual units of
-source code, sets of one or more MCU program modules together with associated
-control data, usage procedures, and operating procedures, are tested to
-determine whether they are fit for use. Unit testing finds problems early
-in the development cycle.
+    pio test -e native
 
-More information about PIO Unit Testing:
-- https://docs.platformio.org/page/plus/unit-testing.html
+`test_rpm_counter/` exercises `src/logic/RpmCounter` — the tachometer
+edge-counting and RPM calculation pulled out of `arduino_target.ino`'s
+TimerHandler0 into a plain C++ class with no Arduino.h dependency, so it
+can run natively instead of needing a real sensor and platter to test
+against. `arduino_target.ino` itself, and anything under `src/data`, depend
+on Arduino.h/BLE and can't be built for the `native` environment — see
+`platformio.ini`'s `build_src_filter` for the `[env:native]` env.
+
+More on PlatformIO Unit Testing: https://docs.platformio.org/page/plus/unit-testing.html
