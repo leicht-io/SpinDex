@@ -11,6 +11,18 @@ export const GAP_THRESHOLD_MS = 5_000;
 export const TARGET_CHART_POINTS = 600;
 const MIN_BUCKET_MS = 1_000;
 
+// A y-axis pinned to [0, target] wastes nearly the whole chart height on RPM
+// values that never occur once the platter's up to speed — real wow/flutter
+// deviations are a fraction of a percent, squeezed into a couple of pixels
+// at the top of a 33/45-unit axis. yAxisDomain zooms to what's actually in
+// the visible window instead. Don't zoom tighter than this fraction of
+// target, so a rock-steady run doesn't turn into a meaningless,
+// noise-amplifying sliver.
+export const MIN_Y_SPAN_FRACTION = 0.08;
+// Padding added around the actual data extent so the line/area doesn't hug
+// the top/bottom edge of the chart.
+export const Y_AXIS_PADDING_FRACTION = 0.15;
+
 export interface Bucket {
     timestamp: number;
     value: number;
@@ -34,13 +46,28 @@ export const bucketDurationFor = (spanMs: number, targetPoints: number = TARGET_
 /**
  * Buckets raw samples into `bucketMs`-wide averages and detects gaps (runs
  * of time with no samples at all, above GAP_THRESHOLD_MS).
+ *
+ * `liveEndBoundary` (pass "now" when viewing the live tracking) additionally
+ * checks the *trailing* edge — the span from the last sample up to right
+ * now. Without it, a BLE drop only becomes visible as a gap once
+ * reconnecting delivers a following sample far enough away to trip the
+ * threshold against; the loop above can't detect it in the meantime since
+ * there's no "next" sample yet to compare the last one to.
  */
-export const resampleSamples = (samples: Sample[], bucketMs: number): ResampleResult => {
+export const resampleSamples = (samples: Sample[], bucketMs: number, liveEndBoundary?: number): ResampleResult => {
     if (samples.length === 0) {
         return {buckets: [], gaps: []};
     }
 
-    const sorted = [...samples].sort((a, b) => a.timestamp - b.timestamp);
+    // A non-finite value (NaN/Infinity) landing in one bucket's average
+    // would turn that whole bucket, and the SVG path it's plotted in, into
+    // "NaN" -- silently hiding the entire line/area for that segment rather
+    // than just the one bad point. BLEContext already rejects these at
+    // ingestion, but filtering again here guards any sample that made it in
+    // before that fix, or via another path (mock/CSV import) later.
+    const sorted = samples
+        .filter(s => Number.isFinite(s.value))
+        .sort((a, b) => a.timestamp - b.timestamp);
 
     const gaps: Gap[] = [];
     for (let i = 1; i < sorted.length; i++) {
@@ -48,6 +75,11 @@ export const resampleSamples = (samples: Sample[], bucketMs: number): ResampleRe
         if (delta > GAP_THRESHOLD_MS) {
             gaps.push({start: sorted[i - 1].timestamp, end: sorted[i].timestamp});
         }
+    }
+
+    const lastTimestamp = sorted[sorted.length - 1].timestamp;
+    if (liveEndBoundary !== undefined && liveEndBoundary - lastTimestamp > GAP_THRESHOLD_MS) {
+        gaps.push({start: lastTimestamp, end: liveEndBoundary});
     }
 
     const buckets: Bucket[] = [];
@@ -119,4 +151,31 @@ export const segmentBuckets = (buckets: Bucket[], gaps: Gap[]): Bucket[][] => {
     }
 
     return segments;
+};
+
+/**
+ * Y-axis range for the chart, zoomed to the visible buckets' actual extent
+ * (each bucket's min/max, not just its averaged value, so a brief spike
+ * isn't smoothed away) rather than a fixed [0, target] that buries real
+ * deviations in a few pixels. `target` centers the fallback range before
+ * any data has arrived, and provides the floor for MIN_Y_SPAN_FRACTION so a
+ * rock-steady run still gets a sensibly-sized axis.
+ */
+export const yAxisDomain = (buckets: Bucket[], target: number): [number, number] => {
+    const minSpan = target * MIN_Y_SPAN_FRACTION;
+
+    if (buckets.length === 0) {
+        return [target - minSpan / 2, target + minSpan / 2];
+    }
+
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (const bucket of buckets) {
+        lo = Math.min(lo, bucket.min);
+        hi = Math.max(hi, bucket.max);
+    }
+
+    const center = (lo + hi) / 2;
+    const span = Math.max(hi - lo, minSpan) * (1 + Y_AXIS_PADDING_FRACTION);
+    return [center - span / 2, center + span / 2];
 };

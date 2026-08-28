@@ -7,18 +7,19 @@ import {WindowOption} from '../../context/TrackingContext';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import {
-    AnimatedAreaSeries,
-    AnimatedAxis,
-    AnimatedLineSeries,
+    AreaSeries,
+    Axis,
     DataContext as XYChartDataContext,
     Grid,
+    LineSeries,
     XYChart,
 } from "@visx/xychart";
 import {Group} from '@visx/group';
-import {Bucket, Gap, segmentBuckets} from '../../core/tracking/resample';
+import {Bucket, Gap, segmentBuckets, yAxisDomain} from '../../core/tracking/resample';
 
 const axisTickLabelProps = {
     fill: '#898781',
@@ -130,12 +131,17 @@ export const Dashboard = () => {
         setSelectedWindow,
         chartBuckets,
         chartGaps,
+        chartRangeStart,
+        chartRangeEnd,
         startTracking,
         stopTracking,
         deleteTracking,
+        renameTracking,
         exportTracking,
         viewTracking,
     } = React.useContext(TrackingContext);
+
+    const [newTrackingName, setNewTrackingName] = React.useState('');
 
     const isViewingLive = activeTracking !== null && viewingTracking?.id === activeTracking.id;
     const lastBucketValue = chartBuckets.length > 0 ? chartBuckets[chartBuckets.length - 1].value : 0;
@@ -143,15 +149,22 @@ export const Dashboard = () => {
     const target = nominalTarget(currentValue);
     const segments = segmentBuckets(chartBuckets, chartGaps);
 
-    // @visx/xychart derives the x scale's domain from the data points
-    // registered by its Series children — with none mounted (a tracking
-    // that's just been started has no samples yet) that domain comes back
-    // `undefined` and the whole chart, axes included, renders as nothing.
-    // Falling back to the selected window's span keeps the empty frame
-    // visible while the first samples come in.
-    const xScaleConfig = chartBuckets.length > 0
-        ? {type: 'time' as const}
-        : {type: 'time' as const, domain: [new Date(Date.now() - (selectedWindow.ms ?? 10 * 60 * 1000)), new Date()]};
+    // Always an explicit domain matching exactly what was queried, rather
+    // than one @visx/xychart derives from whatever Series data happens to
+    // be registered. Two reasons: (1) with zero buckets (a tracking just
+    // started, nothing sampled yet) a derived domain comes back `undefined`
+    // and the whole chart, axes included, renders as nothing; (2) while
+    // live, this reaches all the way to "now" even when the tail of it is
+    // empty (BLE disconnected) — needed for the trailing gap band
+    // (resampleSamples' liveEndBoundary) to actually be visible instead of
+    // sitting off the edge of an axis that stopped short at the last real
+    // sample.
+    const xScaleConfig = {type: 'time' as const, domain: [new Date(chartRangeStart), new Date(chartRangeEnd)]};
+
+    // See resample.ts's yAxisDomain for why this isn't a fixed [0, target]:
+    // that buries real wow/flutter deviations in a couple of pixels at the
+    // top of a 33/45-unit axis.
+    const yDomain = React.useMemo(() => yAxisDomain(chartBuckets, target), [chartBuckets, target]);
 
     const onWindowChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
         const option = windowOptions.find((o: WindowOption) => o.id === event.target.value);
@@ -160,9 +173,25 @@ export const Dashboard = () => {
         }
     };
 
+    const onStartTracking = (): void => {
+        startTracking(newTrackingName.trim() || undefined);
+        setNewTrackingName('');
+    };
+
     const onDeleteTracking = (id: string, name: string): void => {
         if (window.confirm(`Delete "${name}"? This cannot be undone.`)) {
             deleteTracking(id);
+        }
+    };
+
+    const onRenameTracking = (id: string, currentName: string): void => {
+        const name = window.prompt('Rename tracking', currentName);
+        if (name === null) {
+            return;
+        }
+        const trimmed = name.trim();
+        if (trimmed && trimmed !== currentName) {
+            renameTracking(id, trimmed);
         }
     };
 
@@ -176,18 +205,39 @@ export const Dashboard = () => {
                                 <StopIcon fontSize={"small"}/> Stop Tracking
                             </button>
                         ) : (
-                            <button
-                                className={"primary"}
-                                onClick={() => startTracking()}
-                                disabled={!connected}
-                                title={connected ? undefined : "Pair with SpinDex before starting a tracking"}>
-                                <PlayArrowIcon fontSize={"small"}/> Start Tracking
-                            </button>
+                            <>
+                                <input
+                                    className={"tracking-name-input"}
+                                    type={"text"}
+                                    placeholder={"Name (optional)"}
+                                    value={newTrackingName}
+                                    onChange={(e) => setNewTrackingName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && connected) {
+                                            onStartTracking();
+                                        }
+                                    }}/>
+                                <button
+                                    className={"primary"}
+                                    onClick={onStartTracking}
+                                    disabled={!connected}
+                                    title={connected ? undefined : "Pair with SpinDex before starting a tracking"}>
+                                    <PlayArrowIcon fontSize={"small"}/> Start Tracking
+                                </button>
+                            </>
                         )}
 
                         {activeTracking && (
-                            <span className={"tracking-active-label"}>
-                                Recording "{activeTracking.name}" — {activeTracking.sampleCount.toLocaleString()} samples
+                            // A tracking stays "active" (not yet stopped) across a BLE drop or a
+                            // page refresh — neither ends the session — but with no connection no
+                            // new samples can actually arrive, so say so rather than implying it's
+                            // still live: a refreshed page resumes the old session's "Recording"
+                            // state with `connected` reset to false until re-paired, which read as
+                            // still-measuring even though nothing was coming in.
+                            <span className={`tracking-active-label ${connected ? '' : 'tracking-active-label-disconnected'}`}>
+                                {connected
+                                    ? `Recording "${activeTracking.name}" — ${activeTracking.sampleCount.toLocaleString()} samples`
+                                    : `"${activeTracking.name}" not connected — ${activeTracking.sampleCount.toLocaleString()} samples so far, reconnect to resume`}
                             </span>
                         )}
 
@@ -207,7 +257,7 @@ export const Dashboard = () => {
                             flexDirection={"column"}
                             justifyContent="center"
                             alignItems="center"
-                            height="calc(100vh - 320px)">
+                            height="calc(100vh - 240px)">
                             <span className={"empty-state-ring"}>
                                 <BluetoothIcon/>
                             </span>
@@ -215,21 +265,31 @@ export const Dashboard = () => {
                                 Waiting for connection
                             </Typography>
                             <Typography variant="body2" component="div" className={"empty-state-hint"}>
-                                Use the button below to pair with SpinDex
+                                Use the connect button in the top right to pair with SpinDex
                             </Typography>
                         </Box>
                     )}
 
                     {viewingTracking && (
-                        <Box display="flex" flexDirection={"column"} height="calc(100vh - 320px)">
+                        <Box display="flex" flexDirection={"column"} height="calc(100vh - 240px)">
                             <div className={"stat-row"}>
                                 <StatTile label={isViewingLive ? "Current" : "Last"} value={currentValue} target={target}/>
-                                <StatTile label="Min" value={viewingTracking.min === Infinity ? 0 : viewingTracking.min} target={target}/>
+                                <StatTile
+                                    label="Avg"
+                                    value={viewingTracking.sampleCount > 0 && Number.isFinite(viewingTracking.sum)
+                                        ? viewingTracking.sum / viewingTracking.sampleCount
+                                        : 0}
+                                    target={target}/>
                                 <StatTile label="Max" value={viewingTracking.max === -Infinity ? 0 : viewingTracking.max} target={target}/>
                             </div>
 
                             <div className={"chart-wrapper"}>
-                                <XYChart xScale={xScaleConfig} yScale={{type: 'linear', domain: [0, target]}}>
+                                {/* Plain Series/Axis, not @visx/xychart's Animated* variants: those
+                                    spring-interpolate the whole path shape on every data change, so
+                                    while live-tracking (a new bucket every couple of seconds) the
+                                    entire line/area would visibly re-animate on each refresh instead
+                                    of just extending. */}
+                                <XYChart xScale={xScaleConfig} yScale={{type: 'linear', domain: yDomain}}>
                                     <defs>
                                         <linearGradient id="rpm-gradient" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stopColor="#3987e5" stopOpacity={0.35}/>
@@ -241,28 +301,36 @@ export const Dashboard = () => {
 
                                     <Grid strokeDasharray={"2 4"} stroke={"#2c2c2a"} numTicks={5}/>
 
+                                    {/* enableEvents=false: we don't render a Tooltip, so the hover/
+                                        focus machinery these would otherwise wire up (findNearestDatumX
+                                        bisecting into each series' own data on pointermove) is dead
+                                        code we don't need -- and, per a known @visx/xychart issue, that
+                                        bisector can hand the accessor an out-of-range (undefined) datum
+                                        when hovering right at a series' edge, which crashed here. */}
                                     {segments.map((segment, i) => (
                                         <React.Fragment key={i}>
-                                            <AnimatedAreaSeries
+                                            <AreaSeries
                                                 dataKey={`RPM-area-${i}`}
                                                 data={segment}
                                                 xAccessor={(d: Bucket) => new Date(d.timestamp)}
                                                 yAccessor={(d: Bucket) => d.value}
                                                 fill="url(#rpm-gradient)"
                                                 renderLine={false}
+                                                enableEvents={false}
                                             />
-                                            <AnimatedLineSeries
+                                            <LineSeries
                                                 dataKey={`RPM-${i}`}
                                                 data={segment}
                                                 xAccessor={(d: Bucket) => new Date(d.timestamp)}
                                                 yAccessor={(d: Bucket) => d.value}
                                                 stroke={"#3987e5"}
                                                 strokeWidth={2}
+                                                enableEvents={false}
                                             />
                                         </React.Fragment>
                                     ))}
 
-                                    <AnimatedAxis
+                                    <Axis
                                         numTicks={5}
                                         tickFormat={(d: Date) => {
                                             const short = selectedWindow.ms !== null && selectedWindow.ms <= 60 * 60 * 1000;
@@ -272,7 +340,7 @@ export const Dashboard = () => {
                                         tickStroke={"#383835"}
                                         tickLabelProps={() => axisTickLabelProps}
                                         orientation="bottom"/>
-                                    <AnimatedAxis
+                                    <Axis
                                         numTicks={6}
                                         stroke={"#383835"}
                                         tickStroke={"#383835"}
@@ -297,12 +365,20 @@ export const Dashboard = () => {
                             className={`tracking-row ${tracking.id === viewingTracking?.id ? 'active' : ''}`}>
                             <button className={"tracking-row-main transparent"} onClick={() => viewTracking(tracking.id)}>
                                 <span className={"tracking-row-name"}>
-                                    {tracking.stoppedAt === null && <i className={"tracking-row-live-dot"}/>}
+                                    {tracking.stoppedAt === null && (
+                                        <i className={`tracking-row-live-dot ${connected ? '' : 'tracking-row-live-dot-disconnected'}`}/>
+                                    )}
                                     {tracking.name}
                                 </span>
                                 <span className={"tracking-row-meta"}>
                                     {formatDuration(tracking.startedAt, tracking.stoppedAt)} · {tracking.sampleCount.toLocaleString()} samples
                                 </span>
+                            </button>
+                            <button
+                                className={"circle transparent"}
+                                onClick={() => onRenameTracking(tracking.id, tracking.name)}
+                                aria-label={`Rename ${tracking.name}`}>
+                                <EditIcon fontSize={"small"}/>
                             </button>
                             <button
                                 className={"circle transparent"}

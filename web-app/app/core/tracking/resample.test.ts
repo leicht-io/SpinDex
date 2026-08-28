@@ -1,5 +1,13 @@
 import {describe, expect, it} from 'vitest';
-import {bucketDurationFor, GAP_THRESHOLD_MS, resampleSamples, segmentBuckets, TARGET_CHART_POINTS} from './resample';
+import {
+    bucketDurationFor,
+    Bucket,
+    GAP_THRESHOLD_MS,
+    resampleSamples,
+    segmentBuckets,
+    TARGET_CHART_POINTS,
+    yAxisDomain,
+} from './resample';
 import {sample} from './testFixtures';
 
 describe('bucketDurationFor', () => {
@@ -62,6 +70,42 @@ describe('resampleSamples', () => {
 
         expect(gaps).toEqual([]);
     });
+
+    it('drops non-finite readings instead of letting them poison a bucket', () => {
+        // A NaN (or Infinity) reading averaged into a bucket would turn that
+        // whole bucket's value to NaN, which then invalidates the SVG path
+        // it's plotted in — hiding the entire line, not just that point.
+        const samples = [sample(0, 10), sample(100, NaN), sample(200, 30)];
+        const {buckets} = resampleSamples(samples, 10_000);
+
+        expect(buckets).toHaveLength(1);
+        expect(buckets[0].value).toBeCloseTo(20);
+    });
+
+    it('flags a trailing gap from the last sample to "now" when live', () => {
+        // Without liveEndBoundary there's no "next" sample yet to compare
+        // the last one against, so a live BLE drop wouldn't show as a gap
+        // until reconnecting delivered a following sample.
+        const samples = [sample(0, 10)];
+        const now = GAP_THRESHOLD_MS + 1;
+        const {gaps} = resampleSamples(samples, 1_000, now);
+
+        expect(gaps).toEqual([{start: 0, end: now}]);
+    });
+
+    it('does not flag a trailing gap that has not crossed the threshold yet', () => {
+        const samples = [sample(0, 10)];
+        const {gaps} = resampleSamples(samples, 1_000, GAP_THRESHOLD_MS);
+
+        expect(gaps).toEqual([]);
+    });
+
+    it('does not flag a trailing gap when not viewing live (no liveEndBoundary)', () => {
+        const samples = [sample(0, 10)];
+        const {gaps} = resampleSamples(samples, 1_000);
+
+        expect(gaps).toEqual([]);
+    });
 });
 
 describe('segmentBuckets', () => {
@@ -92,5 +136,42 @@ describe('segmentBuckets', () => {
         const gaps = [{start: 5_000, end: 6_000}];
 
         expect(segmentBuckets(buckets, gaps)).toEqual([buckets]);
+    });
+});
+
+describe('yAxisDomain', () => {
+    const bucket = (min: number, max: number): Bucket => ({timestamp: 0, value: (min + max) / 2, min, max});
+
+    it('centers a fallback range on target when there is no data yet', () => {
+        const [lo, hi] = yAxisDomain([], 33.33);
+
+        expect((lo + hi) / 2).toBeCloseTo(33.33);
+        expect(hi - lo).toBeGreaterThan(0);
+    });
+
+    it('zooms to the buckets\' actual min/max, not just their averaged value', () => {
+        const buckets = [bucket(33.1, 33.2), bucket(33.5, 33.6)];
+        const [lo, hi] = yAxisDomain(buckets, 33.33);
+
+        // Extent is [33.1, 33.6] -- padded, so strictly wider, but centered
+        // on the same midpoint rather than on target.
+        expect((lo + hi) / 2).toBeCloseTo((33.1 + 33.6) / 2);
+        expect(lo).toBeLessThan(33.1);
+        expect(hi).toBeGreaterThan(33.6);
+    });
+
+    it('does not zoom tighter than the minimum span for a rock-steady run', () => {
+        const buckets = [bucket(33.33, 33.33), bucket(33.33, 33.33)];
+        const [lo, hi] = yAxisDomain(buckets, 33.33);
+
+        expect(hi - lo).toBeGreaterThanOrEqual(33.33 * 0.08);
+    });
+
+    it('widens to include an in-view stall/ramp-up rather than clipping it', () => {
+        const buckets = [bucket(0, 0), bucket(33.3, 33.4)];
+        const [lo, hi] = yAxisDomain(buckets, 33.33);
+
+        expect(lo).toBeLessThanOrEqual(0);
+        expect(hi).toBeGreaterThanOrEqual(33.4);
     });
 });

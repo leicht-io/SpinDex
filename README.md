@@ -23,7 +23,8 @@ Features:
 - Pair with the controller over Web Bluetooth, with automatic reconnect on a dropped connection so an unattended run rides out a transient disconnect.
 - Start/stop tracking sessions, persisted locally in the browser (IndexedDB) — a page refresh or reconnect doesn't lose the running session.
 - Keep multiple tracking sessions around and switch between them from the Trackings list, including revisiting past (stopped) sessions.
-- Live stat tiles for current/min/max RPM and % deviation from the nominal 33⅓/45 RPM target, colour-coded by how far off spec.
+- Name a tracking when starting it, or rename it later from the Trackings list.
+- Live stat tiles for current/average/max RPM and % deviation from the nominal 33⅓/45 RPM target, colour-coded by how far off spec.
 - Selectable chart time window (Live 10 min / 1h / 6h / 12h / 24h / All), auto-bucketed to a fixed point budget so even a 24h session stays smooth to render.
 - Gap-aware charting — a BLE disconnect or closed tab shows as a clearly marked gap in the plot rather than a misleading flat or interpolated line.
 - CSV export of any tracking session for offline analysis.

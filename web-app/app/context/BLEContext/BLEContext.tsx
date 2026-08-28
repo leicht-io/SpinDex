@@ -42,6 +42,19 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
         const characteristic = event.target as BluetoothRemoteGATTCharacteristic;
         const newValueReceived = new TextDecoder().decode(characteristic.value);
         const latestValue = Number(newValueReceived);
+
+        // A truncated/garbled notification (BLE fragmentation, a stray
+        // empty write) can decode to "" or non-numeric text -- Number(...)
+        // turns that into NaN (or, for "", 0, which is a legitimate reading
+        // and fine to keep). A NaN sample would poison this tracking's
+        // running sum/max forever (Math.max(x, NaN) is always NaN) and,
+        // once bucketed for the chart, invalidate the SVG path it lands in
+        // — collapsing the *entire* visible line, not just that one point.
+        // Simplest fix: never record a reading that isn't an actual number.
+        if (!Number.isFinite(latestValue)) {
+            return;
+        }
+
         recordSample(latestValue);
     };
 

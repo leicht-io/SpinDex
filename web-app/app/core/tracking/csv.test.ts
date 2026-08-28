@@ -32,7 +32,7 @@ describe('downloadTrackingCsv', () => {
         startedAt: 0,
         stoppedAt: 1_000,
         sampleCount: 1,
-        min: 10,
+        sum: 10,
         max: 10,
     };
 

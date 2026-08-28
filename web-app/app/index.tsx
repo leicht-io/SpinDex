@@ -2,7 +2,7 @@ import './core/styles/main.scss';
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
 import {BLEProvider, TrackingProvider} from './context';
-import {Footer, TopBar} from './components';
+import {TopBar} from './components';
 import { Dashboard } from './routes';
 
 const renderApp = (): void => {
@@ -14,7 +14,6 @@ const renderApp = (): void => {
                 <BLEProvider>
                     <TopBar/>
                     <Dashboard/>
-                    <Footer/>
                 </BLEProvider>
             </TrackingProvider>
     );

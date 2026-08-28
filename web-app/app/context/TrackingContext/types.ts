@@ -23,16 +23,16 @@ export interface ITrackingContextProps {
 
     chartBuckets: Bucket[];
     chartGaps: Gap[];
+    chartRangeStart: number;
+    chartRangeEnd: number;
     isLoadingChart: boolean;
 
-    startTracking: () => Promise<void>;
+    startTracking: (name?: string) => Promise<void>;
     stopTracking: () => Promise<void>;
     deleteTracking: (id: string) => Promise<void>;
+    renameTracking: (id: string, name: string) => Promise<void>;
     exportTracking: (id: string) => Promise<void>;
     viewTracking: (id: string) => void;
 
     recordSample: (value: number) => void;
-
-    // Dev-tools only — see components/DevTools.
-    loadMockDataset: () => Promise<void>;
 }

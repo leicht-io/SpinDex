@@ -7,17 +7,11 @@
   // fixed topbar (4rem) actually overlapped the first ~40px of scrollable
   // content, since only a flat 24px top padding was in effect. Padding is
   // what works on a static element, so that's what pushes content clear of
-  // the fixed topbar now.
-  //
-  // Same reasoning applies at the bottom: the footer is fixed (5rem min
-  // height) and was previously cleared by a flat margin-bottom that got
-  // zeroed out above 900px width, which left the last tracking row(s)
-  // rendering behind it whenever the page was exactly viewport-height or
-  // taller on a wide screen. Padding-bottom reserves that space
-  // unconditionally instead of guessing per breakpoint.
+  // the fixed topbar now. (There's no longer a fixed footer to clear at the
+  // bottom too — the connect status/button that used to live there moved
+  // into the topbar — so the base 24px below is enough on its own.)
   padding: 24px;
   padding-top: calc(64px + 24px);
-  padding-bottom: calc(80px + 24px);
 
   background: var(--background);
 }
@@ -51,6 +45,29 @@
 .tracking-active-label {
   font-size: .875rem;
   color: var(--on-surface-variant);
+}
+
+.tracking-active-label-disconnected {
+  color: var(--warning);
+}
+
+.tracking-name-input {
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  border: .0625rem solid var(--outline-variant);
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  font-family: inherit;
+  font-size: .8125rem;
+  width: 12rem;
+
+  &::placeholder {
+    color: var(--on-surface-variant);
+  }
+
+  @media only screen and (max-width: 600px) {
+    width: 100%;
+  }
 }
 
 .window-select {
@@ -238,6 +255,15 @@
   border-radius: 50%;
   background: var(--good);
   box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+}
+
+// Not yet stopped, but not currently connected either -- e.g. a session
+// resumed after a page refresh, before it's been re-paired. Distinguishes
+// "still open, no data coming in right now" from the green dot's "actively
+// receiving samples".
+.tracking-row-live-dot-disconnected {
+  background: var(--warning);
+  box-shadow: 0 0 .5rem 0 rgb(250 178 25 / 0.6);
 }
 
 .tracking-row-meta {

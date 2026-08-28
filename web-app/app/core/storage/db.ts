@@ -16,7 +16,7 @@ export interface Tracking {
     startedAt: number;
     stoppedAt: number | null;
     sampleCount: number;
-    min: number;
+    sum: number;
     max: number;
 }
 
@@ -27,7 +27,18 @@ export interface Sample {
 }
 
 const DB_NAME = 'spindex';
-const DB_VERSION = 1;
+// v2: Tracking's `min` field was replaced by `sum` (Avg replaced the Min
+// stat, which was ~always 0 -- RPM legitimately reports 0 whenever the
+// platter is stopped/stalled). Existing rows from v1 predate `sum` entirely,
+// so `tracking.sum + value` on the first write after upgrading would be
+// `undefined + number` = NaN forever after -- the migration below backfills
+// it by re-summing each such tracking's already-stored samples.
+// v3: the v2 migration's own "already migrated?" guard used `typeof sum ===
+// 'number'`, which is true for NaN too -- so a tracking that had already
+// been corrupted to `sum: NaN` (by the bug v2 was fixing) looked "already
+// fine" and got skipped, leaving the NaN in place. Re-run with the guard
+// fixed to `Number.isFinite` instead.
+const DB_VERSION = 3;
 const TRACKINGS_STORE = 'trackings';
 const SAMPLES_STORE = 'samples';
 const BY_TRACKING_AND_TIME = 'byTrackingAndTime';
@@ -42,7 +53,7 @@ const openDb = (): Promise<IDBDatabase> => {
     dbPromise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        request.onupgradeneeded = () => {
+        request.onupgradeneeded = (event) => {
             const db = request.result;
 
             if (!db.objectStoreNames.contains(TRACKINGS_STORE)) {
@@ -53,6 +64,10 @@ const openDb = (): Promise<IDBDatabase> => {
                 const samples = db.createObjectStore(SAMPLES_STORE, {keyPath: 'id', autoIncrement: true});
                 samples.createIndex(BY_TRACKING_AND_TIME, ['trackingId', 'timestamp']);
             }
+
+            if (event.oldVersion < 3) {
+                backfillSumFromSamples(request.transaction!);
+            }
         };
 
         request.onsuccess = () => resolve(request.result);
@@ -60,6 +75,45 @@ const openDb = (): Promise<IDBDatabase> => {
     });
 
     return dbPromise;
+};
+
+// Runs inside the versionchange transaction itself (chaining requests keeps
+// it alive), so every existing tracking is migrated atomically with the
+// version bump rather than lazily/partially on next write.
+const backfillSumFromSamples = (tx: IDBTransaction): void => {
+    const trackingsStore = tx.objectStore(TRACKINGS_STORE);
+    const byTrackingIndex = tx.objectStore(SAMPLES_STORE).index(BY_TRACKING_AND_TIME);
+
+    trackingsStore.openCursor().onsuccess = (e) => {
+        const cursor = (e.target as IDBRequest<IDBCursorWithValue | null>).result;
+        if (!cursor) {
+            return;
+        }
+
+        const tracking = cursor.value as Tracking & { min?: number };
+        if (Number.isFinite(tracking.sum)) {
+            cursor.continue();
+            return;
+        }
+
+        const range = IDBKeyRange.bound([tracking.id, -Infinity], [tracking.id, Infinity]);
+        let sum = 0;
+        byTrackingIndex.openCursor(range).onsuccess = (sampleEvent) => {
+            const sampleCursor = (sampleEvent.target as IDBRequest<IDBCursorWithValue | null>).result;
+            if (sampleCursor) {
+                const value = (sampleCursor.value as Sample).value;
+                if (Number.isFinite(value)) {
+                    sum += value;
+                }
+                sampleCursor.continue();
+            } else {
+                delete tracking.min;
+                tracking.sum = sum;
+                cursor.update(tracking);
+                cursor.continue();
+            }
+        };
+    };
 };
 
 const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, reject) => {
@@ -93,7 +147,7 @@ export const createTracking = async (
         startedAt,
         stoppedAt,
         sampleCount: 0,
-        min: Infinity,
+        sum: 0,
         max: -Infinity,
     };
 
@@ -112,6 +166,19 @@ export const stopTracking = async (id: string): Promise<void> => {
 
     if (tracking) {
         store.put({...tracking, stoppedAt: Date.now()});
+    }
+
+    await promisifyTx(tx);
+};
+
+export const renameTracking = async (id: string, name: string): Promise<void> => {
+    const db = await openDb();
+    const tx = db.transaction(TRACKINGS_STORE, 'readwrite');
+    const store = tx.objectStore(TRACKINGS_STORE);
+    const tracking = await promisifyRequest<Tracking | undefined>(store.get(id));
+
+    if (tracking) {
+        store.put({...tracking, name});
     }
 
     await promisifyTx(tx);
@@ -154,45 +221,12 @@ export const addSample = async (trackingId: string, timestamp: number, value: nu
         trackingStore.put({
             ...tracking,
             sampleCount: tracking.sampleCount + 1,
-            min: Math.min(tracking.min, value),
+            // Number.isFinite guard, not a bare `tracking.sum + value`: if this
+            // record's `sum` is still corrupt (NaN/undefined) for any reason —
+            // an unmigrated row, a version-skip quirk — self-heal from here
+            // rather than propagating NaN forever.
+            sum: (Number.isFinite(tracking.sum) ? tracking.sum : 0) + value,
             max: Math.max(tracking.max, value),
-        });
-    }
-
-    await promisifyTx(tx);
-};
-
-// Bulk variant for backfilling a large dataset in one shot (e.g. the mock
-// 24h dataset in dev tools) — one transaction and one min/max/count update
-// for the whole batch, instead of one transaction per sample. addSample()'s
-// per-sample transaction is fine at BLE's ~2/sec hot-path rate, but doing
-// that ~166k times in a loop for a bulk load would be needlessly slow.
-export const bulkAddSamples = async (trackingId: string, samples: Array<{ timestamp: number; value: number }>): Promise<void> => {
-    if (samples.length === 0) {
-        return;
-    }
-
-    const db = await openDb();
-    const tx = db.transaction([TRACKINGS_STORE, SAMPLES_STORE], 'readwrite');
-    const samplesStore = tx.objectStore(SAMPLES_STORE);
-
-    let min = Infinity;
-    let max = -Infinity;
-    for (const {timestamp, value} of samples) {
-        samplesStore.add({trackingId, timestamp, value} as Sample);
-        min = Math.min(min, value);
-        max = Math.max(max, value);
-    }
-
-    const trackingStore = tx.objectStore(TRACKINGS_STORE);
-    const tracking = await promisifyRequest<Tracking | undefined>(trackingStore.get(trackingId));
-
-    if (tracking) {
-        trackingStore.put({
-            ...tracking,
-            sampleCount: tracking.sampleCount + samples.length,
-            min: Math.min(tracking.min, min),
-            max: Math.max(tracking.max, max),
         });
     }
 

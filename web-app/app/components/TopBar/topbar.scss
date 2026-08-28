@@ -26,6 +26,37 @@
     color: var(--primary);
     animation: topbar-spin 9s linear infinite;
   }
+
+  .status-dot {
+    flex-shrink: 0;
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--outline);
+    transition: background var(--speed3, .2s), box-shadow var(--speed3, .2s);
+
+    &.connected {
+      background: var(--good);
+      box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+    }
+  }
+
+  .status-text {
+    margin: 0;
+    color: var(--on-surface-variant);
+    font-size: .8125rem;
+    white-space: nowrap;
+
+    // The topbar's a lot narrower than the old footer was — drop the
+    // sentence and keep just the dot + connect button once space is tight.
+    @media only screen and (max-width: 600px) {
+      display: none;
+    }
+  }
+
+  button.searching {
+    animation: topbar-pulse 1.6s ease-out infinite;
+  }
 }
 
 @keyframes topbar-spin {
@@ -33,8 +64,18 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes topbar-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0.55); }
+  70% { box-shadow: 0 0 0 .75rem rgb(57 135 229 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .topbar .topbar-mark {
+    animation: none;
+  }
+
+  .topbar button.searching {
     animation: none;
   }
 }

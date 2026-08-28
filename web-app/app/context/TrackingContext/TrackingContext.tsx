@@ -2,19 +2,18 @@ import * as React from 'react';
 import {ITrackingContextProps, ITrackingProviderProps, WindowOption} from './types';
 import {
     addSample,
-    bulkAddSamples,
     createTracking,
     deleteTracking as dbDeleteTracking,
     getActiveTracking,
     getAllSamples,
     getSamplesInRange,
     listTrackings,
+    renameTracking as dbRenameTracking,
     stopTracking as dbStopTracking,
     Tracking,
 } from '../../core/storage/db';
 import {Bucket, bucketDurationFor, Gap, resampleSamples} from '../../core/tracking/resample';
 import {downloadTrackingCsv} from '../../core/tracking/csv';
-import {generateMockSamples} from '../../core/tracking/mock';
 
 export const TrackingContext = React.createContext({} as ITrackingContextProps);
 
@@ -50,6 +49,14 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
     const [latestValue, setLatestValue] = React.useState<number>(0);
     const [chartBuckets, setChartBuckets] = React.useState<Bucket[]>([]);
     const [chartGaps, setChartGaps] = React.useState<Gap[]>([]);
+    // Exact [start, end] bounds of the last chart query -- Dashboard uses
+    // these as the x-axis domain (rather than deriving it from whatever
+    // data happens to be registered) so a live view's axis reaches all the
+    // way to "now" even when the tail of it is empty, letting a trailing
+    // gap band (see resampleSamples' liveEndBoundary) actually be visible
+    // rather than positioned off the edge of an axis that stopped short.
+    const [chartRangeStart, setChartRangeStart] = React.useState<number>(Date.now());
+    const [chartRangeEnd, setChartRangeEnd] = React.useState<number>(Date.now());
     const [isLoadingChart, setIsLoadingChart] = React.useState<boolean>(false);
 
     const activeTracking = trackings.find(t => t.id === activeTrackingId) ?? null;
@@ -100,11 +107,13 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             }
 
             const bucketMs = bucketDurationFor(Math.max(1, anchor - windowStart));
-            const {buckets, gaps} = resampleSamples(samples, bucketMs);
+            const {buckets, gaps} = resampleSamples(samples, bucketMs, isLive ? anchor : undefined);
 
             if (!cancelled) {
                 setChartBuckets(buckets);
                 setChartGaps(gaps);
+                setChartRangeStart(windowStart);
+                setChartRangeEnd(anchor);
                 setIsLoadingChart(false);
             }
         };
@@ -122,8 +131,8 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewingTracking?.id, viewingTracking?.stoppedAt, activeTracking?.id, selectedWindow]);
 
-    const startTracking = async (): Promise<void> => {
-        const tracking = await createTracking();
+    const startTracking = async (name?: string): Promise<void> => {
+        const tracking = await createTracking(name || undefined);
         setTrackings(prev => [tracking, ...prev]);
         setActiveTrackingId(tracking.id);
         setViewingTrackingId(tracking.id);
@@ -155,6 +164,11 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
         }
     };
 
+    const renameTracking = async (id: string, name: string): Promise<void> => {
+        await dbRenameTracking(id, name);
+        setTrackings(prev => prev.map(t => (t.id === id ? {...t, name} : t)));
+    };
+
     const exportTracking = async (id: string): Promise<void> => {
         const tracking = trackings.find(t => t.id === id);
         if (!tracking) {
@@ -180,43 +194,14 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
         setTrackings(prev => prev.map(t => (t.id === id ? {
             ...t,
             sampleCount: t.sampleCount + 1,
-            min: Math.min(t.min, value),
+            // Number.isFinite guard: self-heal a still-corrupt (NaN/undefined)
+            // `sum` on the next sample rather than propagating it forever —
+            // see db.ts's addSample for the matching persisted-side guard.
+            sum: (Number.isFinite(t.sum) ? t.sum : 0) + value,
             max: Math.max(t.max, value),
         } : t)));
 
         addSample(id, timestamp, value).catch(err => console.error('Failed to persist sample', err));
-    };
-
-    // Dev-tools only (see components/DevTools): backfills a full 24h
-    // tracking with realistic mock samples — including gaps — in one bulk
-    // insert, then switches the view to it.
-    const loadMockDataset = async (): Promise<void> => {
-        const durationMs = 24 * 60 * 60 * 1000;
-        const startedAt = Date.now() - durationMs;
-        const stoppedAt = Date.now();
-
-        const tracking = await createTracking(`Mock 24h — ${new Date(startedAt).toLocaleString()}`, startedAt, stoppedAt);
-        const samples = generateMockSamples(startedAt, durationMs);
-        await bulkAddSamples(tracking.id, samples);
-
-        // Not Math.min(...values)/Math.max(...values) — spreading ~166k
-        // args into Math.min/max blows V8's call stack.
-        let min = Infinity;
-        let max = -Infinity;
-        for (const sample of samples) {
-            min = Math.min(min, sample.value);
-            max = Math.max(max, sample.value);
-        }
-
-        const populated: Tracking = {
-            ...tracking,
-            sampleCount: samples.length,
-            min,
-            max,
-        };
-
-        setTrackings(prev => [populated, ...prev]);
-        setViewingTrackingId(populated.id);
     };
 
     return (
@@ -230,14 +215,16 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             setSelectedWindow,
             chartBuckets,
             chartGaps,
+            chartRangeStart,
+            chartRangeEnd,
             isLoadingChart,
             startTracking,
             stopTracking,
             deleteTracking,
+            renameTracking,
             exportTracking,
             viewTracking,
             recordSample,
-            loadMockDataset,
         }}>
             {props.children}
         </TrackingContext.Provider>
