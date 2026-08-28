@@ -1,7 +1,7 @@
 # SpinDex
 SpinDex is a small RPM measurement tool for the Beogram 4000 series.
 The main focus is to verify that the turntable is restored correctly and maintains the correct speed over an extended period.
-The code is written to run on the ESP-S3-WROOM-U but could easily be ported to other microcontrollers and architectures.
+The code is written to run on the M5Stack StampS3 (ESP32-S3) but could easily be ported to other microcontrollers and architectures.
 
 ![alt text](https://ni.leicht.io/updates-to-beotac-a256b3fc-64fd-464c-9166-10d07f8a27e8.jpg)
 
@@ -31,15 +31,22 @@ This folder contains the source code for the microcontroller.
 ---
 
 ### Documentation (documentation)
-This folder contains the schematics and diagrams for the microcontroller PCB, including the [sensor pin setup and wiring diagram](documentation/pinSetup.md).
+This folder contains the [sensor pin setup and wiring diagram](documentation/pinSetup.md). The PCB schematics themselves live in `hardware/carrier-board`, below.
+
+---
+
+### Hardware (hardware/carrier-board)
+This folder contains the custom carrier board PCB design (KiCad) that
+piggybacks the M5Stack StampS3 module and the TCRT5000 IR sensor front end
+on a single board. See its own [README](hardware/carrier-board/README.md)
+for the schematic writeup, BOM, and what's left before fabrication.
 
 ---
 
 Please note that this project is in progress and prone to change. The following tasks needs to be implemented before i consider the SpinDex finished.
 
 - tests
-- schematics
-- custom-made PCB.
+- custom-made PCB (in progress, see `hardware/carrier-board` — not yet routed or fabricated).
 
 Feel free to develop further on the project and create PRs if, necessary. I would be happy to cooperate with others on the device.
 
