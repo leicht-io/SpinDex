@@ -8,11 +8,10 @@ This mono repository is divided into multiple sub-repositories, explained below:
 
 ### 3D Files (3d-files):
 This folder contains all the 3D models.
-- astreaus_body_v1.stl
-- astreaus_bottom_v1.stl
-- astreaus_led_v1.stl
+- spindex_bottom.stl
+- spindex_top.stl
 
-![alt text](3d-files/rendering_1.png)
+![alt text](3d-files/spindex.PNG)
 
 ---
 
