@@ -3,8 +3,6 @@ SpinDex is a small RPM measurement tool for the Beogram 4000 series.
 The main focus is to verify that the turntable is restored correctly and maintains the correct speed over an extended period.
 The code is written to run on the M5Stack StampS3 (ESP32-S3) but could easily be ported to other microcontrollers and architectures.
 
-![alt text](https://ni.leicht.io/updates-to-beotac-a256b3fc-64fd-464c-9166-10d07f8a27e8.jpg)
-
 This mono repository is divided into multiple sub-repositories, explained below:
 
 
@@ -13,6 +11,8 @@ This folder contains all the 3D models.
 - astreaus_body_v1.stl
 - astreaus_bottom_v1.stl
 - astreaus_led_v1.stl
+
+![alt text](3d-files/rendering_1.png)
 
 ---
 
