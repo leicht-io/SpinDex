@@ -22,7 +22,7 @@
     "@visx/shape": "^3.12.0",
     "@visx/xychart": "^3.12.0",
     "beercss": "^3.4.11",
-    "moment": "^2.30.1",
+    "moment": "^2.31.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
