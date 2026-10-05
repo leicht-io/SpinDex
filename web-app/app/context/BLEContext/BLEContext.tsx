@@ -7,12 +7,27 @@ export const BLEContext = React.createContext({} as IContextProps);
 const RECONNECT_BASE_DELAY_MS = 1_000;
 const RECONNECT_MAX_DELAY_MS = 30_000;
 
+const UNSUPPORTED_STATUS = 'Web Bluetooth API is not available in this browser!';
+const UNAVAILABLE_STATUS = 'Bluetooth is turned off or no adapter was found.';
+
 export const BLEProvider = (props: IProps): React.ReactElement => {
     const {recordSample} = React.useContext(TrackingContext);
+
+    // The characteristic listener below is registered once per connection
+    // and so closes over whatever render it was created in. Calling
+    // recordSample through a ref keeps it pointed at the latest one --
+    // otherwise a tracking started *after* pairing is never seen (the
+    // captured recordSample still has activeTrackingId === null), so no
+    // samples are persisted and the chart stays empty until a refresh
+    // resumes the tracking before re-pairing.
+    const recordSampleRef = React.useRef(recordSample);
+    recordSampleRef.current = recordSample;
 
     const [deviceConnected, setDeviceConnected] = React.useState(false);
     const [device, setDevice] = React.useState<BluetoothDevice | undefined>();
     const [status, setStatus] = React.useState<string>('');
+    // null until the first availability check resolves.
+    const [available, setAvailable] = React.useState<boolean | null>(null);
 
     const deviceName = 'SpinDex';
     const bleServiceId = '8abb038d-5a8d-4d29-ae05-0c1fd42583ab';
@@ -29,12 +44,63 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
         };
     }, []);
 
-    const isWebBluetoothEnabled = (): boolean => {
+    // getAvailability() reports whether a usable Bluetooth adapter is
+    // present *and* switched on (navigator.bluetooth existing only means
+    // the browser supports the API). Checked on load so the user sees
+    // "Bluetooth is off" up front rather than an empty device picker, and
+    // re-checked on availabilitychanged so toggling the adapter updates it.
+    React.useEffect(() => {
         if (!navigator.bluetooth) {
-            setStatus('Web Bluetooth API is not available in this browser!');
+            setAvailable(false);
+            setStatus(UNSUPPORTED_STATUS);
+            return;
+        }
+
+        let cancelled = false;
+        const checkAvailability = (): void => {
+            navigator.bluetooth.getAvailability()
+                .then((isAvailable: boolean) => {
+                    if (cancelled) {
+                        return;
+                    }
+                    setAvailable(isAvailable);
+                    setStatus(prev => {
+                        if (!isAvailable) {
+                            return UNAVAILABLE_STATUS;
+                        }
+                        return prev === UNAVAILABLE_STATUS ? '' : prev;
+                    });
+                })
+                .catch(() => {
+                    // Can't tell (e.g. blocked by permissions policy) --
+                    // don't block the user, let requestDevice() report it.
+                    if (!cancelled) {
+                        setAvailable(true);
+                    }
+                });
+        };
+
+        checkAvailability();
+        navigator.bluetooth.addEventListener('availabilitychanged', checkAvailability);
+
+        return () => {
+            cancelled = true;
+            navigator.bluetooth.removeEventListener('availabilitychanged', checkAvailability);
+        };
+    }, []);
+
+    const isWebBluetoothEnabled = async (): Promise<boolean> => {
+        if (!navigator.bluetooth) {
+            setStatus(UNSUPPORTED_STATUS);
             return false;
         }
-        setStatus('Web Bluetooth API supported in this browser.');
+
+        const isAvailable = await navigator.bluetooth.getAvailability().catch(() => true);
+        setAvailable(isAvailable);
+        if (!isAvailable) {
+            setStatus(UNAVAILABLE_STATUS);
+            return false;
+        }
         return true;
     };
 
@@ -55,7 +121,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
             return;
         }
 
-        recordSample(latestValue);
+        recordSampleRef.current(latestValue);
     };
 
     // Connects GATT on an already-picked device (no requestDevice() picker
@@ -139,7 +205,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     };
 
     const initBluetooth = async (): Promise<void> => {
-        if (isWebBluetoothEnabled()) {
+        if (await isWebBluetoothEnabled()) {
             connectToDevice();
         }
     };
@@ -147,6 +213,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     return (
         <BLEContext.Provider value={{
             connected: deviceConnected,
+            available,
             initBluetooth,
             status,
             device

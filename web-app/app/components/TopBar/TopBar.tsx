@@ -4,12 +4,12 @@ import BluetoothSearchingIcon from '@mui/icons-material/BluetoothSearching';
 import {BLEContext} from "../../context";
 
 export const TopBar = (): React.ReactElement => {
-    const {initBluetooth, status, connected} = React.useContext(BLEContext);
+    const {initBluetooth, status, connected, available} = React.useContext(BLEContext);
 
     // The BLE status is a loose set of human-readable sentences (see
     // BLEContext), not an enum, so this is a best-effort read of "an attempt
     // is in flight" purely to drive the button's pulse animation.
-    const isSearching = !connected && status !== ''
+    const isSearching = !connected && available !== false && status !== ''
         && !status.startsWith('Error') && !status.includes('not available');
 
     return (
@@ -28,6 +28,8 @@ export const TopBar = (): React.ReactElement => {
                     onClick={() => {
                         initBluetooth();
                     }}
+                    disabled={available === false}
+                    title={available === false ? "Turn on Bluetooth to connect" : undefined}
                     aria-label={connected ? "Connected" : "Connect to SpinDex"}
                     className={`circle small ${connected ? '' : 'primary'} ${isSearching ? 'searching' : ''}`}>
                     <BluetoothSearchingIcon fontSize={"small"}/>
