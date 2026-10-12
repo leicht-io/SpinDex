@@ -1,23 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>SpinDex</title>
+    <meta charset="utf-8">
+    <title>SpinDex — Turntable RPM Monitor for the Beogram 4000</title>
+    <meta name="description" content="SpinDex is a free, open source RPM monitor for the Bang &amp; Olufsen Beogram 4000 series. Pair over Web Bluetooth to log turntable speed for hours, see deviation from 33⅓/45 RPM live and export sessions as CSV.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="theme-color" content="#0d0d0d">
+    <meta name="author" content="Christian Leicht">
+    <link rel="canonical" href="https://spindex.leicht.io/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SpinDex">
+    <meta property="og:title" content="SpinDex — Turntable RPM Monitor for the Beogram 4000">
+    <meta property="og:description" content="Free, open source RPM monitor for the Beogram 4000 series. Log turntable speed over Web Bluetooth and export it as CSV.">
+    <meta property="og:url" content="https://spindex.leicht.io/">
+    <meta property="og:image" content="https://spindex.leicht.io/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="SpinDex dashboard showing a live RPM chart and current, min and max speed">
+    <meta name="twitter:card" content="summary_large_image">
 
     <link rel="icon" type="image/x-icon" href="./assets/icons/favicon.ico">
     <link rel="apple-touch-icon" href="./assets/icons/512x512.png">
+    <link rel="manifest" href="./site.webmanifest">
 
-    <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-    />
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "SpinDex",
+            "url": "https://spindex.leicht.io/",
+            "description": "RPM monitor and speed logger for the Bang & Olufsen Beogram 4000 series, connecting to the SpinDex sensor over Web Bluetooth.",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any (requires a Web Bluetooth capable browser such as Chrome or Edge)",
+            "browserRequirements": "Requires Web Bluetooth",
+            "isAccessibleForFree": true,
+            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+            "codeRepository": "https://github.com/leicht-io/SpinDex",
+            "author": {"@type": "Person", "name": "Christian Leicht", "url": "https://leicht.io"}
+        }
+    </script>
+
     <style>
         .spinner {
             width: 40px;
             height: 40px;
 
-            position: relative;
-            margin: 100px auto;
+            /* Fixed, not `margin: 100px auto`: that margin collapsed through
+               #app, pushing it down 100px until React replaced the spinner and
+               it jumped back up -- the page's only layout shift (CLS 0.12). */
+            position: fixed;
+            top: 100px;
+            left: calc(50% - 20px);
         }
 
         .double-bounce1, .double-bounce2 {
@@ -61,6 +95,14 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
+<noscript>
+    <h1>SpinDex</h1>
+    <p>
+        SpinDex is a free, open source RPM monitor for the Bang &amp; Olufsen Beogram 4000 series.
+        It needs JavaScript and a Web Bluetooth capable browser (Chrome or Edge).
+        Source code on <a href="https://github.com/leicht-io/SpinDex">GitHub</a>, made by <a href="https://leicht.io">leicht.io</a>.
+    </p>
+</noscript>
 <div id="app">
     <div class="spinner">
         <div class="double-bounce1"></div>

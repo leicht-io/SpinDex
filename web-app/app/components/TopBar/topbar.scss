@@ -15,8 +15,10 @@
     padding-inline: 1.5rem;
   }
 
-  h5 {
+  // The page's only <h1> (for SEO/accessibility), sized like the <h5> it was.
+  h1 {
     margin: 0;
+    font-size: 1.75rem;
     font-weight: 500;
     letter-spacing: .06em;
   }

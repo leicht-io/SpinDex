@@ -57,11 +57,11 @@ const openDb = (): Promise<IDBDatabase> => {
             const db = request.result;
 
             if (!db.objectStoreNames.contains(TRACKINGS_STORE)) {
-                db.createObjectStore(TRACKINGS_STORE, {keyPath: 'id'});
+                db.createObjectStore(TRACKINGS_STORE, { keyPath: 'id' });
             }
 
             if (!db.objectStoreNames.contains(SAMPLES_STORE)) {
-                const samples = db.createObjectStore(SAMPLES_STORE, {keyPath: 'id', autoIncrement: true});
+                const samples = db.createObjectStore(SAMPLES_STORE, { keyPath: 'id', autoIncrement: true });
                 samples.createIndex(BY_TRACKING_AND_TIME, ['trackingId', 'timestamp']);
             }
 
@@ -71,7 +71,7 @@ const openDb = (): Promise<IDBDatabase> => {
         };
 
         request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+        request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
     });
 
     return dbPromise;
@@ -118,19 +118,19 @@ const backfillSumFromSamples = (tx: IDBTransaction): void => {
 
 const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> => new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
 });
 
 const promisifyTx = (tx: IDBTransaction): Promise<void> => new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
+    tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'));
 });
 
 const generateId = (): string =>
     (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
         ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        : `${ Date.now() }-${ Math.random().toString(16).slice(2) }`;
 
 // startedAt/stoppedAt are overridable so mock/backdated datasets (see
 // core/tracking/mock.ts) can declare a tracking's bounds up front instead
@@ -143,7 +143,7 @@ export const createTracking = async (
     const db = await openDb();
     const tracking: Tracking = {
         id: generateId(),
-        name: name ?? `Tracking — ${new Date().toLocaleString()}`,
+        name: name ?? `Tracking — ${ new Date().toLocaleString() }`,
         startedAt,
         stoppedAt,
         sampleCount: 0,
@@ -165,7 +165,7 @@ export const stopTracking = async (id: string): Promise<void> => {
     const tracking = await promisifyRequest<Tracking | undefined>(store.get(id));
 
     if (tracking) {
-        store.put({...tracking, stoppedAt: Date.now()});
+        store.put({ ...tracking, stoppedAt: Date.now() });
     }
 
     await promisifyTx(tx);
@@ -178,7 +178,7 @@ export const renameTracking = async (id: string, name: string): Promise<void> =>
     const tracking = await promisifyRequest<Tracking | undefined>(store.get(id));
 
     if (tracking) {
-        store.put({...tracking, name});
+        store.put({ ...tracking, name });
     }
 
     await promisifyTx(tx);
@@ -212,7 +212,7 @@ export const addSample = async (trackingId: string, timestamp: number, value: nu
     const db = await openDb();
     const tx = db.transaction([TRACKINGS_STORE, SAMPLES_STORE], 'readwrite');
 
-    tx.objectStore(SAMPLES_STORE).add({trackingId, timestamp, value} as Sample);
+    tx.objectStore(SAMPLES_STORE).add({ trackingId, timestamp, value });
 
     const trackingStore = tx.objectStore(TRACKINGS_STORE);
     const tracking = await promisifyRequest<Tracking | undefined>(trackingStore.get(trackingId));

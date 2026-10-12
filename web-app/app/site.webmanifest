@@ -1,0 +1,16 @@
+{
+    "name": "SpinDex — Turntable RPM Monitor",
+    "short_name": "SpinDex",
+    "description": "Live RPM monitor and speed logger for the Bang & Olufsen Beogram 4000 series, over Web Bluetooth.",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#0d0d0d",
+    "theme_color": "#0d0d0d",
+    "icons": [
+        {
+            "src": "./assets/icons/512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

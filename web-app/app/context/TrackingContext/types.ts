@@ -1,5 +1,5 @@
-import {Tracking} from '../../core/storage/db';
-import {Bucket, Gap} from '../../core/tracking/resample';
+import { Tracking } from '../../core/storage/db';
+import { Bucket, Gap } from '../../core/tracking/resample';
 
 export interface WindowOption {
     id: string;

@@ -1,4 +1,4 @@
-import {Sample} from '../storage/db';
+import { Sample } from '../storage/db';
 
 // Above this, a jump between consecutive samples is treated as a real gap
 // (disconnect, app closed, laptop asleep) rather than normal ~0.5s sample
@@ -56,7 +56,7 @@ export const bucketDurationFor = (spanMs: number, targetPoints: number = TARGET_
  */
 export const resampleSamples = (samples: Sample[], bucketMs: number, liveEndBoundary?: number): ResampleResult => {
     if (samples.length === 0) {
-        return {buckets: [], gaps: []};
+        return { buckets: [], gaps: [] };
     }
 
     // A non-finite value (NaN/Infinity) landing in one bucket's average
@@ -73,13 +73,13 @@ export const resampleSamples = (samples: Sample[], bucketMs: number, liveEndBoun
     for (let i = 1; i < sorted.length; i++) {
         const delta = sorted[i].timestamp - sorted[i - 1].timestamp;
         if (delta > GAP_THRESHOLD_MS) {
-            gaps.push({start: sorted[i - 1].timestamp, end: sorted[i].timestamp});
+            gaps.push({ start: sorted[i - 1].timestamp, end: sorted[i].timestamp });
         }
     }
 
     const lastTimestamp = sorted[sorted.length - 1].timestamp;
     if (liveEndBoundary !== undefined && liveEndBoundary - lastTimestamp > GAP_THRESHOLD_MS) {
-        gaps.push({start: lastTimestamp, end: liveEndBoundary});
+        gaps.push({ start: lastTimestamp, end: liveEndBoundary });
     }
 
     const buckets: Bucket[] = [];
@@ -121,7 +121,7 @@ export const resampleSamples = (samples: Sample[], bucketMs: number, liveEndBoun
     }
     flushBucket();
 
-    return {buckets, gaps};
+    return { buckets, gaps };
 };
 
 /**

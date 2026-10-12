@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ITrackingContextProps, ITrackingProviderProps, WindowOption} from './types';
+import { ITrackingContextProps, ITrackingProviderProps, WindowOption } from './types';
 import {
     addSample,
     createTracking,
@@ -12,18 +12,18 @@ import {
     stopTracking as dbStopTracking,
     Tracking,
 } from '../../core/storage/db';
-import {Bucket, bucketDurationFor, Gap, resampleSamples} from '../../core/tracking/resample';
-import {downloadTrackingCsv} from '../../core/tracking/csv';
+import { Bucket, bucketDurationFor, Gap, resampleSamples } from '../../core/tracking/resample';
+import { downloadTrackingCsv } from '../../core/tracking/csv';
 
 export const TrackingContext = React.createContext({} as ITrackingContextProps);
 
 export const WINDOW_OPTIONS: WindowOption[] = [
-    {id: 'live', label: 'Live (10 min)', ms: 10 * 60 * 1000},
-    {id: '1h', label: '1 hour', ms: 60 * 60 * 1000},
-    {id: '6h', label: '6 hours', ms: 6 * 60 * 60 * 1000},
-    {id: '12h', label: '12 hours', ms: 12 * 60 * 60 * 1000},
-    {id: '24h', label: '24 hours', ms: 24 * 60 * 60 * 1000},
-    {id: 'all', label: 'All', ms: null},
+    { id: 'live', label: 'Live (10 min)', ms: 10 * 60 * 1000 },
+    { id: '1h', label: '1 hour', ms: 60 * 60 * 1000 },
+    { id: '6h', label: '6 hours', ms: 6 * 60 * 60 * 1000 },
+    { id: '12h', label: '12 hours', ms: 12 * 60 * 60 * 1000 },
+    { id: '24h', label: '24 hours', ms: 24 * 60 * 60 * 1000 },
+    { id: 'all', label: 'All', ms: null },
 ];
 
 // Live view re-queries IndexedDB and re-buckets on a timer (rather than
@@ -107,7 +107,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             }
 
             const bucketMs = bucketDurationFor(Math.max(1, anchor - windowStart));
-            const {buckets, gaps} = resampleSamples(samples, bucketMs, isLive ? anchor : undefined);
+            const { buckets, gaps } = resampleSamples(samples, bucketMs, isLive ? anchor : undefined);
 
             if (!cancelled) {
                 setChartBuckets(buckets);
@@ -128,7 +128,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
                 clearInterval(intervalId);
             }
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [viewingTracking?.id, viewingTracking?.stoppedAt, activeTracking?.id, selectedWindow]);
 
     const startTracking = async (name?: string): Promise<void> => {
@@ -144,7 +144,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
         }
         const id = activeTrackingId;
         await dbStopTracking(id);
-        setTrackings(prev => prev.map(t => (t.id === id ? {...t, stoppedAt: Date.now()} : t)));
+        setTrackings(prev => prev.map(t => (t.id === id ? { ...t, stoppedAt: Date.now() } : t)));
         setActiveTrackingId(null);
     };
 
@@ -166,7 +166,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
 
     const renameTracking = async (id: string, name: string): Promise<void> => {
         await dbRenameTracking(id, name);
-        setTrackings(prev => prev.map(t => (t.id === id ? {...t, name} : t)));
+        setTrackings(prev => prev.map(t => (t.id === id ? { ...t, name } : t)));
     };
 
     const exportTracking = async (id: string): Promise<void> => {
@@ -201,11 +201,12 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             max: Math.max(t.max, value),
         } : t)));
 
+        // eslint-disable-next-line no-console -- a dropped sample should be visible when debugging, not silent
         addSample(id, timestamp, value).catch(err => console.error('Failed to persist sample', err));
     };
 
     return (
-        <TrackingContext.Provider value={{
+        <TrackingContext.Provider value={ {
             trackings,
             activeTracking,
             viewingTracking,
@@ -225,7 +226,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             exportTracking,
             viewTracking,
             recordSample,
-        }}>
+        } }>
             {props.children}
         </TrackingContext.Provider>
     );

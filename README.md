@@ -31,7 +31,7 @@ Features:
 - Delete old tracking sessions.
 - Single dark, "precision-instrument" themed UI.
 
-Unit tests for the pure logic (chart bucketing/gap detection, CSV export) run via `npm test`, see `web-app/package.json`.
+Unit tests for the pure logic (chart bucketing/gap detection, CSV export) run via `yarn test`, see `web-app/package.json`.
 
 ![alt text](documentation/images/desktop_screenshot.png)
 
@@ -57,7 +57,7 @@ for the schematic writeup, BOM, and what's left before fabrication.
 
 Please note that this project is in progress and prone to change. The following tasks needs to be implemented before i consider the SpinDex finished.
 
-- tests (started — see the web app's `npm test` and the µController's `pio test -e native`; coverage is still thin, mostly the pure logic so far).
+- tests (started — see the web app's `yarn test` and the µController's `pio test -e native`; coverage is still thin, mostly the pure logic so far).
 - custom-made PCB (in progress, see `hardware/carrier-board` — not yet routed or fabricated).
 
 Feel free to develop further on the project and create PRs if, necessary. I would be happy to cooperate with others on the device.

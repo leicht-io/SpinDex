@@ -270,3 +270,20 @@
   font-size: .8125rem;
   color: var(--on-surface-variant);
 }
+
+.site-footer {
+  // BeerCSS makes every <footer> a 5rem-tall grid, which stacks each text
+  // run and link on its own row -- this is just one line of text.
+  display: block;
+  min-block-size: auto;
+  padding: 0;
+  margin-top: 1.5rem;
+  text-align: center;
+  color: var(--on-surface-variant);
+  font-size: .8125rem;
+
+  a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+}

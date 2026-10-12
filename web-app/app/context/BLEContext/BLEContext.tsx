@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {IContextProps, IProps} from './types';
-import {TrackingContext} from '../TrackingContext';
+import { IContextProps, IProps } from './types';
+import { TrackingContext } from '../TrackingContext';
 
 export const BLEContext = React.createContext({} as IContextProps);
 
@@ -11,7 +11,7 @@ const UNSUPPORTED_STATUS = 'Web Bluetooth API is not available in this browser!'
 const UNAVAILABLE_STATUS = 'Bluetooth is turned off or no adapter was found.';
 
 export const BLEProvider = (props: IProps): React.ReactElement => {
-    const {recordSample} = React.useContext(TrackingContext);
+    const { recordSample } = React.useContext(TrackingContext);
 
     // The characteristic listener below is registered once per connection
     // and so closes over whatever render it was created in. Calling
@@ -34,7 +34,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     const characteristicId = 'ea53154b-9815-4143-b717-d4e1de9f6cca';
 
     const reconnectAttemptsRef = React.useRef(0);
-    const reconnectTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+    const reconnectTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     React.useEffect(() => {
         return () => {
@@ -138,11 +138,11 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
                 return gattServer.getPrimaryService(bleServiceId);
             })
             .then((service: BluetoothRemoteGATTService) => {
-                setStatus(`Service discovered: ${service.uuid}`);
+                setStatus(`Service discovered: ${ service.uuid }`);
                 return service.getCharacteristic(characteristicId);
             })
             .then((characteristic: BluetoothRemoteGATTCharacteristic) => {
-                setStatus(`Characteristic discovered: ${characteristic.uuid}`);
+                setStatus(`Characteristic discovered: ${ characteristic.uuid }`);
                 characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
                 characteristic.startNotifications();
                 setStatus('Connection Established.');
@@ -159,7 +159,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
         const attempt = reconnectAttemptsRef.current;
         const delay = Math.min(RECONNECT_BASE_DELAY_MS * 2 ** (attempt - 1), RECONNECT_MAX_DELAY_MS);
 
-        setStatus(`Disconnected — reconnecting in ${Math.round(delay / 1000)}s (attempt ${attempt})…`);
+        setStatus(`Disconnected — reconnecting in ${ Math.round(delay / 1000) }s (attempt ${ attempt })…`);
 
         reconnectTimeoutRef.current = setTimeout(() => {
             attachToDevice(disconnectedDevice).catch(() => {
@@ -179,17 +179,17 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
         // string, so read its .message (e.g. "User cancelled the
         // requestDevice() chooser." on cancel).
         const message = error instanceof Error ? error.message : String(error);
-        setStatus(`Error: ${message}`);
+        setStatus(`Error: ${ message }`);
         setDeviceConnected(false);
     };
 
     const connectToDevice = (): void => {
         setStatus('Initializing Bluetooth...');
         navigator.bluetooth.requestDevice({
-            filters: [{name: deviceName}],
+            filters: [{ name: deviceName }],
             optionalServices: [bleServiceId]
         }).then((selectedDevice: BluetoothDevice) => {
-            setStatus(`Device Selected: ${selectedDevice.name}`);
+            setStatus(`Device Selected: ${ selectedDevice.name }`);
             setDevice(selectedDevice);
             selectedDevice.addEventListener('gattserverdisconnected', onDisconnected);
             reconnectAttemptsRef.current = 0;
@@ -211,13 +211,13 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     };
 
     return (
-        <BLEContext.Provider value={{
+        <BLEContext.Provider value={ {
             connected: deviceConnected,
             available,
             initBluetooth,
             status,
             device
-        }}>
+        } }>
             {props.children}
         </BLEContext.Provider>
     );

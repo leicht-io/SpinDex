@@ -1,7 +1,7 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {Tracking} from '../storage/db';
-import {downloadTrackingCsv, trackingToCsv} from './csv';
-import {sample} from './testFixtures';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Tracking } from '../storage/db';
+import { downloadTrackingCsv, trackingToCsv } from './csv';
+import { sample } from './testFixtures';
 
 describe('trackingToCsv', () => {
     it('emits a header row even with no samples', () => {
@@ -21,7 +21,7 @@ describe('trackingToCsv', () => {
         const csv = trackingToCsv([sample(0, 33.33)]);
         const [, row] = csv.split('\n');
 
-        expect(row).toBe(`${new Date(0).toISOString()},0,33.33`);
+        expect(row).toBe(`${ new Date(0).toISOString() },0,33.33`);
     });
 });
 
@@ -62,7 +62,7 @@ describe('downloadTrackingCsv', () => {
             downloadAttr = this.download;
         });
 
-        downloadTrackingCsv({...tracking, name: 'Mock 24h — 8/28/2026, 10:00:00 AM'}, []);
+        downloadTrackingCsv({ ...tracking, name: 'Mock 24h — 8/28/2026, 10:00:00 AM' }, []);
 
         expect(downloadAttr).toBe('Mock_24h_8_28_2026_10_00_00_AM.csv');
     });
