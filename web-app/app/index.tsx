@@ -7,9 +7,8 @@ import '@fontsource/roboto/latin-700.css';
 import './core/styles/main.scss';
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BLEProvider, TrackingProvider } from './context';
-import { TopBar } from './components';
-import { Dashboard } from './routes';
+import { BLEProvider, TrackingProvider, UIProvider } from './context';
+import { AppShell } from './components';
 
 const renderApp = (): void => {
     const container: Element = document.getElementById('app') as Element;
@@ -18,8 +17,9 @@ const renderApp = (): void => {
     root.render(
         <TrackingProvider>
             <BLEProvider>
-                <TopBar />
-                <Dashboard />
+                <UIProvider>
+                    <AppShell />
+                </UIProvider>
             </BLEProvider>
         </TrackingProvider>
     );

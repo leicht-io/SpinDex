@@ -1,4 +1,4 @@
-import { Tracking } from '../../core/storage/db';
+import { Folder, Tracking } from '../../core/storage/db';
 import { Bucket, Gap } from '../../core/tracking/resample';
 
 export interface WindowOption {
@@ -13,6 +13,7 @@ export interface ITrackingProviderProps {
 
 export interface ITrackingContextProps {
     trackings: Tracking[];
+    folders: Folder[];
     activeTracking: Tracking | null;
     viewingTracking: Tracking | null;
     latestValue: number;
@@ -27,12 +28,17 @@ export interface ITrackingContextProps {
     chartRangeEnd: number;
     isLoadingChart: boolean;
 
-    startTracking: (name?: string) => Promise<void>;
+    startTracking: (name?: string, folderId?: string | null) => Promise<void>;
     stopTracking: () => Promise<void>;
     deleteTracking: (id: string) => Promise<void>;
     renameTracking: (id: string, name: string) => Promise<void>;
     exportTracking: (id: string) => Promise<void>;
     viewTracking: (id: string) => void;
+    moveTracking: (id: string, folderId: string | null) => Promise<void>;
+
+    createFolder: (name: string, serialNumber: string) => Promise<Folder>;
+    updateFolder: (id: string, name: string, serialNumber: string) => Promise<void>;
+    deleteFolder: (id: string) => Promise<void>;
 
     recordSample: (value: number) => void;
 }

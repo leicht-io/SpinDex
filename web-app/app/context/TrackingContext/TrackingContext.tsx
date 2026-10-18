@@ -2,15 +2,21 @@ import * as React from 'react';
 import { ITrackingContextProps, ITrackingProviderProps, WindowOption } from './types';
 import {
     addSample,
+    createFolder as dbCreateFolder,
     createTracking,
+    deleteFolder as dbDeleteFolder,
     deleteTracking as dbDeleteTracking,
+    Folder,
     getActiveTracking,
     getAllSamples,
     getSamplesInRange,
+    listFolders,
     listTrackings,
+    moveTracking as dbMoveTracking,
     renameTracking as dbRenameTracking,
     stopTracking as dbStopTracking,
     Tracking,
+    updateFolder as dbUpdateFolder,
 } from '../../core/storage/db';
 import { Bucket, bucketDurationFor, Gap, resampleSamples } from '../../core/tracking/resample';
 import { downloadTrackingCsv } from '../../core/tracking/csv';
@@ -43,6 +49,7 @@ const refreshIntervalFor = (windowMs: number | null): number => {
 
 export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElement => {
     const [trackings, setTrackings] = React.useState<Tracking[]>([]);
+    const [folders, setFolders] = React.useState<Folder[]>([]);
     const [activeTrackingId, setActiveTrackingId] = React.useState<string | null>(null);
     const [viewingTrackingId, setViewingTrackingId] = React.useState<string | null>(null);
     const [selectedWindow, setSelectedWindow] = React.useState<WindowOption>(WINDOW_OPTIONS[0]);
@@ -67,8 +74,9 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
     // than losing track of it.
     React.useEffect(() => {
         (async () => {
-            const list = await listTrackings();
+            const [list, folderList] = await Promise.all([listTrackings(), listFolders()]);
             setTrackings(list);
+            setFolders(folderList);
 
             const active = await getActiveTracking();
             if (active) {
@@ -131,8 +139,8 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
 
     }, [viewingTracking?.id, viewingTracking?.stoppedAt, activeTracking?.id, selectedWindow]);
 
-    const startTracking = async (name?: string): Promise<void> => {
-        const tracking = await createTracking(name || undefined);
+    const startTracking = async (name?: string, folderId: string | null = null): Promise<void> => {
+        const tracking = await createTracking(name || undefined, folderId);
         setTrackings(prev => [tracking, ...prev]);
         setActiveTrackingId(tracking.id);
         setViewingTrackingId(tracking.id);
@@ -182,6 +190,28 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
         setViewingTrackingId(id);
     };
 
+    const moveTracking = async (id: string, folderId: string | null): Promise<void> => {
+        await dbMoveTracking(id, folderId);
+        setTrackings(prev => prev.map(t => (t.id === id ? { ...t, folderId } : t)));
+    };
+
+    const createFolder = async (name: string, serialNumber: string): Promise<Folder> => {
+        const folder = await dbCreateFolder(name, serialNumber);
+        setFolders(prev => [...prev, folder]);
+        return folder;
+    };
+
+    const updateFolder = async (id: string, name: string, serialNumber: string): Promise<void> => {
+        await dbUpdateFolder(id, name, serialNumber);
+        setFolders(prev => prev.map(f => (f.id === id ? { ...f, name, serialNumber } : f)));
+    };
+
+    const deleteFolder = async (id: string): Promise<void> => {
+        await dbDeleteFolder(id);
+        setFolders(prev => prev.filter(f => f.id !== id));
+        setTrackings(prev => prev.map(t => (t.folderId === id ? { ...t, folderId: null } : t)));
+    };
+
     const recordSample = (value: number): void => {
         setLatestValue(value);
 
@@ -208,6 +238,7 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
     return (
         <TrackingContext.Provider value={ {
             trackings,
+            folders,
             activeTracking,
             viewingTracking,
             latestValue,
@@ -225,6 +256,10 @@ export const TrackingProvider = (props: ITrackingProviderProps): React.ReactElem
             renameTracking,
             exportTracking,
             viewTracking,
+            moveTracking,
+            createFolder,
+            updateFolder,
+            deleteFolder,
             recordSample,
         } }>
             {props.children}

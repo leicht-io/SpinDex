@@ -1,0 +1,161 @@
+.menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--menubar-height);
+  z-index: 30;
+
+  background: rgb(13 13 13 / 0.85);
+  backdrop-filter: blur(.75rem) saturate(1.4);
+  -webkit-backdrop-filter: blur(.75rem) saturate(1.4);
+  border-bottom: .0625rem solid var(--outline-variant);
+
+  nav {
+    height: 100%;
+    gap: .5rem;
+    padding-inline: .5rem 1rem;
+  }
+
+  // The page's only <h1> (for SEO/accessibility).
+  h1 {
+    margin: 0 .75rem 0 0;
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: .06em;
+  }
+
+  .menubar-mark {
+    flex-shrink: 0;
+    color: var(--primary);
+    animation: menubar-spin 9s linear infinite;
+  }
+
+  .status-dot {
+    flex-shrink: 0;
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--outline);
+    transition: background var(--speed3, .2s), box-shadow var(--speed3, .2s);
+
+    &.connected {
+      background: var(--good);
+      box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+    }
+  }
+
+  .status-text {
+    margin: 0;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--on-surface-variant);
+    font-size: .8125rem;
+    white-space: nowrap;
+
+    @media only screen and (max-width: 1100px) {
+      display: none;
+    }
+  }
+
+  button.searching {
+    animation: menubar-pulse 1.6s ease-out infinite;
+  }
+}
+
+.menubar-menus {
+  display: flex;
+  gap: .125rem;
+
+  @media only screen and (max-width: 720px) {
+    display: none;
+  }
+}
+
+// Classic text menu-bar entries rather than BeerCSS's filled pill buttons.
+button.menubar-item {
+  height: 2rem;
+  margin: 0;
+  padding: 0 .75rem;
+  border-radius: .375rem;
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-size: .875rem;
+  font-weight: 400;
+
+  &:hover,
+  &.open {
+    background: var(--active);
+    color: var(--on-surface);
+  }
+}
+
+.menubar-overflow {
+  display: none;
+
+  @media only screen and (max-width: 720px) {
+    display: inline-flex;
+  }
+}
+
+button.menubar-record,
+button.menubar-compare {
+  gap: .375rem;
+  height: 2.25rem;
+  padding-inline: .875rem;
+}
+
+button.menubar-record.recording {
+  background: var(--critical);
+  color: #ffffff;
+}
+
+button.menubar-compare.selected {
+  background: var(--active) !important;
+}
+
+.menubar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: .3rem;
+  border-radius: .625rem;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: .6875rem;
+  font-weight: 700;
+}
+
+.menubar-sep {
+  width: .0625rem;
+  height: 1.5rem;
+  margin-inline: .25rem;
+  background: var(--surface-variant);
+}
+
+.menubar-label {
+  @media only screen and (max-width: 600px) {
+    display: none;
+  }
+}
+
+@keyframes menubar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes menubar-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0.55); }
+  70% { box-shadow: 0 0 0 .75rem rgb(57 135 229 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menubar .menubar-mark,
+  .menubar button.searching {
+    animation: none;
+  }
+}

@@ -1,0 +1,22 @@
+.dialog-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin: 0;
+  padding: .75rem 1rem;
+  border-radius: .5rem;
+  background: var(--surface-container-lowest);
+  border: .0625rem solid var(--surface-variant);
+
+  button {
+    gap: .375rem;
+  }
+}
+
+.dialog-note-warning {
+  border-color: rgb(250 178 25 / 0.4);
+  color: var(--on-surface);
+}
+

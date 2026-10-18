@@ -1,0 +1,291 @@
+.sidebar {
+  position: fixed;
+  top: var(--menubar-height);
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  background: var(--surface-container-low);
+  border-right: .0625rem solid var(--outline-variant);
+  transform: translateX(-100%);
+  transition: transform .2s ease;
+
+  &.open {
+    transform: translateX(0);
+  }
+}
+
+// Only the drawer layout gets a scrim; on wide screens the sidebar is a
+// column the main area makes room for (see appshell.scss).
+.sidebar-scrim {
+  display: none;
+
+  @media only screen and (max-width: 900px) {
+    &.visible {
+      display: block;
+      position: fixed;
+      inset: var(--menubar-height) 0 0 0;
+      z-index: 19;
+      background: var(--overlay);
+    }
+  }
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem .75rem .5rem 1rem;
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.sidebar-search {
+  position: relative;
+  display: block;
+  margin: 0 .75rem .75rem;
+  font-size: inherit;
+
+  svg {
+    position: absolute;
+    top: 50%;
+    left: .625rem;
+    transform: translateY(-50%);
+    color: var(--on-surface-variant);
+    pointer-events: none;
+  }
+
+  .app-input {
+    padding-left: 2.125rem;
+  }
+}
+
+.sidebar-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 .5rem 1rem;
+}
+
+.sidebar-empty {
+  margin: .5rem;
+  color: var(--on-surface-variant);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+
+.sidebar-group + .sidebar-group {
+  margin-top: .25rem;
+}
+
+.sidebar-group-header {
+  display: flex;
+  align-items: center;
+
+  .sidebar-more {
+    opacity: 0;
+  }
+
+  &:hover .sidebar-more,
+  .sidebar-more:focus-visible,
+  .sidebar-more.open {
+    opacity: 1;
+  }
+}
+
+button.sidebar-group-toggle {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: .375rem;
+  height: auto;
+  min-height: 2.5rem;
+  margin: 0;
+  padding: .25rem .5rem .25rem .25rem;
+  border-radius: .5rem;
+  text-align: left;
+
+  &:hover {
+    background: var(--active) !important;
+  }
+}
+
+.sidebar-chevron {
+  flex-shrink: 0;
+  color: var(--on-surface-variant);
+  transition: transform .15s ease;
+
+  &.expanded {
+    transform: rotate(90deg);
+  }
+}
+
+.sidebar-folder-icon {
+  flex-shrink: 0;
+  color: var(--on-surface-variant);
+}
+
+.sidebar-group-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.sidebar-group-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+.sidebar-group-serial {
+  font-size: .75rem;
+  color: var(--on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar-count {
+  flex-shrink: 0;
+  font-size: .75rem;
+  color: var(--on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar-list {
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+  list-style: none;
+}
+
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  padding-left: .25rem;
+  border-radius: .5rem;
+
+  &.open {
+    background: var(--surface-container-highest);
+    box-shadow: inset .125rem 0 0 var(--primary);
+  }
+
+  .sidebar-more {
+    opacity: 0;
+  }
+
+  &:hover .sidebar-more,
+  &.open .sidebar-more,
+  .sidebar-more:focus-visible,
+  .sidebar-more.open {
+    opacity: 1;
+  }
+
+  // Touch screens have no hover to reveal it.
+  @media (hover: none) {
+    .sidebar-more {
+      opacity: 1;
+    }
+  }
+}
+
+input.sidebar-check {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin: 0 .25rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+button.sidebar-row-main {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .0625rem;
+  height: auto;
+  margin: 0;
+  padding: .375rem .5rem;
+  border-radius: .375rem;
+  text-align: left;
+}
+
+.sidebar-row-name {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .8125rem;
+  color: var(--on-surface);
+}
+
+.sidebar-row-meta {
+  font-size: .75rem;
+  color: var(--on-surface-variant);
+}
+
+.sidebar-live-dot {
+  flex-shrink: 0;
+  width: .4375rem;
+  height: .4375rem;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+
+  // Not yet stopped, but not connected either -- "still open, no data
+  // coming in right now" vs. the green dot's "actively receiving".
+  &.disconnected {
+    background: var(--warning);
+    box-shadow: 0 0 .5rem 0 rgb(250 178 25 / 0.6);
+  }
+}
+
+.sidebar-row-empty button {
+  color: var(--primary) !important;
+  font-size: .8125rem;
+}
+
+.sidebar-compare-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1rem;
+  border-top: .0625rem solid var(--outline-variant);
+  background: var(--surface-container);
+  font-size: .8125rem;
+
+  span {
+    flex: 1;
+    color: var(--on-surface-variant);
+  }
+}
+
+// BeerCSS makes every <footer> a 5rem-tall grid -- this is one line of text.
+.sidebar-footer {
+  display: block;
+  min-block-size: auto;
+  padding: .75rem 1rem;
+  border-top: .0625rem solid var(--outline-variant);
+  color: var(--on-surface-variant);
+  font-size: .75rem;
+
+  a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,20 @@
+.app-main {
+  min-height: 100vh;
+  padding-top: var(--menubar-height);
+  background: var(--background);
+  transition: padding-left .2s ease;
+
+  // Wide screens: the sidebar is a docked column the content makes room
+  // for. Narrower: it's an overlay drawer, so the content stays put.
+  @media only screen and (min-width: 901px) {
+    &.with-sidebar {
+      padding-left: var(--sidebar-width);
+    }
+  }
+}
+
+// The single-measurement view fills the viewport so its chart can take
+// whatever height is left below the header and stat tiles.
+.measurement-view {
+  height: calc(100dvh - var(--menubar-height));
+}

@@ -3,6 +3,9 @@
 
 :root {
   color-scheme: dark;
+
+  --menubar-height: 3.5rem;
+  --sidebar-width: 18.5rem;
 }
 
 body, html {
@@ -22,6 +25,14 @@ body, html {
 
 * {
   box-sizing: border-box;
+}
+
+// visx renders chart tooltips into a bare <div> it appends to <body>.
+// BeerCSS gives every element `position: relative`, which made that div --
+// laid out after the whole of #app -- the tooltip's containing block, so
+// the tooltip landed a full page-height below the cursor.
+body > div:not(#app) {
+  position: static;
 }
 
 ::selection {
@@ -44,5 +55,30 @@ body, html {
 
   &:hover {
     background: var(--outline);
+  }
+}
+
+// Shared text input / select look (dialogs, sidebar search, window select).
+.app-input {
+  width: 100%;
+  padding: .5625rem .75rem;
+  border-radius: .5rem;
+  border: .0625rem solid var(--surface-variant);
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  font-family: inherit;
+  font-size: .875rem;
+  user-select: text;
+  -webkit-user-select: text;
+
+  &::placeholder {
+    color: var(--on-surface-variant);
+    opacity: .7;
+  }
+
+  &:focus {
+    outline: .125rem solid var(--primary);
+    outline-offset: -.0625rem;
+    border-color: transparent;
   }
 }

@@ -2,6 +2,8 @@
   Minimal IndexedDB wrapper for tracking sessions.
 
   A "tracking" is one recording session (Start Tracking .. Stop Tracking).
+  A "folder" groups trackings by the turntable they were measured on,
+  identified by its model name and serial number.
   Its samples are stored individually so a 24h session (~150-200k rows)
   never has to live in a single JS array or get copied on every append —
   see resample.ts for how the chart reads a bounded view back out of this.
@@ -10,9 +12,19 @@
   adding a dependency for what's a small, fixed set of queries.
 */
 
+export interface Folder {
+    id: string;
+    name: string;
+    serialNumber: string;
+    createdAt: number;
+}
+
 export interface Tracking {
     id: string;
     name: string;
+    // null = not filed in any folder. Rows written before v4 don't have the
+    // field at all, so readers must treat `undefined` the same as null.
+    folderId?: string | null;
     startedAt: number;
     stoppedAt: number | null;
     sampleCount: number;
@@ -38,8 +50,11 @@ const DB_NAME = 'spindex';
 // been corrupted to `sum: NaN` (by the bug v2 was fixing) looked "already
 // fine" and got skipped, leaving the NaN in place. Re-run with the guard
 // fixed to `Number.isFinite` instead.
-const DB_VERSION = 3;
+// v4: adds the folders store. Existing trackings need no migration -- a
+// missing `folderId` already reads as "unfiled".
+const DB_VERSION = 4;
 const TRACKINGS_STORE = 'trackings';
+const FOLDERS_STORE = 'folders';
 const SAMPLES_STORE = 'samples';
 const BY_TRACKING_AND_TIME = 'byTrackingAndTime';
 
@@ -63,6 +78,10 @@ const openDb = (): Promise<IDBDatabase> => {
             if (!db.objectStoreNames.contains(SAMPLES_STORE)) {
                 const samples = db.createObjectStore(SAMPLES_STORE, { keyPath: 'id', autoIncrement: true });
                 samples.createIndex(BY_TRACKING_AND_TIME, ['trackingId', 'timestamp']);
+            }
+
+            if (!db.objectStoreNames.contains(FOLDERS_STORE)) {
+                db.createObjectStore(FOLDERS_STORE, { keyPath: 'id' });
             }
 
             if (event.oldVersion < 3) {
@@ -137,6 +156,7 @@ const generateId = (): string =>
 // of always meaning "starting now".
 export const createTracking = async (
     name?: string,
+    folderId: string | null = null,
     startedAt: number = Date.now(),
     stoppedAt: number | null = null,
 ): Promise<Tracking> => {
@@ -144,6 +164,7 @@ export const createTracking = async (
     const tracking: Tracking = {
         id: generateId(),
         name: name ?? `Tracking — ${ new Date().toLocaleString() }`,
+        folderId,
         startedAt,
         stoppedAt,
         sampleCount: 0,
@@ -158,31 +179,33 @@ export const createTracking = async (
     return tracking;
 };
 
-export const stopTracking = async (id: string): Promise<void> => {
+// Read-modify-write of one record inside a single transaction, so a
+// concurrent addSample can't interleave and lose either write.
+const patchRecord = async <T extends { id: string }>(
+    storeName: string,
+    id: string,
+    patch: (record: T) => Partial<T>,
+): Promise<void> => {
     const db = await openDb();
-    const tx = db.transaction(TRACKINGS_STORE, 'readwrite');
-    const store = tx.objectStore(TRACKINGS_STORE);
-    const tracking = await promisifyRequest<Tracking | undefined>(store.get(id));
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const record = await promisifyRequest<T | undefined>(store.get(id));
 
-    if (tracking) {
-        store.put({ ...tracking, stoppedAt: Date.now() });
+    if (record) {
+        store.put({ ...record, ...patch(record) });
     }
 
     await promisifyTx(tx);
 };
 
-export const renameTracking = async (id: string, name: string): Promise<void> => {
-    const db = await openDb();
-    const tx = db.transaction(TRACKINGS_STORE, 'readwrite');
-    const store = tx.objectStore(TRACKINGS_STORE);
-    const tracking = await promisifyRequest<Tracking | undefined>(store.get(id));
+export const stopTracking = (id: string): Promise<void> =>
+    patchRecord<Tracking>(TRACKINGS_STORE, id, () => ({ stoppedAt: Date.now() }));
 
-    if (tracking) {
-        store.put({ ...tracking, name });
-    }
+export const renameTracking = (id: string, name: string): Promise<void> =>
+    patchRecord<Tracking>(TRACKINGS_STORE, id, () => ({ name }));
 
-    await promisifyTx(tx);
-};
+export const moveTracking = (id: string, folderId: string | null): Promise<void> =>
+    patchRecord<Tracking>(TRACKINGS_STORE, id, () => ({ folderId }));
 
 export const deleteTracking = async (id: string): Promise<void> => {
     const db = await openDb();
@@ -255,3 +278,47 @@ export const getSamplesInRange = async (trackingId: string, start: number, end: 
 
 export const getAllSamples = (trackingId: string): Promise<Sample[]> =>
     getSamplesInRange(trackingId, -Infinity, Infinity);
+
+export const listFolders = async (): Promise<Folder[]> => {
+    const db = await openDb();
+    const tx = db.transaction(FOLDERS_STORE, 'readonly');
+    const all = await promisifyRequest<Folder[]>(tx.objectStore(FOLDERS_STORE).getAll());
+    return all.sort((a, b) => a.name.localeCompare(b.name) || a.serialNumber.localeCompare(b.serialNumber));
+};
+
+export const createFolder = async (name: string, serialNumber: string): Promise<Folder> => {
+    const db = await openDb();
+    const folder: Folder = { id: generateId(), name, serialNumber, createdAt: Date.now() };
+
+    const tx = db.transaction(FOLDERS_STORE, 'readwrite');
+    tx.objectStore(FOLDERS_STORE).put(folder);
+    await promisifyTx(tx);
+
+    return folder;
+};
+
+export const updateFolder = (id: string, name: string, serialNumber: string): Promise<void> =>
+    patchRecord<Folder>(FOLDERS_STORE, id, () => ({ name, serialNumber }));
+
+// Deleting a folder never deletes measurements -- its trackings are moved
+// back to "unfiled" in the same transaction.
+export const deleteFolder = async (id: string): Promise<void> => {
+    const db = await openDb();
+    const tx = db.transaction([FOLDERS_STORE, TRACKINGS_STORE], 'readwrite');
+    tx.objectStore(FOLDERS_STORE).delete(id);
+
+    const cursorRequest = tx.objectStore(TRACKINGS_STORE).openCursor();
+    cursorRequest.onsuccess = () => {
+        const cursor = cursorRequest.result;
+        if (!cursor) {
+            return;
+        }
+        const tracking = cursor.value as Tracking;
+        if (tracking.folderId === id) {
+            cursor.update({ ...tracking, folderId: null });
+        }
+        cursor.continue();
+    };
+
+    await promisifyTx(tx);
+};
