@@ -1,17 +1,18 @@
 import * as React from 'react';
 import './menubar.scss';
 import BluetoothSearchingIcon from '@mui/icons-material/BluetoothSearching';
+import BluetoothDisabledIcon from '@mui/icons-material/BluetoothDisabled';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import DownloadIcon from '@mui/icons-material/Download';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import MenuIcon from '@mui/icons-material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import StopIcon from '@mui/icons-material/Stop';
 import { BLEContext, TrackingContext, UIContext } from '../../context';
 import { Menu, MenuEntry, useActionMenus } from '../Menu';
+import { SpinDexMark } from '../Logo';
 
 export const MenuBar = (): React.ReactElement => {
-    const { initBluetooth, status, connected, available } = React.useContext(BLEContext);
+    const { initBluetooth, status, connected, supported, available } = React.useContext(BLEContext);
     const {
         activeTracking,
         viewingTracking,
@@ -21,7 +22,7 @@ export const MenuBar = (): React.ReactElement => {
         selectedWindow,
         setSelectedWindow,
     } = React.useContext(TrackingContext);
-    const { viewMode, setViewMode, compare, sidebarOpen, setSidebarOpen, openDialog } = React.useContext(UIContext);
+    const { viewMode, setViewMode, compare, setSidebarOpen, openDialog } = React.useContext(UIContext);
     const { trackingItems, newItems } = useActionMenus();
 
     // The BLE status is a loose set of human-readable sentences (see
@@ -29,6 +30,7 @@ export const MenuBar = (): React.ReactElement => {
     // is in flight" purely to drive the button's pulse animation.
     const isSearching = !connected && available !== false && status !== ''
         && !status.startsWith('Error') && !status.includes('not available');
+    const bluetoothUnusable = !supported || available === false;
 
     const viewItems: MenuEntry[] = [
         {
@@ -50,47 +52,24 @@ export const MenuBar = (): React.ReactElement => {
             disabled: viewMode !== 'measurement' || !viewingTracking,
             onSelect: () => setSelectedWindow(option),
         })),
-        'divider',
-        {
-            label: sidebarOpen ? 'Hide library' : 'Show library',
-            onSelect: () => setSidebarOpen(!sidebarOpen),
-        },
     ];
 
     return (
         <header className={ 'menubar' }>
             <nav>
+                {/* Phones only: the library is a drawer there. On wider screens
+                    it's always docked and this button is hidden. */}
                 <button className={ 'circle transparent menubar-toggle' }
-                    aria-label={ sidebarOpen ? 'Hide library' : 'Show library' }
-                    aria-pressed={ sidebarOpen }
-                    onClick={ () => setSidebarOpen(!sidebarOpen) }>
+                    aria-label={ 'Open library' }
+                    onClick={ () => setSidebarOpen(true) }>
                     <MenuIcon />
                 </button>
 
-                <svg className={ 'menubar-mark' }
-                    viewBox="0 0 24 24"
-                    width="24"
-                    height="24"
-                    aria-hidden="true">
-                    <circle cx="12"
-                        cy="12"
-                        r="10.5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5" />
-                    <circle cx="12"
-                        cy="12"
-                        r="6.5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        opacity="0.5" />
-                    <circle cx="12"
-                        cy="12"
-                        r="1.75"
-                        fill="currentColor" />
-                </svg>
-                <h1>SpinDex</h1>
+                <div className={ 'menubar-brand' }>
+                    <SpinDexMark size={ 28 }
+                        spinning={ activeTracking !== null && connected } />
+                    <h1>SpinDex</h1>
+                </div>
 
                 <div className={ 'menubar-menus' }>
                     <Menu label={ 'File' }
@@ -116,7 +95,7 @@ export const MenuBar = (): React.ReactElement => {
                 <span className={ 'max' } />
 
                 {compare.length > 0 && (
-                    <button className={ `transparent menubar-compare ${ viewMode === 'compare' ? 'selected' : '' }` }
+                    <button className={ `border menubar-compare ${ viewMode === 'compare' ? 'selected' : '' }` }
                         onClick={ () => setViewMode('compare') }
                         aria-label={ `Compare ${ compare.length } measurements` }>
                         <CompareArrowsIcon fontSize={ 'small' } />
@@ -136,31 +115,35 @@ export const MenuBar = (): React.ReactElement => {
                     <button className={ 'primary menubar-record' }
                         onClick={ () => openDialog({ kind: 'newMeasurement' }) }
                         aria-label={ 'New measurement' }>
-                        <FiberManualRecordIcon fontSize={ 'small' } />
+                        <span className={ 'rec-dot' } />
                         <span className={ 'menubar-label' }>New measurement</span>
                     </button>
                 )}
 
                 <span className={ 'menubar-sep' } />
 
-                <span className={ `status-dot ${ connected ? 'connected' : '' }` }
-                    aria-hidden="true" />
-                <p className={ 'status-text' }>{status || 'Not Connected'}</p>
+                {/* When Web Bluetooth can't be used at all, the button explains
+                    why instead of sitting there disabled. */}
                 <button
                     onClick={ () => {
-                        initBluetooth();
+                        if (bluetoothUnusable) {
+                            openDialog({ kind: 'bluetoothHelp' });
+                        } else {
+                            initBluetooth();
+                        }
                     } }
-                    disabled={ available === false }
-                    title={ available === false ? 'Turn on Bluetooth to connect' : undefined }
-                    aria-label={ connected ? 'Connected' : 'Connect to SpinDex' }
-                    className={ `circle small ${ connected ? '' : 'primary' } ${ isSearching ? 'searching' : '' }` }>
-                    <BluetoothSearchingIcon fontSize={ 'small' } />
+                    title={ bluetoothUnusable ? 'Bluetooth unavailable — read more' : (connected ? 'Connected' : 'Connect to SpinDex') }
+                    aria-label={ bluetoothUnusable ? 'Bluetooth unavailable, read more' : (connected ? 'Connected' : 'Connect to SpinDex') }
+                    className={ `square small menubar-link ${ connected ? 'connected' : '' } ${ bluetoothUnusable ? 'unusable' : '' } ${ isSearching ? 'searching' : '' }` }>
+                    {bluetoothUnusable
+                        ? <BluetoothDisabledIcon fontSize={ 'small' } />
+                        : <BluetoothSearchingIcon fontSize={ 'small' } />}
                 </button>
 
                 <div className={ 'menubar-overflow' }>
                     <Menu label={ <MoreVertIcon /> }
                         ariaLabel={ 'More' }
-                        triggerClassName={ 'circle transparent' }
+                        triggerClassName={ 'square transparent' }
                         align={ 'end' }
                         items={ [...newItems, 'divider', ...viewItems] } />
                 </div>

@@ -2,6 +2,7 @@ import * as React from 'react';
 import BluetoothSearchingIcon from '@mui/icons-material/BluetoothSearching';
 import { BLEContext, TrackingContext, UIContext } from '../../context';
 import { Dialog, Field } from '../Dialog';
+import { Select } from '../Menu';
 import { findFolder, folderLabel } from '../../core/tracking/folders';
 
 const NEW_FOLDER = '__new__';
@@ -12,9 +13,9 @@ interface NewMeasurementDialogProps {
 }
 
 export const NewMeasurementDialog = ({ folderId }: NewMeasurementDialogProps): React.ReactElement => {
-    const { connected, available, initBluetooth } = React.useContext(BLEContext);
+    const { connected, supported, available, initBluetooth } = React.useContext(BLEContext);
     const { folders, activeTracking, viewingTracking, startTracking, stopTracking, createFolder } = React.useContext(TrackingContext);
-    const { closeDialog, setViewMode } = React.useContext(UIContext);
+    const { closeDialog, setViewMode, openDialog } = React.useContext(UIContext);
 
     // Default to the folder asked for, else the one the user is currently
     // looking at -- re-measuring the same turntable is the common case.
@@ -53,21 +54,19 @@ export const NewMeasurementDialog = ({ folderId }: NewMeasurementDialogProps): R
 
     return (
         <Dialog title={ 'New measurement' }
+            eyebrow={ 'Record' }
             onClose={ closeDialog }
             onSubmit={ onSubmit }
             submitLabel={ 'Start recording' }
             submitDisabled={ !canSubmit }>
             <Field label={ 'Turntable' }>
-                <select className={ 'app-input' }
-                    value={ folderChoice }
-                    onChange={ (e) => setFolderChoice(e.target.value) }>
-                    {folders.map(folder => (
-                        <option key={ folder.id }
-                            value={ folder.id }>{folderLabel(folder)}</option>
-                    ))}
-                    <option value={ NEW_FOLDER }>+ New turntable…</option>
-                    <option value={ NO_FOLDER }>No folder</option>
-                </select>
+                <Select value={ folderChoice }
+                    onChange={ setFolderChoice }
+                    options={ [
+                        ...folders.map(folder => ({ value: folder.id, label: folderLabel(folder) })),
+                        { value: NO_FOLDER, label: 'No folder', divider: true },
+                        { value: NEW_FOLDER, label: '+ New turntable…', action: true },
+                    ] } />
             </Field>
 
             {isNewFolder && (
@@ -108,17 +107,25 @@ export const NewMeasurementDialog = ({ folderId }: NewMeasurementDialogProps): R
                 <p className={ 'dialog-note' }>&quot;{activeTracking.name}&quot; is still recording and will be stopped.</p>
             )}
 
-            {!connected && (
+            {!connected && (supported && available !== false ? (
                 <div className={ 'dialog-note dialog-note-warning' }>
                     <span>Pair with the SpinDex sensor to start recording.</span>
                     <button type="button"
                         className={ 'small' }
-                        disabled={ available === false }
                         onClick={ () => initBluetooth() }>
                         <BluetoothSearchingIcon fontSize={ 'small' } /> Connect
                     </button>
                 </div>
-            )}
+            ) : (
+                <div className={ 'dialog-note dialog-note-warning' }>
+                    <span>{supported ? 'Bluetooth is turned off.' : 'This browser can’t connect to the sensor.'}</span>
+                    <button type="button"
+                        className={ 'small border' }
+                        onClick={ () => openDialog({ kind: 'bluetoothHelp' }) }>
+                        Read more
+                    </button>
+                </div>
+            ))}
         </Dialog>
     );
 };

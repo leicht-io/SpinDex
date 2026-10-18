@@ -9,6 +9,9 @@ interface DialogProps {
     submitLabel?: string;
     submitDisabled?: boolean;
     danger?: boolean;
+    // Small mono label above the title.
+    eyebrow?: string;
+    wide?: boolean;
     children?: React.ReactNode;
 }
 
@@ -18,7 +21,7 @@ interface DialogProps {
  * while open -- DialogHost unmounts it on close.
  */
 export const Dialog = (props: DialogProps): React.ReactElement => {
-    const { title, onClose, onSubmit, submitLabel = 'OK', submitDisabled, danger, children } = props;
+    const { title, onClose, onSubmit, submitLabel = 'OK', submitDisabled, danger, eyebrow, wide, children } = props;
     const ref = React.useRef<HTMLDialogElement>(null);
     const titleId = React.useId();
 
@@ -33,7 +36,7 @@ export const Dialog = (props: DialogProps): React.ReactElement => {
     return (
         <dialog
             ref={ ref }
-            className={ 'app-dialog' }
+            className={ `app-dialog ${ wide ? 'wide' : '' }` }
             aria-labelledby={ titleId }
             // Escape: let React unmount it rather than the browser closing it
             // behind React's back.
@@ -56,6 +59,7 @@ export const Dialog = (props: DialogProps): React.ReactElement => {
                         onSubmit();
                     }
                 } }>
+                {eyebrow && <span className={ 'app-dialog-eyebrow' }>{eyebrow}</span>}
                 <h2 id={ titleId }
                     className={ 'app-dialog-title' }>{title}</h2>
 

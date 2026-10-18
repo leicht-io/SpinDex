@@ -1,58 +1,71 @@
+@use '../../core/styles/mixins' as *;
+
 .menu-root {
   position: relative;
   display: inline-flex;
 }
 
 .menu-list {
-  position: absolute;
-  top: calc(100% + .375rem);
+  @include brackets(var(--primary), .375rem);
+  // Shown in the top layer (popover) and placed by usePopover with fixed
+  // coordinates. Undo the UA popover defaults (centred, inset 0, Canvas
+  // colours) -- and re-assert `fixed` after the brackets mixin's relative.
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  overflow: visible;
   z-index: 50;
   display: flex;
   flex-direction: column;
-  min-width: 14rem;
-  padding: .375rem;
-  border-radius: .625rem;
+  min-width: 14.5rem;
+  padding: .3125rem;
+  border-radius: 2px;
   border: .0625rem solid var(--surface-variant);
-  background: var(--surface-container-highest);
-  box-shadow: var(--elevate3);
+  background: var(--surface-container);
+  box-shadow: var(--elevate3), 0 0 0 .0625rem rgb(0 0 0 / 0.5);
+  color: var(--on-surface);
   animation: menu-in .12s ease-out;
-
-  &.align-start { left: 0; }
-  &.align-end { right: 0; }
 }
 
-// Reset BeerCSS's global <button> look (pill, filled, centered) back to a
-// plain full-width list row.
+// Reset BeerCSS's global <button> look (filled, centered, and our mono
+// caps) back to a plain full-width list row.
 button.menu-item {
+  @include plain-button;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: .625rem;
   width: 100%;
   height: auto;
-  min-height: 2.25rem;
+  min-height: 2.125rem;
   margin: 0;
-  padding: .375rem .625rem;
-  border-radius: .375rem;
+  padding: .3125rem .625rem;
+  border-radius: 1px;
   background: transparent;
   color: var(--on-surface);
-  font-size: .875rem;
-  font-weight: 400;
+  font-size: .8125rem;
   text-align: left;
-  text-transform: none;
-  box-shadow: none;
 
   &:is(:hover, :focus-visible):not(:disabled) {
-    background: var(--active);
+    background: var(--primary-tint);
+    color: var(--on-primary-container);
     outline: none;
+
+    .menu-item-icon {
+      color: var(--primary);
+    }
   }
 
   &:disabled {
-    opacity: .4;
+    opacity: .35;
   }
 
   &.danger {
     color: var(--error);
+
+    .menu-item-icon {
+      color: var(--error);
+    }
   }
 }
 
@@ -64,29 +77,31 @@ button.menu-item {
   color: var(--on-surface-variant);
 }
 
+.menu-item-check {
+  color: var(--primary);
+}
+
 .menu-item-label {
   flex: 1;
 }
 
 .menu-item-hint {
-  color: var(--on-surface-variant);
-  font-size: .75rem;
+  font-family: var(--font-mono);
+  font-size: .6875rem;
+  color: var(--primary);
 }
 
 .menu-heading {
-  padding: .5rem .625rem .25rem;
-  font-size: .6875rem;
-  font-weight: 500;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--on-surface-variant);
+  padding: .625rem .625rem .3125rem;
+  @include mono-label(.625rem, .14em);
+  color: var(--outline);
 }
 
 .menu-divider {
   width: 100%;
   margin: .25rem 0;
   border: none;
-  border-top: .0625rem solid var(--surface-variant);
+  border-top: .0625rem solid var(--hairline);
 }
 
 @keyframes menu-in {
@@ -97,5 +112,78 @@ button.menu-item {
 @media (prefers-reduced-motion: reduce) {
   .menu-list {
     animation: none;
+  }
+}
+
+// --- Select (shares the menu panel and rows) ---
+
+.select-root {
+  position: relative;
+  display: block;
+}
+
+// Trigger looks like .app-input, with a chevron.
+button.select-trigger {
+  @include plain-button;
+  justify-content: space-between;
+  gap: .5rem;
+  width: 100%;
+  height: 2.375rem;
+  margin: 0;
+  padding: 0 .5rem 0 .75rem;
+  border: .0625rem solid var(--surface-variant);
+  border-radius: 2px;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  letter-spacing: .04em;
+  text-align: left;
+  transition: border-color .15s, box-shadow .15s;
+
+  &:hover {
+    border-color: var(--outline);
+  }
+
+  &:focus-visible,
+  &.open {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 .1875rem var(--primary-tint);
+  }
+
+  &.open .select-chevron {
+    transform: rotate(180deg);
+    color: var(--primary);
+  }
+}
+
+.select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-chevron {
+  flex-shrink: 0;
+  color: var(--on-surface-variant);
+  transition: transform .15s ease;
+}
+
+.select-list {
+  min-width: 0;
+
+  button.menu-item {
+    font-family: var(--font-mono);
+    font-size: .75rem;
+    letter-spacing: .02em;
+
+    &[aria-selected='true'] {
+      color: var(--on-primary-container);
+    }
+
+    &.action {
+      color: var(--primary);
+    }
   }
 }

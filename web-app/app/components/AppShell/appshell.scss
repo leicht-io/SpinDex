@@ -1,20 +1,29 @@
+// Blueprint backdrop: a faint measuring grid with a major line every
+// fourth cell, and a low copper glow from the top edge -- the "bench" the
+// instrument panels sit on. Fixed so it doesn't scroll with the content.
 .app-main {
   min-height: 100vh;
   padding-top: var(--menubar-height);
-  background: var(--background);
-  transition: padding-left .2s ease;
+  padding-bottom: var(--statusbar-height);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 65% 0%, rgb(224 122 79 / 0.07), transparent 70%),
+    linear-gradient(var(--grid-line) .0625rem, transparent .0625rem),
+    linear-gradient(90deg, var(--grid-line) .0625rem, transparent .0625rem),
+    linear-gradient(rgb(232 228 222 / 0.025) .0625rem, transparent .0625rem),
+    linear-gradient(90deg, rgb(232 228 222 / 0.025) .0625rem, transparent .0625rem);
+  background-size: 100% 100%, 8rem 8rem, 8rem 8rem, 2rem 2rem, 2rem 2rem;
+  background-attachment: fixed;
 
-  // Wide screens: the sidebar is a docked column the content makes room
-  // for. Narrower: it's an overlay drawer, so the content stays put.
+  // The library is always docked on wide screens, so the content always
+  // makes room for it. Narrower, it's an overlay drawer instead.
   @media only screen and (min-width: 901px) {
-    &.with-sidebar {
-      padding-left: var(--sidebar-width);
-    }
+    padding-left: var(--sidebar-width);
   }
 }
 
 // The single-measurement view fills the viewport so its chart can take
 // whatever height is left below the header and stat tiles.
 .measurement-view {
-  height: calc(100dvh - var(--menubar-height));
+  height: calc(100dvh - var(--menubar-height) - var(--statusbar-height));
 }

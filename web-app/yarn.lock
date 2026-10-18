@@ -554,10 +554,15 @@
   resolved "https://registry.npmjs.org/@exodus/bytes/-/bytes-1.16.0.tgz"
   integrity sha512-IcpW84uEn3N7ETtNZMlxKhfl6Pec8rUNGOTBtWbK1FKhJxIFAptZyVrvVRVBimAJxJCgc3PxepxkdWWG4DVzfA==
 
-"@fontsource/roboto@^5.3.0":
+"@fontsource/ibm-plex-mono@^5.3.0":
   version "5.3.0"
-  resolved "https://registry.npmjs.org/@fontsource/roboto/-/roboto-5.3.0.tgz"
-  integrity sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==
+  resolved "https://registry.yarnpkg.com/@fontsource/ibm-plex-mono/-/ibm-plex-mono-5.3.0.tgz#1879699d104602d5331e28e103f33c3b1b766b17"
+  integrity sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==
+
+"@fontsource/ibm-plex-sans@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/ibm-plex-sans/-/ibm-plex-sans-5.3.0.tgz#8099950b404e625f65e7bd833bcb84ffe6bcd40c"
+  integrity sha512-CbE4CbbEEZJX860XyUiRpsksXIQR8Rp2XDva2VO53NJox9tVNtusrysd2x5YkUEY3ErQ66W1IiiQL8/wihhw5w==
 
 "@humanfs/core@^0.19.2":
   version "0.19.2"

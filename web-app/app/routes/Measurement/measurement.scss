@@ -1,3 +1,5 @@
+@use '../../core/styles/mixins' as *;
+
 // Shared by the measurement and compare views.
 .view {
   display: flex;
@@ -5,7 +7,7 @@
   min-height: 100%;
   max-width: 90rem;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1.75rem 2rem 1.5rem;
 
   @media only screen and (max-width: 600px) {
     padding: 1rem;
@@ -17,41 +19,114 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 1.25rem;
-  border-bottom: .0625rem solid var(--outline-variant);
+  border-bottom: .0625rem solid var(--hairline);
 }
 
 .view-heading {
   display: flex;
   flex-direction: column;
-  gap: .25rem;
+  gap: .375rem;
   min-width: 0;
 }
 
+// leicht.io eyebrow: copper mono caps above the title.
 .view-breadcrumb {
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  @include mono-label(.6875rem, .12em);
   color: var(--primary);
+}
+
+.view-live {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .125rem .5rem;
+  border: .0625rem solid rgb(208 59 59 / 0.5);
+  border-radius: 2px;
+  background: rgb(208 59 59 / 0.1);
+  color: #f08a7a;
+
+  .view-live-dot {
+    width: .375rem;
+    height: .375rem;
+    border-radius: 50%;
+    background: var(--critical);
+    animation: view-live-blink 1.4s ease-in-out infinite;
+  }
+
+  &.paused {
+    border-color: rgb(250 178 25 / 0.45);
+    background: rgb(250 178 25 / 0.08);
+    color: var(--warning);
+
+    .view-live-dot {
+      background: var(--warning);
+      animation: none;
+    }
+  }
+}
+
+@keyframes view-live-blink {
+  50% { opacity: .25; }
 }
 
 .view-title {
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 1.5rem;
-  font-weight: 500;
-  line-height: 1.25;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  line-height: 1.2;
   color: var(--on-surface);
 }
 
-.view-meta {
-  font-size: .8125rem;
-  color: var(--on-surface-variant);
-  font-variant-numeric: tabular-nums;
+// Spec sheet row: mono caps keys over values, hairline-separated.
+.view-specs {
+  display: flex;
+  flex-wrap: wrap;
+  margin: .375rem 0 0;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: .1875rem;
+    padding: 0 1.25rem;
+    border-left: .0625rem solid var(--hairline);
+
+    &:first-child {
+      padding-left: 0;
+      border-left: none;
+    }
+  }
+
+  dt {
+    @include mono-label(.5625rem, .14em);
+    color: var(--outline);
+  }
+
+  dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: .8125rem;
+    color: var(--on-surface);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media only screen and (max-width: 600px) {
+    gap: .75rem 0;
+
+    > div:nth-child(3) {
+      padding-left: 0;
+      border-left: none;
+    }
+  }
 }
 
 .view-actions {
@@ -60,14 +135,10 @@
   align-items: center;
   gap: .5rem;
 
-  button {
-    gap: .375rem;
-  }
-
   button.border.selected {
-    background: var(--primary-container) !important;
-    color: var(--on-primary-container);
-    border-color: transparent;
+    border-color: var(--primary);
+    background: var(--primary-tint);
+    color: var(--primary);
   }
 }
 
@@ -77,97 +148,140 @@ button.stop-button {
 }
 
 .window-select {
-  width: auto;
-}
+  width: 10.5rem;
 
-.recording-banner {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: .5rem;
-  margin: 0 0 1rem;
-  font-size: .8125rem;
-  color: var(--on-surface-variant);
-
-  .recording-dot {
-    width: .5rem;
-    height: .5rem;
-    border-radius: 50%;
-    background: var(--critical);
-    animation: recording-blink 1.4s ease-in-out infinite;
-  }
-
-  &.disconnected {
-    color: var(--warning);
-
-    .recording-dot {
-      background: var(--warning);
-      animation: none;
-    }
+  button.select-trigger {
+    height: 2.5rem;
   }
 }
 
-@keyframes recording-blink {
-  50% { opacity: .3; }
-}
+// --- Stat readouts ---
 
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: .75rem;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 
+  // Phones: keep all three readouts in one compact row rather than a
+  // tall stack that pushes the chart off screen.
   @media only screen and (max-width: 600px) {
-    grid-template-columns: 1fr;
+    gap: .5rem;
+
+    .stat-tile {
+      gap: .375rem;
+      padding: .75rem .625rem;
+    }
+
+    .stat-value {
+      font-size: 1.375rem;
+
+      small {
+        display: none;
+      }
+    }
+
+    .stat-offset {
+      font-size: .625rem;
+    }
+
+    .stat-offset-ref {
+      display: none;
+    }
   }
 }
 
 .stat-tile {
+  @include brackets(var(--primary), .5rem);
   display: flex;
   flex-direction: column;
-  gap: .25rem;
+  gap: .5rem;
 
-  padding: 1rem 1.25rem;
-  border-radius: .625rem;
-  background: var(--surface-container-high);
-  border: .0625rem solid var(--outline-variant);
+  padding: 1rem 1.25rem 1.125rem;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgb(33 31 30 / 0.92), rgb(27 26 25 / 0.92));
+  border: .0625rem solid var(--hairline);
 }
 
 .stat-label {
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: .625rem;
+  @include mono-label(.625rem, .14em);
   color: var(--on-surface-variant);
 }
 
+.stat-index {
+  color: var(--primary);
+}
+
 .stat-value {
-  font-size: 1.75rem;
-  font-weight: 500;
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 400;
+  letter-spacing: -.02em;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--on-surface);
 
-  small {
-    margin-left: .3rem;
-    font-size: .8rem;
-    font-weight: 400;
+  .stat-fraction {
     color: var(--on-surface-variant);
   }
+
+  small {
+    margin-left: .5rem;
+    @include mono-label(.625rem, .12em);
+    font-weight: 400;
+    color: var(--outline);
+  }
+}
+
+// Deviation gauge: -3%..+3% around nominal, centre tick = on speed.
+.stat-gauge {
+  position: relative;
+  height: .5rem;
+  margin-top: .125rem;
+  background:
+    linear-gradient(90deg, transparent calc(50% - .03125rem), var(--outline) calc(50% - .03125rem), var(--outline) calc(50% + .03125rem), transparent calc(50% + .03125rem)),
+    repeating-linear-gradient(90deg, var(--surface-variant) 0 .0625rem, transparent .0625rem 16.666%);
+  background-size: 100% 100%, 100% .25rem;
+  background-position: 0 0, 0 100%;
+  background-repeat: no-repeat;
+  border-bottom: .0625rem solid var(--surface-variant);
+}
+
+.stat-gauge-marker {
+  position: absolute;
+  top: -.125rem;
+  width: .125rem;
+  height: .75rem;
+  margin-left: -.0625rem;
+  background: var(--on-surface);
+  transition: left .3s ease;
+
+  &.status-good { background: var(--good); box-shadow: 0 0 .375rem var(--good); }
+  &.status-warning { background: var(--warning); box-shadow: 0 0 .375rem var(--warning); }
+  &.status-serious { background: var(--serious); box-shadow: 0 0 .375rem var(--serious); }
+  &.status-critical { background: var(--critical); box-shadow: 0 0 .375rem var(--critical); }
 }
 
 .stat-offset {
   display: inline-flex;
   align-items: center;
   gap: .375rem;
-  font-size: .8125rem;
+  font-family: var(--font-mono);
+  font-size: .6875rem;
+  letter-spacing: .02em;
   font-variant-numeric: tabular-nums;
   color: var(--on-surface-variant);
 
   .status-dot {
     display: inline-block;
-    width: .4375rem;
-    height: .4375rem;
-    border-radius: 50%;
+    width: .375rem;
+    height: .375rem;
+    border-radius: 1px;
   }
 
   &.status-good .status-dot { background: var(--good); }
@@ -176,62 +290,161 @@ button.stop-button {
   &.status-critical .status-dot { background: var(--critical); }
 }
 
-.chart-wrapper {
+// --- Chart ---
+
+.chart-panel {
+  @include brackets(var(--primary), .5rem);
   flex: 1;
   min-height: 20rem;
+  display: flex;
+  flex-direction: column;
+  border: .0625rem solid var(--hairline);
+  border-radius: 2px;
+  background: rgb(20 19 18 / 0.7);
+}
+
+.chart-panel-header {
+  display: flex;
+  justify-content: space-between;
+  white-space: nowrap;
+  padding: .625rem 1rem;
+  border-bottom: .0625rem solid var(--hairline);
+  @include mono-label(.5625rem, .14em);
+  color: var(--outline);
+}
+
+.chart-panel-window {
+  color: var(--on-surface-variant);
+}
+
+// The window is already shown in the select above; drop it where space
+// is tight.
+.chart-panel-window {
+  @media only screen and (max-width: 600px) {
+    display: none;
+  }
+}
+
+// Legend entry for the dashed nominal line in the plot.
+.chart-panel-nominal {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-left: auto;
+  margin-right: 1.5rem;
+  color: var(--primary);
+
+  @media only screen and (max-width: 600px) {
+    margin-right: 0;
+  }
+
+  &::before {
+    content: '';
+    width: 1.25rem;
+    border-top: .0625rem dashed var(--primary);
+  }
+}
+
+.chart-wrapper {
+  flex: 1;
+  min-height: 0;
+  padding: 0 .5rem .25rem 0;
 
   svg {
     overflow: visible;
   }
 }
 
+// --- Empty state ---
+
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
-  min-height: calc(100vh - var(--menubar-height));
+  gap: .625rem;
+  min-height: calc(100vh - var(--menubar-height) - var(--statusbar-height));
   padding: 2rem 1rem;
   text-align: center;
   color: var(--on-surface-variant);
 
   h2 {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -.015em;
     color: var(--on-surface);
-  }
-
-  .empty-state-ring {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 4rem;
-    height: 4rem;
-    margin-bottom: 1rem;
-    border-radius: 50%;
-    border: .0625rem solid var(--outline-variant);
-    color: var(--primary);
-    animation: empty-state-pulse 2.4s ease-in-out infinite;
   }
 
   .empty-state-hint {
     margin: 0;
-    opacity: .8;
+    font-size: .875rem;
   }
 }
 
+// The mark inside a crosshair reticle with crop marks.
+.empty-state-reticle {
+  @include brackets(var(--primary), .75rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 9rem;
+  height: 9rem;
+  margin-bottom: 1rem;
+  background:
+    linear-gradient(var(--hairline), var(--hairline)) center / 100% .0625rem no-repeat,
+    linear-gradient(var(--hairline), var(--hairline)) center / .0625rem 100% no-repeat;
+  border: .0625rem solid var(--hairline);
+
+  .spindex-mark {
+    --mark-cutout: var(--background);
+  }
+}
+
+.empty-state-eyebrow {
+  @include mono-label(.6875rem, .16em);
+  color: var(--primary);
+}
+
+// Numbered steps, leicht.io style.
 .empty-state-steps {
-  margin: .5rem 0 0;
-  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
   text-align: left;
   font-size: .875rem;
-  line-height: 1.9;
 
-  li.done {
-    color: var(--good);
-    text-decoration: line-through;
+  li {
+    position: relative;
+    padding-left: 2rem;
+    color: var(--on-surface);
+    counter-increment: step;
+
+    &::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      top: .1875rem;
+      left: 0;
+      font-family: var(--font-mono);
+      font-size: .6875rem;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: var(--primary);
+    }
+
+    &.done {
+      color: var(--on-surface-variant);
+      text-decoration: line-through;
+
+      &::before {
+        content: '✓';
+        color: var(--good);
+      }
+    }
   }
 }
 
@@ -240,21 +453,18 @@ button.stop-button {
   flex-wrap: wrap;
   justify-content: center;
   gap: .75rem;
-  margin-top: 1.25rem;
-
-  button {
-    gap: .375rem;
-  }
+  margin-top: 1.5rem;
 }
 
-@keyframes empty-state-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(57 135 229 / 0.35); }
-  50% { box-shadow: 0 0 0 .875rem rgb(57 135 229 / 0); }
+// On wide screens the library is always docked, so there's nothing to open.
+button.empty-state-library {
+  @media only screen and (min-width: 901px) {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .empty-state .empty-state-ring {
+  .view-live .view-live-dot {
     animation: none;
   }
 }
-

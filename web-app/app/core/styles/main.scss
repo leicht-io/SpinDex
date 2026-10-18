@@ -4,7 +4,10 @@
 :root {
   color-scheme: dark;
 
-  --menubar-height: 3.5rem;
+  // BeerCSS gives every <header> a 4rem min-height, so the menu bar is
+  // 4rem whatever we ask for -- match it, so nothing below leaves a gap.
+  --menubar-height: 4rem;
+  --statusbar-height: 1.75rem;
   --sidebar-width: 18.5rem;
 }
 
@@ -14,6 +17,7 @@ body, html {
   margin: 0;
   background: var(--background);
   color: var(--on-background);
+  font-family: var(--font);
 
   user-select: none;
   -webkit-user-select: none;
@@ -41,8 +45,8 @@ body > div:not(#app) {
 }
 
 ::-webkit-scrollbar {
-  width: .5rem;
-  height: .5rem;
+  width: .375rem;
+  height: .375rem;
 }
 
 ::-webkit-scrollbar-track {
@@ -50,35 +54,115 @@ body > div:not(#app) {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-container-high);
-  border-radius: .25rem;
+  background: var(--surface-variant);
+  border-radius: 1px;
 
   &:hover {
     background: var(--outline);
   }
 }
 
+code {
+  padding: .0625rem .3125rem;
+  border-radius: 2px;
+  background: var(--surface-container-lowest);
+  border: .0625rem solid var(--hairline);
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+  font-size: .8125em;
+  word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+// Buttons, leicht.io style: square-cornered, IBM Plex Mono, uppercase and
+// tracked out. `:is(button, .button)` matches BeerCSS's own selector
+// weight, so these win by coming later without needing !important.
+:is(button, .button) {
+  // BeerCSS sets content-box on buttons, overriding the global border-box:
+  // a full-width button (menu items) then got its padding added on top of
+  // 100% and overhung its container.
+  box-sizing: border-box;
+  gap: .5rem;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+:is(button, .button):is(.circle, .square) {
+  border-radius: 2px;
+}
+
+:is(button, .button).border {
+  border: .0625rem solid var(--surface-variant);
+  background: transparent;
+  color: var(--on-surface);
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+:is(button, .button):is(.transparent) {
+  color: var(--on-surface-variant) !important;
+
+  &:hover {
+    color: var(--on-surface) !important;
+  }
+}
+
+:is(button, .button)[disabled] {
+  opacity: .4;
+}
+
+// The small "record" dot on New measurement buttons.
+.rec-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 // Shared text input / select look (dialogs, sidebar search, window select).
 .app-input {
   width: 100%;
-  padding: .5625rem .75rem;
-  border-radius: .5rem;
+  height: 2.375rem;
+  padding: 0 .75rem;
+  border-radius: 2px;
   border: .0625rem solid var(--surface-variant);
   background: var(--surface-container-lowest);
   color: var(--on-surface);
-  font-family: inherit;
+  font-family: var(--font);
   font-size: .875rem;
   user-select: text;
   -webkit-user-select: text;
+  transition: border-color .15s, box-shadow .15s;
 
   &::placeholder {
     color: var(--on-surface-variant);
-    opacity: .7;
+    opacity: .6;
+  }
+
+  &:hover {
+    border-color: var(--outline);
   }
 
   &:focus {
-    outline: .125rem solid var(--primary);
-    outline-offset: -.0625rem;
-    border-color: transparent;
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 .1875rem var(--primary-tint);
   }
+}
+
+select.app-input {
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  letter-spacing: .04em;
 }

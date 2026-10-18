@@ -1,24 +1,36 @@
+@use '../../core/styles/mixins' as *;
+
 .sidebar {
   position: fixed;
   top: var(--menubar-height);
-  bottom: 0;
+  bottom: var(--statusbar-height);
   left: 0;
   z-index: 20;
   display: flex;
   flex-direction: column;
   width: var(--sidebar-width);
-  background: var(--surface-container-low);
-  border-right: .0625rem solid var(--outline-variant);
+  background: rgb(20 19 18 / 0.94);
+  backdrop-filter: blur(.5rem);
+  -webkit-backdrop-filter: blur(.5rem);
+  border-right: .0625rem solid var(--hairline);
+  // A BeerCSS sibling rule gives the <aside> a 1rem top margin, which
+  // opened a gap under the menu bar.
+  margin: 0 !important;
   transform: translateX(-100%);
   transition: transform .2s ease;
 
   &.open {
     transform: translateX(0);
   }
+
+  // Docked on wide screens -- never hidden, whatever the drawer state.
+  @media only screen and (min-width: 901px) {
+    transform: none;
+    transition: none;
+  }
 }
 
-// Only the drawer layout gets a scrim; on wide screens the sidebar is a
-// column the main area makes room for (see appshell.scss).
+// Only the drawer layout gets a scrim.
 .sidebar-scrim {
   display: none;
 
@@ -26,9 +38,10 @@
     &.visible {
       display: block;
       position: fixed;
-      inset: var(--menubar-height) 0 0 0;
+      inset: var(--menubar-height) 0 var(--statusbar-height) 0;
       z-index: 19;
       background: var(--overlay);
+      backdrop-filter: blur(.125rem);
     }
   }
 }
@@ -37,16 +50,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem .75rem .5rem 1rem;
+  padding: 1.125rem .75rem .625rem 1rem;
 }
 
 .sidebar-title {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
   margin: 0;
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  @include mono-label(.6875rem, .14em);
   color: var(--on-surface-variant);
+}
+
+.sidebar-title-count {
+  color: var(--primary);
+  letter-spacing: .04em;
 }
 
 .sidebar-search {
@@ -59,31 +77,35 @@
     position: absolute;
     top: 50%;
     left: .625rem;
+    z-index: 1;
     transform: translateY(-50%);
-    color: var(--on-surface-variant);
+    color: var(--outline);
     pointer-events: none;
   }
 
   .app-input {
+    height: 2.125rem;
     padding-left: 2.125rem;
+    font-size: .8125rem;
   }
 }
 
 .sidebar-tree {
   flex: 1;
   overflow-y: auto;
-  padding: 0 .5rem 1rem;
+  padding: .25rem .5rem 1rem;
+  border-top: .0625rem solid var(--hairline);
 }
 
 .sidebar-empty {
-  margin: .5rem;
+  margin: .75rem .5rem;
   color: var(--on-surface-variant);
   font-size: .8125rem;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-.sidebar-group + .sidebar-group {
-  margin-top: .25rem;
+.sidebar-group {
+  padding-top: .375rem;
 }
 
 .sidebar-group-header {
@@ -102,6 +124,7 @@
 }
 
 button.sidebar-group-toggle {
+  @include plain-button;
   flex: 1;
   min-width: 0;
   justify-content: flex-start;
@@ -110,7 +133,6 @@ button.sidebar-group-toggle {
   min-height: 2.5rem;
   margin: 0;
   padding: .25rem .5rem .25rem .25rem;
-  border-radius: .5rem;
   text-align: left;
 
   &:hover {
@@ -120,7 +142,7 @@ button.sidebar-group-toggle {
 
 .sidebar-chevron {
   flex-shrink: 0;
-  color: var(--on-surface-variant);
+  color: var(--outline);
   transition: transform .15s ease;
 
   &.expanded {
@@ -138,6 +160,7 @@ button.sidebar-group-toggle {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: .0625rem;
   line-height: 1.25;
 }
 
@@ -151,22 +174,28 @@ button.sidebar-group-toggle {
 }
 
 .sidebar-group-serial {
-  font-size: .75rem;
-  color: var(--on-surface-variant);
-  font-variant-numeric: tabular-nums;
+  @include mono-label(.625rem, .08em);
+  font-weight: 400;
+  color: var(--primary);
 }
 
 .sidebar-count {
   flex-shrink: 0;
-  font-size: .75rem;
+  padding: .0625rem .3125rem;
+  border: .0625rem solid var(--hairline);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: .625rem;
   color: var(--on-surface-variant);
   font-variant-numeric: tabular-nums;
 }
 
+// Measurements hang off a hairline "trace" running down from the folder.
 .sidebar-list {
-  margin: 0;
-  padding: 0 0 0 1.25rem;
+  margin: 0 0 0 .875rem;
+  padding: 0 0 0 .5rem;
   list-style: none;
+  border-left: .0625rem solid var(--hairline);
 }
 
 .sidebar-row {
@@ -174,11 +203,19 @@ button.sidebar-group-toggle {
   align-items: center;
   gap: .25rem;
   padding-left: .25rem;
-  border-radius: .5rem;
+  border-radius: 2px;
+
+  &:hover {
+    background: var(--active);
+  }
 
   &.open {
-    background: var(--surface-container-highest);
+    background: var(--primary-tint);
     box-shadow: inset .125rem 0 0 var(--primary);
+
+    .sidebar-row-name {
+      color: var(--on-primary-container);
+    }
   }
 
   .sidebar-more {
@@ -200,25 +237,65 @@ button.sidebar-group-toggle {
   }
 }
 
+// Square compare checkbox, filled with the measurement's comparison color
+// (set as --check-color), so the sidebar doubles as the chart's legend.
 input.sidebar-check {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
   flex-shrink: 0;
-  width: 1rem;
-  height: 1rem;
+  width: .875rem;
+  height: .875rem;
   margin: 0 .25rem;
-  accent-color: var(--primary);
+  border: .0625rem solid var(--outline);
+  border-radius: 1px;
+  background: transparent;
   cursor: pointer;
+
+  &::before {
+    content: '';
+    width: .5rem;
+    height: .5rem;
+    background: var(--check-color, var(--primary));
+    transform: scale(0);
+    transition: transform .12s ease;
+  }
+
+  &:checked {
+    border-color: var(--check-color, var(--primary));
+
+    &::before {
+      transform: scale(1);
+    }
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--on-surface-variant);
+  }
+
+  &:disabled {
+    opacity: .3;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: .0625rem solid var(--primary);
+    outline-offset: .125rem;
+  }
 }
 
 button.sidebar-row-main {
+  @include plain-button;
   flex: 1;
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
-  gap: .0625rem;
+  gap: .125rem;
   height: auto;
   margin: 0;
-  padding: .375rem .5rem;
-  border-radius: .375rem;
+  padding: .4375rem .5rem;
+  background: transparent;
   text-align: left;
 }
 
@@ -235,43 +312,39 @@ button.sidebar-row-main {
 }
 
 .sidebar-row-meta {
-  font-size: .75rem;
+  font-family: var(--font-mono);
+  font-size: .625rem;
+  letter-spacing: .04em;
   color: var(--on-surface-variant);
 }
 
 .sidebar-live-dot {
-  flex-shrink: 0;
-  width: .4375rem;
-  height: .4375rem;
-  border-radius: 50%;
-  background: var(--good);
-  box-shadow: 0 0 .5rem 0 rgb(12 163 12 / 0.6);
+  @include led(var(--good));
 
   // Not yet stopped, but not connected either -- "still open, no data
   // coming in right now" vs. the green dot's "actively receiving".
   &.disconnected {
-    background: var(--warning);
-    box-shadow: 0 0 .5rem 0 rgb(250 178 25 / 0.6);
+    @include led(var(--warning));
   }
 }
 
 .sidebar-row-empty button {
   color: var(--primary) !important;
-  font-size: .8125rem;
+  font-size: .6875rem;
 }
 
 .sidebar-compare-bar {
   display: flex;
   align-items: center;
   gap: .5rem;
-  padding: .75rem 1rem;
-  border-top: .0625rem solid var(--outline-variant);
-  background: var(--surface-container);
-  font-size: .8125rem;
+  padding: .625rem .75rem .625rem 1rem;
+  border-top: .0625rem solid var(--hairline);
+  background: var(--primary-tint);
 
   span {
     flex: 1;
-    color: var(--on-surface-variant);
+    @include mono-label(.625rem, .1em);
+    color: var(--primary);
   }
 }
 
@@ -279,13 +352,20 @@ button.sidebar-row-main {
 .sidebar-footer {
   display: block;
   min-block-size: auto;
-  padding: .75rem 1rem;
-  border-top: .0625rem solid var(--outline-variant);
-  color: var(--on-surface-variant);
-  font-size: .75rem;
+  padding: .625rem 1rem;
+  border-top: .0625rem solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: .625rem;
+  letter-spacing: .04em;
+  color: var(--outline);
 
   a {
-    color: var(--primary);
+    color: var(--on-surface-variant);
     text-decoration: underline;
+    text-underline-offset: .1875rem;
+
+    &:hover {
+      color: var(--primary);
+    }
   }
 }

@@ -1,0 +1,65 @@
+// Shared visual vocabulary for the instrument look.
+
+// Copper crop marks on two opposite corners of a panel, like registration
+// marks on a technical drawing. Uses ::before/::after, so the element must
+// not need them for anything else. `$offset` pulls them out over the
+// border; use 0 inside a scrolling box (a dialog), where marks poking
+// out by a pixel would make it scrollable.
+@mixin brackets($color: var(--primary), $size: .5rem, $offset: -.0625rem) {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: $size;
+    height: $size;
+    border: 0 solid $color;
+    pointer-events: none;
+  }
+
+  &::before {
+    top: $offset;
+    left: $offset;
+    border-top-width: .0625rem;
+    border-left-width: .0625rem;
+  }
+
+  &::after {
+    right: $offset;
+    bottom: $offset;
+    border-right-width: .0625rem;
+    border-bottom-width: .0625rem;
+  }
+}
+
+// leicht.io's mono label: uppercase IBM Plex Mono, tracked out.
+@mixin mono-label($size: .6875rem, $tracking: .08em) {
+  font-family: var(--font-mono);
+  font-size: $size;
+  font-weight: 500;
+  letter-spacing: $tracking;
+  text-transform: uppercase;
+}
+
+// Undo the global mono/uppercase button look for buttons that are really
+// list rows or links (menu items, sidebar rows, legend chips).
+@mixin plain-button {
+  font-family: var(--font);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+// A small square status LED.
+@mixin led($color, $glow: true) {
+  display: inline-block;
+  flex-shrink: 0;
+  width: .375rem;
+  height: .375rem;
+  border-radius: 1px;
+  background: $color;
+  @if $glow {
+    box-shadow: 0 0 .5rem 0 $color;
+  }
+}

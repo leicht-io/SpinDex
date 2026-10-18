@@ -6,11 +6,15 @@ import FolderIcon from '@mui/icons-material/Folder';
 import InboxIcon from '@mui/icons-material/Inbox';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SearchIcon from '@mui/icons-material/Search';
-import { BLEContext, TrackingContext, UIContext } from '../../context';
+import { BLEContext, DRAWER_BREAKPOINT, TrackingContext, UIContext } from '../../context';
 import { Tracking } from '../../core/storage/db';
 import { folderLabel, groupTrackings, TrackingGroup } from '../../core/tracking/folders';
 import { humanizeDuration } from '../../core/tracking/time';
 import { Menu, useActionMenus } from '../Menu';
+import { useMediaQuery } from '../../core/hooks/useMediaQuery';
+
+// Counts read like instrument channels: 03, 12.
+const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 const formatDate = (timestamp: number): string =>
     new Date(timestamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
@@ -54,7 +58,7 @@ const TrackingRow = ({ tracking }: TrackingRowProps): React.ReactElement => {
                 disabled={ !entry && compare.length >= maxCompare }
                 // The checkbox wears the measurement's comparison color, so the
                 // sidebar doubles as the compare chart's legend.
-                style={ entry ? { accentColor: entry.color } : undefined }
+                style={ entry ? { '--check-color': entry.color } as React.CSSProperties : undefined }
                 onChange={ () => toggleCompare(tracking.id) }
                 aria-label={ `Compare ${ tracking.name }` }
                 title={ !entry && compare.length >= maxCompare ? `Up to ${ maxCompare } measurements can be compared` : 'Compare' } />
@@ -85,15 +89,9 @@ export const Sidebar = (): React.ReactElement => {
     const { folderItems } = useActionMenus();
 
     const [query, setQuery] = React.useState('');
-    const asideRef = React.useRef<HTMLElement>(null);
-
-    // A closed (off-screen) sidebar must not be reachable by Tab. Set on the
-    // DOM node directly: React only learned the `inert` prop in v19.
-    React.useEffect(() => {
-        if (asideRef.current) {
-            asideRef.current.inert = !sidebarOpen;
-        }
-    }, [sidebarOpen]);
+    const isDrawer = useMediaQuery(DRAWER_BREAKPOINT);
+    // Docked on wide screens, so only a closed drawer is ever hidden.
+    const isHidden = isDrawer && !sidebarOpen;
     const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
 
     const normalizedQuery = query.trim().toLowerCase();
@@ -116,11 +114,15 @@ export const Sidebar = (): React.ReactElement => {
             <div className={ `sidebar-scrim ${ sidebarOpen ? 'visible' : '' }` }
                 onClick={ () => setSidebarOpen(false) }
                 aria-hidden="true" />
-            <aside className={ `sidebar ${ sidebarOpen ? 'open' : '' }` }
-                ref={ asideRef }
+            <aside className={ `sidebar ${ isHidden ? '' : 'open' }` }
+                // An off-screen drawer must not be reachable by Tab.
+                inert={ isHidden }
                 aria-label={ 'Measurement library' }>
                 <div className={ 'sidebar-header' }>
-                    <h2 className={ 'sidebar-title' }>Library</h2>
+                    <h2 className={ 'sidebar-title' }>
+                        Library
+                        <span className={ 'sidebar-title-count' }>{pad2(trackings.length)}</span>
+                    </h2>
                     <button className={ 'circle transparent small' }
                         onClick={ () => openDialog({ kind: 'folder' }) }
                         aria-label={ 'New turntable folder' }
@@ -172,7 +174,7 @@ export const Sidebar = (): React.ReactElement => {
                                                 <span className={ 'sidebar-group-serial' }>SN {group.folder.serialNumber}</span>
                                             )}
                                         </span>
-                                        <span className={ 'sidebar-count' }>{group.trackings.length}</span>
+                                        <span className={ 'sidebar-count' }>{pad2(group.trackings.length)}</span>
                                     </button>
                                     {group.folder && (
                                         <Menu label={ <MoreHorizIcon fontSize={ 'small' } /> }

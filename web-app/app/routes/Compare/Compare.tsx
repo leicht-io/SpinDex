@@ -18,7 +18,8 @@ import {
 } from '../../core/tracking/stats';
 import { folderLabel } from '../../core/tracking/folders';
 import { humanizeDuration } from '../../core/tracking/time';
-import { axisTickLabelProps, GapBands } from '../Measurement';
+import { axisTickLabelProps, CHART, GapBands } from '../Measurement';
+import { NARROW_QUERY, useMediaQuery } from '../../core/hooks/useMediaQuery';
 
 // Fewer points per series than the single view's 600: up to eight lines
 // share the chart, and hover bisects every one of them.
@@ -58,6 +59,7 @@ export const Compare = (): React.ReactElement => {
 
     const [loaded, setLoaded] = React.useState<Record<string, LoadedSamples>>({});
     const [isLoading, setIsLoading] = React.useState(false);
+    const narrow = useMediaQuery(NARROW_QUERY);
 
     const ids = compare.map(e => e.id);
     const idsKey = ids.join(',');
@@ -147,13 +149,14 @@ export const Compare = (): React.ReactElement => {
     if (compare.length === 0) {
         return (
             <div className={ 'empty-state' }>
-                <span className={ 'empty-state-ring' }><CompareArrowsIcon /></span>
-                <h2>Compare measurements</h2>
+                <span className={ 'empty-state-reticle' }><CompareArrowsIcon /></span>
+                <span className={ 'empty-state-eyebrow' }>Comparison</span>
+                <h2>Nothing to compare yet</h2>
                 <p className={ 'empty-state-hint' }>
                     Tick the checkboxes next to measurements in the library, or use a folder&apos;s &quot;Compare all&quot;.
                 </p>
                 <div className={ 'empty-state-actions' }>
-                    <button className={ 'primary' }
+                    <button className={ 'primary empty-state-library' }
                         onClick={ () => setSidebarOpen(true) }>Open library</button>
                 </div>
             </div>
@@ -168,7 +171,20 @@ export const Compare = (): React.ReactElement => {
                     <h2 className={ 'view-title' }>
                         {compare.length} measurement{compare.length === 1 ? '' : 's'}
                     </h2>
-                    <span className={ 'view-meta' }>Aligned by time since each recording started</span>
+                    <dl className={ 'view-specs' }>
+                        <div>
+                            <dt>Aligned by</dt>
+                            <dd>Time since start</dd>
+                        </div>
+                        <div>
+                            <dt>Longest</dt>
+                            <dd>{formatElapsed(xMax)}</dd>
+                        </div>
+                        <div>
+                            <dt>Turntables</dt>
+                            <dd>{new Set(series.map(s => s.tracking.folderId ?? '')).size}</dd>
+                        </div>
+                    </dl>
                 </div>
                 <div className={ 'view-actions' }>
                     <button className={ 'border' }
@@ -193,7 +209,7 @@ export const Compare = (): React.ReactElement => {
                                 title={ 'Open measurement' }>
                                 {tracking.name}
                             </button>
-                            <button className={ 'circle transparent small' }
+                            <button className={ 'square transparent small' }
                                 onClick={ () => toggleCompare(entry.id) }
                                 aria-label={ `Remove ${ tracking.name } from comparison` }>
                                 <CloseIcon fontSize={ 'small' } />
@@ -208,84 +224,90 @@ export const Compare = (): React.ReactElement => {
             )}
 
             <div className={ `compare-chart ${ isLoading ? 'loading' : '' }` }>
-                <XYChart xScale={ { type: 'linear', domain: [0, xMax] } }
-                    yScale={ { type: 'linear', domain: yDomain, zero: false } }
-                    // The legend sits above the chart, so the default 50px top
-                    // margin is just dead space.
-                    margin={ { top: 16, right: 24, bottom: 40, left: 48 } }>
-                    <GapBands gaps={ series.length === 1 ? series[0].gaps : [] } />
+                <div className={ 'chart-panel-header' }>
+                    <span>Speed · rpm</span>
+                    <span className={ 'chart-panel-window' }>Elapsed · h:mm:ss</span>
+                </div>
+                <div className={ 'compare-chart-plot' }>
+                    <XYChart xScale={ { type: 'linear', domain: [0, xMax] } }
+                        yScale={ { type: 'linear', domain: yDomain, zero: false } }
+                        // The legend sits above the chart, so the default 50px top
+                        // margin is just dead space.
+                        margin={ { top: 16, right: 24, bottom: 40, left: 48 } }>
+                        <GapBands gaps={ series.length === 1 ? series[0].gaps : [] } />
 
-                    <Grid strokeDasharray={ '2 4' }
-                        stroke={ '#2c2c2a' }
-                        numTicks={ 5 } />
+                        <Grid strokeDasharray={ '1 3' }
+                            stroke={ CHART.grid }
+                            numTicks={ 5 } />
 
-                    {series.flatMap(s => s.segments.map((segment, i) => (
-                        <LineSeries
-                            key={ segmentKey(s.tracking.id, i) }
-                            dataKey={ segmentKey(s.tracking.id, i) }
-                            data={ segment }
-                            xAccessor={ xAccessor }
-                            yAccessor={ yAccessor }
-                            stroke={ s.color }
-                            strokeWidth={ 2 }
-                        />
-                    )))}
+                        {series.flatMap(s => s.segments.map((segment, i) => (
+                            <LineSeries
+                                key={ segmentKey(s.tracking.id, i) }
+                                dataKey={ segmentKey(s.tracking.id, i) }
+                                data={ segment }
+                                xAccessor={ xAccessor }
+                                yAccessor={ yAccessor }
+                                stroke={ s.color }
+                                strokeWidth={ 2 }
+                            />
+                        )))}
 
-                    <Axis
-                        numTicks={ 6 }
-                        tickFormat={ (d: number) => formatElapsed(d) }
-                        stroke={ '#383835' }
-                        tickStroke={ '#383835' }
-                        tickLabelProps={ () => axisTickLabelProps }
-                        orientation="bottom" />
-                    <Axis
-                        numTicks={ 6 }
-                        stroke={ '#383835' }
-                        tickStroke={ '#383835' }
-                        tickLabelProps={ () => axisTickLabelProps }
-                        orientation="left" />
+                        <Axis
+                            numTicks={ narrow ? 3 : 6 }
+                            tickFormat={ (d: number) => formatElapsed(d) }
+                            stroke={ CHART.axis }
+                            tickStroke={ CHART.axis }
+                            tickLabelProps={ () => axisTickLabelProps }
+                            orientation="bottom" />
+                        <Axis
+                            numTicks={ 6 }
+                            stroke={ CHART.axis }
+                            tickStroke={ CHART.axis }
+                            tickLabelProps={ () => axisTickLabelProps }
+                            orientation="left" />
 
-                    <Tooltip<Bucket>
-                        snapTooltipToDatumX={ true }
-                        showVerticalCrosshair={ true }
-                        verticalCrosshairStyle={ { stroke: '#66655f', strokeWidth: 1 } }
-                        className={ 'chart-tooltip' }
-                        unstyled={ true }
-                        applyPositionStyle={ true }
-                        renderTooltip={ ({ tooltipData }) => {
-                            const x = tooltipData?.nearestDatum?.datum?.timestamp;
-                            if (x === undefined) {
-                                return null;
-                            }
-                            // datumByKey holds the nearest point of *every* segment,
-                            // however far away -- keep the closest one per measurement,
-                            // and only if it's actually near the hovered time.
-                            const tolerance = xMax / COMPARE_CHART_POINTS * 2;
-                            const nearest = new Map<string, Bucket>();
-                            for (const { key, datum } of Object.values(tooltipData?.datumByKey ?? {})) {
-                                const id = key.split('::')[0];
-                                const current = nearest.get(id);
-                                if (datum && Math.abs(datum.timestamp - x) <= tolerance
-                                    && (!current || Math.abs(datum.timestamp - x) < Math.abs(current.timestamp - x))) {
-                                    nearest.set(id, datum);
+                        <Tooltip<Bucket>
+                            snapTooltipToDatumX={ true }
+                            showVerticalCrosshair={ true }
+                            verticalCrosshairStyle={ { stroke: CHART.accent, strokeWidth: 1, strokeDasharray: '3 3' } }
+                            className={ 'chart-tooltip' }
+                            unstyled={ true }
+                            applyPositionStyle={ true }
+                            renderTooltip={ ({ tooltipData }) => {
+                                const x = tooltipData?.nearestDatum?.datum?.timestamp;
+                                if (x === undefined) {
+                                    return null;
                                 }
-                            }
-                            return (
-                                <>
-                                    <div className={ 'chart-tooltip-title' }>{formatElapsed(x)} elapsed</div>
-                                    {compare.filter(e => nearest.has(e.id)).map(e => (
-                                        <div key={ e.id }
-                                            className={ 'chart-tooltip-row' }>
-                                            <span className={ 'chart-tooltip-swatch' }
-                                                style={ { background: e.color } } />
-                                            <span className={ 'chart-tooltip-name' }>{seriesById.get(e.id)?.tracking.name}</span>
-                                            <strong>{nearest.get(e.id)?.value.toFixed(2)}</strong>
-                                        </div>
-                                    ))}
-                                </>
-                            );
-                        } } />
-                </XYChart>
+                                // datumByKey holds the nearest point of *every* segment,
+                                // however far away -- keep the closest one per measurement,
+                                // and only if it's actually near the hovered time.
+                                const tolerance = xMax / COMPARE_CHART_POINTS * 2;
+                                const nearest = new Map<string, Bucket>();
+                                for (const { key, datum } of Object.values(tooltipData?.datumByKey ?? {})) {
+                                    const id = key.split('::')[0];
+                                    const current = nearest.get(id);
+                                    if (datum && Math.abs(datum.timestamp - x) <= tolerance
+                                    && (!current || Math.abs(datum.timestamp - x) < Math.abs(current.timestamp - x))) {
+                                        nearest.set(id, datum);
+                                    }
+                                }
+                                return (
+                                    <>
+                                        <div className={ 'chart-tooltip-title' }>{formatElapsed(x)} elapsed</div>
+                                        {compare.filter(e => nearest.has(e.id)).map(e => (
+                                            <div key={ e.id }
+                                                className={ 'chart-tooltip-row' }>
+                                                <span className={ 'chart-tooltip-swatch' }
+                                                    style={ { background: e.color } } />
+                                                <span className={ 'chart-tooltip-name' }>{seriesById.get(e.id)?.tracking.name}</span>
+                                                <strong>{nearest.get(e.id)?.value.toFixed(2)}</strong>
+                                            </div>
+                                        ))}
+                                    </>
+                                );
+                            } } />
+                    </XYChart>
+                </div>
             </div>
 
             <div className={ 'compare-table-wrapper' }>

@@ -1,3 +1,5 @@
+@use '../../core/styles/mixins' as *;
+
 .compare-legend {
   display: flex;
   flex-wrap: wrap;
@@ -13,12 +15,13 @@
   gap: .25rem;
   max-width: 100%;
   padding: .125rem .125rem .125rem .75rem;
-  border-radius: 1.25rem;
-  background: var(--surface-container-high);
-  border: .0625rem solid var(--outline-variant);
+  border-radius: 2px;
+  background: rgb(27 26 25 / 0.9);
+  border: .0625rem solid var(--hairline);
 }
 
 button.compare-chip-name {
+  @include plain-button;
   min-width: 0;
   height: 2rem;
   margin: 0;
@@ -27,8 +30,11 @@ button.compare-chip-name {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: .8125rem;
-  font-weight: 400;
   color: var(--on-surface) !important;
+
+  &:hover {
+    color: var(--primary) !important;
+  }
 }
 
 // A short line segment -- the same mark the chart draws.
@@ -36,66 +42,73 @@ button.compare-chip-name {
   display: inline-block;
   flex-shrink: 0;
   width: 1rem;
-  height: .1875rem;
-  border-radius: .125rem;
+  height: .125rem;
 }
 
 .compare-hint {
   margin: 0 0 1rem;
-  color: var(--on-surface-variant);
   font-size: .8125rem;
+  color: var(--on-surface-variant);
 }
 
-// Not .chart-wrapper: that one is a `flex: 1` item sized by min-height,
-// which leaves XYChart's 100%-height ParentSize with an indefinite height
-// to resolve against (it measures 0 and the chart never renders). A plain
-// fixed height doesn't have that problem.
 .compare-chart {
-  flex: none;
-  height: clamp(18rem, 50vh, 32rem);
+  @include brackets(var(--primary), .5rem);
+  border: .0625rem solid var(--hairline);
+  border-radius: 2px;
+  background: rgb(20 19 18 / 0.7);
   transition: opacity .2s;
-
-  svg {
-    overflow: visible;
-  }
 
   &.loading {
     opacity: .5;
   }
 }
 
+// A plain fixed height, not a flex/min-height-sized box: XYChart's
+// 100%-height ParentSize needs a definite height to resolve against, or
+// it measures 0 and the chart never renders.
+.compare-chart-plot {
+  height: clamp(18rem, 50vh, 32rem);
+  padding-right: .5rem;
+
+  svg {
+    overflow: visible;
+  }
+}
+
 .chart-tooltip {
+  @include brackets(var(--primary), .375rem);
   z-index: 40;
-  min-width: 12rem;
+  min-width: 13rem;
   max-width: 20rem;
   padding: .625rem .75rem;
-  border-radius: .5rem;
+  border-radius: 2px;
   border: .0625rem solid var(--surface-variant);
-  background: var(--surface-container-highest);
+  background: rgb(27 26 25 / 0.96);
   box-shadow: var(--elevate2);
   color: var(--on-surface);
-  font-family: Roboto, sans-serif;
+  font-family: var(--font);
   font-size: .75rem;
   pointer-events: none;
 }
 
 .chart-tooltip-title {
-  margin-bottom: .375rem;
-  color: var(--on-surface-variant);
-  font-variant-numeric: tabular-nums;
+  margin-bottom: .5rem;
+  padding-bottom: .375rem;
+  border-bottom: .0625rem solid var(--hairline);
+  @include mono-label(.625rem, .1em);
+  color: var(--primary);
 }
 
 .chart-tooltip-row {
   display: flex;
   align-items: center;
   gap: .5rem;
-  line-height: 1.6;
+  line-height: 1.7;
 
   .chart-tooltip-swatch {
     flex: 0 0 auto;
     width: .75rem;
-    height: .1875rem;
-    border-radius: .125rem;
+    height: .125rem;
   }
 
   .chart-tooltip-name {
@@ -103,19 +116,22 @@ button.compare-chip-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--on-surface-variant);
   }
 
   strong {
+    font-family: var(--font-mono);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
   }
 }
 
 .compare-table-wrapper {
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   overflow-x: auto;
-  border-radius: .625rem;
-  border: .0625rem solid var(--outline-variant);
+  border-radius: 2px;
+  border: .0625rem solid var(--hairline);
+  background: rgb(20 19 18 / 0.7);
 }
 
 .compare-table {
@@ -125,27 +141,33 @@ button.compare-chip-name {
 
   th,
   td {
-    padding: .625rem .875rem;
+    padding: .625rem 1rem;
     text-align: left;
     white-space: nowrap;
-    border-bottom: .0625rem solid var(--outline-variant);
+    border-bottom: .0625rem solid var(--hairline);
   }
 
   th {
-    background: var(--surface-container-high);
-    font-size: .6875rem;
-    font-weight: 500;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--on-surface-variant);
+    @include mono-label(.5625rem, .14em);
+    color: var(--outline);
+    background: var(--surface-container-lowest);
+  }
+
+  td {
+    color: var(--on-surface);
   }
 
   tbody tr:last-child td {
     border-bottom: none;
   }
 
+  tbody tr:hover td {
+    background: var(--active);
+  }
+
   .num {
     text-align: right;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
 }
@@ -153,12 +175,16 @@ button.compare-chip-name {
 .compare-table-name {
   display: inline-flex;
   align-items: center;
-  gap: .625rem;
+  gap: .75rem;
 
   small {
     display: block;
-    color: var(--on-surface-variant);
-    font-size: .75rem;
+    margin-top: .125rem;
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--primary);
   }
 }
 

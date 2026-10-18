@@ -8,7 +8,9 @@ export type DialogState =
     | { kind: 'rename'; tracking: Tracking }
     | { kind: 'move'; tracking: Tracking }
     | { kind: 'deleteTracking'; tracking: Tracking }
-    | { kind: 'deleteFolder'; folder: Folder };
+    | { kind: 'deleteFolder'; folder: Folder }
+    | { kind: 'bluetoothHelp' }
+    | { kind: 'changelog' };
 
 export interface CompareEntry {
     id: string;
@@ -33,6 +35,8 @@ export interface IUIContextProps {
     compareMany: (ids: string[]) => void;
     clearCompare: () => void;
 
+    // Whether the library drawer is open. Only meaningful on narrow screens
+    // (see DRAWER_BREAKPOINT); on wider ones the library is always docked.
     sidebarOpen: boolean;
     setSidebarOpen: (open: boolean) => void;
 

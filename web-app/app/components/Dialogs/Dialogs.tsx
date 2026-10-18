@@ -3,7 +3,10 @@ import './dialogs.scss';
 import { TrackingContext, UIContext } from '../../context';
 import { Folder, Tracking } from '../../core/storage/db';
 import { Dialog, Field } from '../Dialog';
+import { Select } from '../Menu';
 import { findFolder, folderLabel } from '../../core/tracking/folders';
+import { BluetoothHelpDialog } from './BluetoothHelpDialog';
+import { ChangelogDialog } from './ChangelogDialog';
 import { NewMeasurementDialog } from './NewMeasurementDialog';
 
 const FolderDialog = ({ folder }: { folder?: Folder }): React.ReactElement => {
@@ -92,15 +95,12 @@ const MoveDialog = ({ tracking }: { tracking: Tracking }): React.ReactElement =>
             } }
             submitLabel={ 'Move' }>
             <Field label={ `Move "${ tracking.name }" to` }>
-                <select className={ 'app-input' }
-                    value={ folderId }
-                    onChange={ (e) => setFolderId(e.target.value) }>
-                    {folders.map(folder => (
-                        <option key={ folder.id }
-                            value={ folder.id }>{folderLabel(folder)}</option>
-                    ))}
-                    <option value={ '' }>No folder</option>
-                </select>
+                <Select value={ folderId }
+                    onChange={ setFolderId }
+                    options={ [
+                        ...folders.map(folder => ({ value: folder.id, label: folderLabel(folder) })),
+                        { value: '', label: 'No folder', divider: true },
+                    ] } />
             </Field>
         </Dialog>
     );
@@ -162,6 +162,10 @@ export const DialogHost = (): React.ReactElement | null => {
             return <DeleteTrackingDialog tracking={ dialog.tracking } />;
         case 'deleteFolder':
             return <DeleteFolderDialog folder={ dialog.folder } />;
+        case 'bluetoothHelp':
+            return <BluetoothHelpDialog />;
+        case 'changelog':
+            return <ChangelogDialog />;
         default:
             return null;
     }

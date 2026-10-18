@@ -5,7 +5,7 @@
     <title>SpinDex — Turntable RPM Monitor for the Beogram 4000</title>
     <meta name="description" content="SpinDex is a free, open source RPM monitor for the Bang &amp; Olufsen Beogram 4000 series. Pair over Web Bluetooth to log turntable speed for hours, see deviation from 33⅓/45 RPM live and export sessions as CSV.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <meta name="theme-color" content="#0d0d0d">
+    <meta name="theme-color" content="#0f0e0d">
     <meta name="author" content="Christian Leicht">
     <link rel="canonical" href="https://spindex.leicht.io/">
 
@@ -20,8 +20,9 @@
     <meta property="og:image:alt" content="SpinDex dashboard showing a live RPM chart and current, min and max speed">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="icon" type="image/x-icon" href="./assets/icons/favicon.ico">
-    <link rel="apple-touch-icon" href="./assets/icons/512x512.png">
+    <link rel="icon" type="image/svg+xml" href="./assets/icons/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="./assets/icons/favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="./site.webmanifest">
 
     <script type="application/ld+json">
@@ -42,55 +43,34 @@
     </script>
 
     <style>
+        html, body {
+            margin: 0;
+            background: #0f0e0d;
+        }
+
+        /* The SpinDex mark, its platter turning, until React takes over.
+           Fixed, not margin-centred: a margin collapsing through #app was
+           the page's only layout shift (CLS 0.12) once React replaced it. */
         .spinner {
-            width: 40px;
-            height: 40px;
-
-            /* Fixed, not `margin: 100px auto`: that margin collapsed through
-               #app, pushing it down 100px until React replaced the spinner and
-               it jumped back up -- the page's only layout shift (CLS 0.12). */
             position: fixed;
-            top: 100px;
-            left: calc(50% - 20px);
+            top: calc(50% - 32px);
+            left: calc(50% - 32px);
+            width: 64px;
+            height: 64px;
+            color: #e8e4de;
         }
 
-        .double-bounce1, .double-bounce2 {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background-color: var(--primary, #3987e5);
-            opacity: 0.6;
-            position: absolute;
-            top: 0;
-            left: 0;
-
-            -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
-            animation: sk-bounce 2.0s infinite ease-in-out;
+        .spinner .platter {
+            transform-origin: 16px 16px;
+            animation: spinner-turn 1.8s linear infinite;
         }
 
-        .double-bounce2 {
-            -webkit-animation-delay: -1.0s;
-            animation-delay: -1.0s;
+        @keyframes spinner-turn {
+            to { transform: rotate(360deg); }
         }
 
-        @-webkit-keyframes sk-bounce {
-            0%, 100% {
-                -webkit-transform: scale(0.0)
-            }
-            50% {
-                -webkit-transform: scale(1.0)
-            }
-        }
-
-        @keyframes sk-bounce {
-            0%, 100% {
-                transform: scale(0.0);
-                -webkit-transform: scale(0.0);
-            }
-            50% {
-                transform: scale(1.0);
-                -webkit-transform: scale(1.0);
-            }
+        @media (prefers-reduced-motion: reduce) {
+            .spinner .platter { animation: none; }
         }
     </style>
 </head>
@@ -104,10 +84,7 @@
     </p>
 </noscript>
 <div id="app">
-    <div class="spinner">
-        <div class="double-bounce1"></div>
-        <div class="double-bounce2"></div>
-    </div>
+    <svg class="spinner" viewBox="0 0 32 32" aria-label="Loading SpinDex" role="img"><defs><clipPath id="p"><circle cx="16" cy="16" r="7.25"/></clipPath></defs><path d="M19.041 4.650L19.559 2.719M21.875 5.824L22.875 4.092M24.309 7.691L25.723 6.277M26.176 10.125L27.908 9.125M27.350 12.959L29.281 12.441M27.750 16.000L29.750 16.000M27.350 19.041L29.281 19.559M26.176 21.875L27.908 22.875M24.309 24.309L25.723 25.723M21.875 26.176L22.875 27.908M19.041 27.350L19.559 29.281M16.000 27.750L16.000 29.750M12.959 27.350L12.441 29.281M10.125 26.176L9.125 27.908M7.691 24.309L6.277 25.723M5.824 21.875L4.092 22.875M4.650 19.041L2.719 19.559M4.250 16.000L2.250 16.000M4.650 12.959L2.719 12.441M5.824 10.125L4.092 9.125M7.691 7.691L6.277 6.277M10.125 5.824L9.125 4.092M12.959 4.650L12.441 2.719" stroke="#e8e4de" stroke-opacity="0.45" stroke-width="1.0"/><g class="platter"><circle cx="16" cy="16" r="8.5" fill="none" stroke="#e8e4de" stroke-width="1.0"/><g clip-path="url(#p)" fill="#e8e4de"><rect x="7" y="8.675" width="18" height="1.15"/><rect x="7" y="10.925" width="18" height="1.15"/><rect x="7" y="13.175" width="18" height="1.15"/><rect x="7" y="15.425" width="18" height="1.15"/><rect x="7" y="17.675" width="18" height="1.15"/><rect x="7" y="19.925" width="18" height="1.15"/><rect x="7" y="22.175" width="18" height="1.15"/></g></g><circle cx="16" cy="16" r="2.5" fill="#0f0e0d"/><circle cx="16" cy="16" r="1.25" fill="#e07a4f"/><line x1="16" y1="0.5" x2="16" y2="6.6" stroke="#e07a4f" stroke-width="1.5"/></svg>
 </div>
 <script src="./index.tsx" type="module"></script>
 </body>

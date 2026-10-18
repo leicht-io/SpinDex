@@ -5,14 +5,15 @@ import { TrackingContext } from '../TrackingContext';
 export const UIContext = React.createContext({} as IUIContextProps);
 
 // The dataviz skill's categorical palette, dark-surface steps, in its
-// fixed order (validated for overlapping lines on a dark surface; slot 1 is
-// the app's --primary). Eight slots is also the comparison cap -- a 9th
-// series would need a generated hue.
+// fixed order (validated for overlapping lines on a dark surface). Eight
+// slots is also the comparison cap -- a 9th series would need a generated
+// hue.
 export const COMPARE_COLORS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'];
 
-// Below this width the sidebar is an overlay drawer rather than a column,
-// so it closes itself whenever the view changes underneath it.
-const DRAWER_BREAKPOINT = '(max-width: 900px)';
+// Below this width the sidebar is an overlay drawer rather than a docked
+// column, so it closes itself whenever the view changes underneath it.
+// Above it the sidebar is always shown -- it can't be hidden.
+export const DRAWER_BREAKPOINT = '(max-width: 900px)';
 
 const isDrawerLayout = (): boolean => window.matchMedia(DRAWER_BREAKPOINT).matches;
 
@@ -21,7 +22,7 @@ export const UIProvider = (props: IUIProviderProps): React.ReactElement => {
 
     const [viewMode, setViewModeState] = React.useState<ViewMode>('measurement');
     const [selection, setSelection] = React.useState<CompareEntry[]>([]);
-    const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(() => !isDrawerLayout());
+    const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(false);
     const [dialog, setDialog] = React.useState<DialogState | null>(null);
 
     // Derived rather than pruned on delete, so a deleted measurement just

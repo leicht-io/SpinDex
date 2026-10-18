@@ -1,3 +1,5 @@
+@use '../../core/styles/mixins' as *;
+
 .dialog-note {
   display: flex;
   flex-wrap: wrap;
@@ -6,17 +8,236 @@
   gap: .75rem;
   margin: 0;
   padding: .75rem 1rem;
-  border-radius: .5rem;
+  border-radius: 2px;
   background: var(--surface-container-lowest);
-  border: .0625rem solid var(--surface-variant);
+  border: .0625rem solid var(--hairline);
+  border-left: .125rem solid var(--outline);
+  color: var(--on-surface);
+}
 
-  button {
+.dialog-note-warning {
+  border-left-color: var(--warning);
+}
+
+// --- Bluetooth help ---
+
+.help-section {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding-top: 1rem;
+  border-top: .0625rem solid var(--hairline);
+
+  > button {
+    align-self: flex-start;
+  }
+}
+
+.help-heading {
+  margin: 0;
+  @include mono-label(.6875rem, .14em);
+  color: var(--primary);
+}
+
+.help-browsers {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: .0625rem solid var(--hairline);
+  border-radius: 2px;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem 1fr auto;
+    align-items: baseline;
+    gap: .625rem;
+    padding: .5rem .75rem;
+    font-size: .8125rem;
+
+    & + li {
+      border-top: .0625rem solid var(--hairline);
+    }
+
+    &.unsupported {
+      opacity: .6;
+    }
+
+    @media only screen and (max-width: 520px) {
+      grid-template-columns: 1.25rem 1fr;
+
+      .help-browser-platforms {
+        grid-column: 2;
+      }
+    }
+  }
+}
+
+// ✓ / ✕ in mono, colored -- paired with the aria-label, never color alone.
+.help-browser-mark {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--good);
+
+  .unsupported & {
+    color: var(--critical);
+  }
+}
+
+.help-browser-name {
+  color: var(--on-surface);
+
+  small {
+    color: var(--on-surface-variant);
+    font-size: .75rem;
+  }
+}
+
+.help-browser-platforms {
+  font-family: var(--font-mono);
+  font-size: .6875rem;
+  letter-spacing: .02em;
+  color: var(--on-surface-variant);
+  text-align: right;
+
+  @media only screen and (max-width: 520px) {
+    text-align: left;
+  }
+}
+
+// Numbered steps, leicht.io style: a copper 01 / 02 / 03 above each.
+.help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+
+  // Number positioned absolutely rather than a grid column: steps mix text
+  // with <code>/<em>, and a grid would make each of those its own cell.
+  li {
+    position: relative;
+    padding-left: 1.75rem;
+    color: var(--on-surface);
+    counter-increment: step;
+
+    &::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      top: .1875rem;
+      left: 0;
+      font-family: var(--font-mono);
+      font-size: .6875rem;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: var(--primary);
+    }
+  }
+}
+
+.help-note {
+  font-size: .8125rem;
+}
+
+// --- Changelog ---
+
+.changelog-release {
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+
+  & + & {
+    padding-top: 1.25rem;
+    border-top: .0625rem solid var(--hairline);
+  }
+}
+
+.changelog-release-header {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+
+.changelog-version {
+  padding: .125rem .5rem;
+  border: .0625rem solid var(--primary);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: var(--primary);
+}
+
+.changelog-latest {
+  @include mono-label(.5625rem, .14em);
+  color: var(--good);
+}
+
+.changelog-date {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: .6875rem;
+  letter-spacing: .04em;
+  color: var(--outline);
+}
+
+.changelog-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+
+.changelog-section {
+  display: flex;
+  gap: .75rem;
+
+  // !important: a BeerCSS sibling rule adds a 1rem top margin, which
+  // dropped each list below its label.
+  ul {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    margin: 0 !important;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    padding-left: .875rem;
+    font-size: .8125rem;
+    color: var(--on-surface-variant);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: .5625rem;
+      left: 0;
+      width: .375rem;
+      height: .0625rem;
+      background: var(--outline);
+    }
+  }
+
+  @media only screen and (max-width: 480px) {
+    flex-direction: column;
     gap: .375rem;
   }
 }
 
-.dialog-note-warning {
-  border-color: rgb(250 178 25 / 0.4);
-  color: var(--on-surface);
-}
+.changelog-section-label {
+  flex: 0 0 4.5rem;
+  margin: 0 !important;
+  padding-top: .125rem;
+  @include mono-label(.5625rem, .14em);
+  color: var(--on-surface-variant);
 
+  &.section-added { color: var(--primary); }
+}

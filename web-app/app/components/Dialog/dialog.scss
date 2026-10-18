@@ -1,22 +1,63 @@
+@use '../../core/styles/mixins' as *;
+
 dialog.app-dialog {
+  @include brackets(var(--primary), .625rem, 0);
   width: min(28rem, calc(100vw - 2rem));
   min-inline-size: 0;
-  inset: 12% auto auto 50%;
-  padding: 1.5rem;
-  border-radius: 1rem;
+  max-block-size: calc(100dvh - 4rem);
+  inset: 10% auto auto 50%;
+  // The form scrolls, not the dialog, so the crop marks stay pinned to
+  // the dialog's corners however long the content is.
+  padding: 0;
+  overflow: hidden;
+  border-radius: 2px;
   border: .0625rem solid var(--surface-variant);
-  background: var(--surface-container-high);
+  background: var(--surface-container);
+  box-shadow: var(--elevate3), 0 0 0 .0625rem rgb(0 0 0 / 0.4);
 
-  &::backdrop {
-    background: rgb(0 0 0 / 0.6);
-    backdrop-filter: blur(.125rem);
+  &.wide {
+    width: min(36rem, calc(100vw - 2rem));
+    inset-block-start: 6%;
   }
+
+  > form {
+    max-block-size: calc(100dvh - 4rem);
+    padding: 1.5rem 1.5rem 1.25rem;
+    overflow-y: auto;
+  }
+
+  // BeerCSS hides every dialog::backdrop (opacity 0, visibility hidden)
+  // unless the dialog was opened as a popover; these are showModal()
+  // dialogs, so the backdrop has to be switched back on explicitly.
+  &::backdrop {
+    opacity: 1;
+    visibility: visible;
+    background:
+      linear-gradient(rgb(224 122 79 / 0.04) .0625rem, transparent .0625rem) 0 0 / 100% .1875rem,
+      rgb(8 7 7 / 0.72);
+    backdrop-filter: blur(.25rem) saturate(.8);
+    -webkit-backdrop-filter: blur(.25rem) saturate(.8);
+    animation: dialog-backdrop-in .18s ease-out;
+  }
+
+  &[open] {
+    animation: dialog-in .18s ease-out;
+  }
+}
+
+.app-dialog-eyebrow {
+  display: block;
+  margin-bottom: .375rem;
+  @include mono-label(.625rem, .14em);
+  color: var(--primary);
 }
 
 .app-dialog-title {
   margin: 0 0 1.25rem;
   font-size: 1.25rem;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  color: var(--on-surface);
 }
 
 .app-dialog-body {
@@ -25,10 +66,15 @@ dialog.app-dialog {
   gap: 1rem;
   color: var(--on-surface-variant);
   font-size: .875rem;
-  line-height: 1.5;
+  line-height: 1.55;
 
   p {
     margin: 0;
+  }
+
+  strong {
+    color: var(--on-surface);
+    font-weight: 500;
   }
 }
 
@@ -37,6 +83,8 @@ dialog.app-dialog {
   justify-content: flex-end;
   gap: .5rem;
   margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: .0625rem solid var(--hairline);
 }
 
 button.app-dialog-danger {
@@ -52,9 +100,7 @@ button.app-dialog-danger {
 }
 
 .app-field-label {
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .04em;
+  @include mono-label(.625rem, .12em);
   color: var(--on-surface-variant);
 }
 
@@ -71,5 +117,22 @@ button.app-dialog-danger {
 
   @media only screen and (max-width: 480px) {
     grid-template-columns: 1fr;
+  }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translate(-50%, .5rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes dialog-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.app-dialog[open],
+  dialog.app-dialog::backdrop {
+    animation: none;
   }
 }

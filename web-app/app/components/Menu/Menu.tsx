@@ -1,6 +1,7 @@
 import * as React from 'react';
 import './menu.scss';
 import CheckIcon from '@mui/icons-material/Check';
+import { usePopover } from './usePopover';
 
 export interface MenuItem {
     label: string;
@@ -39,6 +40,8 @@ export const Menu = ({ label, ariaLabel, triggerClassName, items, align = 'start
     const listRef = React.useRef<HTMLDivElement>(null);
     const menuId = React.useId();
 
+    usePopover(open, triggerRef, listRef, { align });
+
     React.useEffect(() => {
         if (!open) {
             return;
@@ -63,7 +66,9 @@ export const Menu = ({ label, ariaLabel, triggerClassName, items, align = 'start
 
     const onListKeyDown = (e: React.KeyboardEvent): void => {
         if (e.key === 'Escape') {
+            // Don't let it also reach an enclosing <dialog> and close that.
             e.preventDefault();
+            e.stopPropagation();
             close();
             return;
         }
@@ -109,7 +114,8 @@ export const Menu = ({ label, ariaLabel, triggerClassName, items, align = 'start
                     id={ menuId }
                     ref={ listRef }
                     role="menu"
-                    className={ `menu-list align-${ align }` }
+                    popover="manual"
+                    className={ 'menu-list' }
                     onKeyDown={ onListKeyDown }>
                     {items.map((entry, i) => {
                         if (entry === 'divider') {

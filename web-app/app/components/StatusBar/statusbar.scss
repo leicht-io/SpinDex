@@ -1,0 +1,141 @@
+@use '../../core/styles/mixins' as *;
+
+// BeerCSS makes every <footer> a 5rem grid -- this is a single flex row.
+footer.statusbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-block-size: 0;
+  height: var(--statusbar-height);
+  padding: 0 1rem;
+  background: var(--surface-container-lowest);
+  border-top: .0625rem solid var(--hairline);
+  @include mono-label(.625rem, .1em);
+  font-weight: 400;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.statusbar-group {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+}
+
+.statusbar-right {
+  margin-left: auto;
+
+  @media only screen and (max-width: 600px) {
+    .statusbar-detail {
+      display: none;
+    }
+  }
+}
+
+.statusbar-detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--outline);
+
+  @media only screen and (max-width: 720px) {
+    display: none;
+  }
+}
+
+.statusbar-value {
+  color: var(--on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.statusbar-led {
+  @include led(var(--outline), false);
+
+  &.connected { @include led(var(--good)); }
+  &.searching {
+    @include led(var(--primary));
+    animation: statusbar-blink 1s steps(2, jump-none) infinite;
+  }
+  &.unusable { @include led(var(--warning)); }
+}
+
+// Reset BeerCSS's button look down to an inline text link.
+button.statusbar-link {
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: var(--primary);
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  text-underline-offset: .1875rem;
+
+  &:hover {
+    color: var(--on-primary-container);
+  }
+}
+
+.statusbar-rec {
+  color: var(--critical);
+
+  .statusbar-rec-dot {
+    width: .375rem;
+    height: .375rem;
+    border-radius: 50%;
+    background: var(--critical);
+    animation: statusbar-blink 1.4s ease-in-out infinite;
+  }
+
+  &.paused {
+    color: var(--warning);
+
+    .statusbar-rec-dot {
+      background: var(--warning);
+      animation: none;
+    }
+  }
+
+  @media only screen and (max-width: 600px) {
+    .statusbar-detail {
+      display: none;
+    }
+  }
+}
+
+@keyframes statusbar-blink {
+  50% { opacity: .25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statusbar-led.searching,
+  .statusbar-rec .statusbar-rec-dot {
+    animation: none;
+  }
+}
+
+// Version tag; opens the changelog.
+button.statusbar-version {
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: .0625rem .375rem;
+  border: .0625rem solid var(--hairline);
+  background: none;
+  color: var(--on-surface-variant);
+  font-size: inherit;
+  letter-spacing: .06em;
+  text-transform: none;
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}

@@ -213,6 +213,7 @@ export const BLEProvider = (props: IProps): React.ReactElement => {
     return (
         <BLEContext.Provider value={ {
             connected: deviceConnected,
+            supported: typeof navigator !== 'undefined' && !!navigator.bluetooth,
             available,
             initBluetooth,
             status,

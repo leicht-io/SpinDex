@@ -1,0 +1,42 @@
+.spindex-mark {
+  flex-shrink: 0;
+  color: var(--on-surface);
+  overflow: visible;
+
+  .spindex-mark-ticks {
+    opacity: .45;
+  }
+
+  .spindex-mark-platter {
+    transform-origin: 16px 16px;
+    transform-box: view-box;
+  }
+
+  .spindex-mark-cutout {
+    fill: var(--mark-cutout, var(--background));
+  }
+
+  .spindex-mark-accent {
+    fill: var(--primary);
+  }
+
+  .spindex-mark-accent-stroke {
+    stroke: var(--primary);
+  }
+
+  // 33⅓ RPM is 1.8s per turn -- far too busy for a logo; a slow sweep is
+  // enough to say "measuring".
+  &.spinning .spindex-mark-platter {
+    animation: spindex-mark-spin 6s linear infinite;
+  }
+}
+
+@keyframes spindex-mark-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spindex-mark.spinning .spindex-mark-platter {
+    animation: none;
+  }
+}
