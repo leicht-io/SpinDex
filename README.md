@@ -89,7 +89,4 @@ Please note that this project is in progress and prone to change. The following 
 
 Feel free to develop further on the project and create PRs if, necessary. I would be happy to cooperate with others on the device.
 
-Blog posts with more pictures:
-
-- https://leicht.io/articles/beotac-a-tachometer-for-the-beogram-4000-series
-- https://leicht.io/articles/updates-to-beotac
+More pictures and background: [SpinDex on leicht.io](https://leicht.io/restoration-services#spindex).
