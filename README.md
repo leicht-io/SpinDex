@@ -8,32 +8,59 @@ This mono repository is divided into multiple sub-repositories, explained below:
 ![alt text](3d-files/in_use.jpg)
 
 ### 3D Files (3d-files):
-This folder contains all the 3D models.
-- spindex_bottom.stl
-- spindex_top.stl
+This folder contains the printable enclosure:
+- `spindex_bottom.stl`: the base. It holds the electronics and sensor, and its curved jaw hooks onto the turntable chassis.
+- `spindex_top.stl`: the lid.
+- `spindex_spacer.stl`: an optional insert (about 2.8 mm thick) that clips into the base's jaw. The chassis width differs between production variants of the Beogram 4000, 4002 and 4004: print the base as-is for one width, and add the spacer to fit the other.
 
-![alt text](3d-files/spindex.PNG)
+![SpinDex enclosure](3d-files/spindex.PNG)
+
+| Exploded: lid, base and spacer | Assembled with the spacer fitted |
+|---|---|
+| ![Exploded view](3d-files/spindex_exploded.png) | ![Assembled with spacer](3d-files/spindex_assembled_spacer.png) |
 
 ---
 
 ### Web App (web-app)
-This folder contains the web app. It connects to the controller over Bluetooth (Web Bluetooth — Chrome/Edge on desktop or Android, no install needed) and displays the live RPM as a temporal line graph. It's hosted publicly, free to use, at **https://spindex.leicht.io/**.
+This folder contains the web app. It connects to the controller over Bluetooth (Web Bluetooth, no install needed) and records, organises and compares RPM measurements. It's hosted publicly, free to use, at **https://spindex.leicht.io/**.
 
 Features:
-- Pair with the controller over Web Bluetooth, with automatic reconnect on a dropped connection so an unattended run rides out a transient disconnect.
-- Start/stop tracking sessions, persisted locally in the browser (IndexedDB) — a page refresh or reconnect doesn't lose the running session.
-- Keep multiple tracking sessions around and switch between them from the Trackings list, including revisiting past (stopped) sessions.
-- Name a tracking when starting it, or rename it later from the Trackings list.
-- Live stat tiles for current/average/max RPM and % deviation from the nominal 33⅓/45 RPM target, colour-coded by how far off spec.
-- Selectable chart time window (Live 10 min / 1h / 6h / 12h / 24h / All), auto-bucketed to a fixed point budget so even a 24h session stays smooth to render.
-- Gap-aware charting — a BLE disconnect or closed tab shows as a clearly marked gap in the plot rather than a misleading flat or interpolated line.
-- CSV export of any tracking session for offline analysis.
-- Delete old tracking sessions.
-- Single dark, "precision-instrument" themed UI.
+- **Desktop-style layout**: a menu bar (File / Measurement / View), a library sidebar and a status bar showing the Bluetooth link, a live recording readout, the app version and a clock.
+- **Turntable folders**: measurements are grouped per turntable, identified by model and serial number (e.g. "Beogram 4002 · SN 2145678"). Pick or create the turntable when starting a measurement; typing an existing model/serial files it with the earlier runs. Search the library by name or serial.
+- **Recording**: start/stop measurements, persisted locally in the browser (IndexedDB), so a page refresh or reconnect doesn't lose a running session. Automatic reconnect rides out a dropped Bluetooth link during an unattended run.
+- **Measurement view**: current/average/peak readouts with their deviation from the nominal 33⅓/45 RPM on a small gauge, colour-coded by how far off spec, plus a chart that zooms to the measured range and marks the nominal speed.
+- **Chart time windows** (Live 10 min / 1h / 6h / 12h / 24h / All), auto-bucketed to a fixed point budget so even a 24h session stays smooth.
+- **Gap-aware charting**: a disconnect or closed tab shows as a marked gap rather than a misleading flat or interpolated line.
+- **Compare**: overlay up to eight measurements aligned by time since start (e.g. before/after a belt change), with a hover readout and a stats table: mean, drift from nominal, rev-to-rev standard deviation, min and max, ignoring spin-up and stopped readings.
+- **Organise**: rename, move between folders, export as CSV, delete.
+- **Help when Bluetooth isn't available**: a "Read more" dialog lists supported browsers and how to continue on each platform. Browsing and comparing saved measurements works in any browser; only recording needs Web Bluetooth.
+- **Changelog**: click the version in the status bar.
+- Works from phone to desktop: below 900px the library becomes a drawer, and below 720px the menus fold into one overflow menu.
+- Dark, instrument-style design after the leicht.io look: IBM Plex Sans / Plex Mono and a copper accent.
 
-Unit tests for the pure logic (chart bucketing/gap detection, CSV export) run via `yarn test`, see `web-app/package.json`.
+Browser support for recording (Web Bluetooth):
 
-![alt text](documentation/images/desktop_screenshot.png)
+| Browser | Platforms | |
+|---|---|---|
+| Google Chrome | Windows 10+, macOS, ChromeOS, Android 6+ | ✓ |
+| Microsoft Edge | Windows, macOS | ✓ |
+| Samsung Internet, Opera | Android | ✓ |
+| Chrome on Linux | Linux | behind `chrome://flags/#enable-experimental-web-platform-features`, BlueZ 5.41+ |
+| Bluefy | iPhone, iPad | ✓ (third-party app) |
+| Safari, Firefox | all | ✕ |
+
+Measurements are stored per browser; export as CSV to move them elsewhere.
+
+Development, from `web-app/`:
+- `yarn start`: dev server (HTTPS, required for Web Bluetooth).
+- `yarn build`: production build.
+- `yarn test`: unit tests for the pure logic (chart bucketing/gap detection, CSV export, measurement stats, folder grouping, changelog/version consistency).
+
+Releases are listed in `web-app/app/core/changelog.ts`. Its newest entry must match the `version` in `web-app/package.json` (a unit test checks this), so bump both together.
+
+![SpinDex web app: measurement view](documentation/images/desktop_screenshot.png)
+
+![SpinDex web app: comparing three runs](documentation/images/compare_screenshot.png)
 
 ---
 
