@@ -77,6 +77,8 @@ This folder contains the source code for the microcontroller. The RPM edge-count
 
 Every 500 ms the firmware sends the current RPM two ways: as a Bluetooth notification, and as a line like `rpm:33.33` on the StampS3's own USB-C port. The web app reads those lines over Web Serial, and `pio device monitor` or the Arduino Serial Plotter can show them too.
 
+The firmware's version is the web app's: `scripts/firmware_version.py` reads it from `web-app/package.json` at build time, so a release bumps one number (see the web app section) and the sensor reports the version of the app it shipped with. The web app reads it on connecting and shows it in the status bar. Over Bluetooth it's the Firmware Revision String (`0x2A26`) in the standard Device Information Service (`0x180A`). Over USB the app sends a `version` line and the firmware answers with a line like `version:2.3.0`, which it also prints on startup. You can type `version` into `pio device monitor` to check it. Firmware from before 2.3.0 doesn't report a version, and the app shows it as unknown.
+
 USB uses the ESP32-S3's built-in USB-Serial/JTAG unit (`ARDUINO_USB_CDC_ON_BOOT` in `platformio.ini`), which keeps uploads button-free. Its name, "USB JTAG/serial debug unit", is fixed in the chip. Only the USB-OTG controller (TinyUSB) could call the device "SpinDex", but on the pinned Arduino core its reboot-to-bootloader hangs the board, so every upload would need the G0 button.
 
 After each upload, `scripts/restore_tty.py` sets the port back to `VMIN=1` on Linux so Chrome can read it (see the Linux note in the web app section). After using `pio device monitor`, run `stty -F /dev/ttyACM0 min 1` yourself.

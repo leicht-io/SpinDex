@@ -4,9 +4,13 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include "../Version.h"
 
 #define SERVICE_UUID                    "8abb038d-5a8d-4d29-ae05-0c1fd42583ab"
 #define CHARACTERISTIC_UUID             "ea53154b-9815-4143-b717-d4e1de9f6cca"
+// Bluetooth SIG-assigned 16-bit UUIDs.
+#define DEVICE_INFORMATION_SERVICE_UUID         0x180A
+#define FIRMWARE_REVISION_CHARACTERISTIC_UUID   0x2A26
 
 BLEServer* bleServer = NULL;
 BLECharacteristic* sensorCharacteristic = NULL;
@@ -58,6 +62,17 @@ void Bluetooth::init() {
 
     // Start the service
     bleService->start();
+
+    // The standard Device Information Service, holding just the firmware
+    // version, which the web app reads on connecting (generic BLE tools such
+    // as nRF Connect show it too).
+    BLEService *deviceInfoService = bleServer->createService(BLEUUID((uint16_t)DEVICE_INFORMATION_SERVICE_UUID));
+    BLECharacteristic *firmwareRevision = deviceInfoService->createCharacteristic(
+                        BLEUUID((uint16_t)FIRMWARE_REVISION_CHARACTERISTIC_UUID),
+                        BLECharacteristic::PROPERTY_READ
+                        );
+    firmwareRevision->setValue(FIRMWARE_VERSION);
+    deviceInfoService->start();
 
     // Start advertising
     BLEAdvertising *bleAdvertising = BLEDevice::getAdvertising();
