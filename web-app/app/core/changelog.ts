@@ -16,6 +16,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
     {
+        version: '2.3.0',
+        date: '2026-10-24',
+        title: 'Sensor firmware version',
+        added: [
+            'The status bar shows which firmware the connected sensor runs, over Bluetooth and USB alike. Firmware from before this release shows as unknown.',
+        ],
+    },
+    {
         version: '2.2.0',
         date: '2026-10-24',
         title: 'Connect over USB',

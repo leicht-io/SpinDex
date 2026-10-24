@@ -25,7 +25,7 @@ This folder contains the printable enclosure:
 This folder contains the web app. It connects to the controller over Bluetooth (Web Bluetooth) or a USB cable (Web Serial), with nothing to install, and records, organises and compares RPM measurements. It's hosted publicly, free to use, at **https://spindex.leicht.io/**.
 
 Features:
-- **Desktop-style layout**: a menu bar (File / Measurement / View), a library sidebar and a status bar showing the link (Bluetooth or USB), a live recording readout, the app version and a clock.
+- **Desktop-style layout**: a menu bar (File / Measurement / View), a library sidebar and a status bar showing the link (Bluetooth or USB) and the sensor's firmware version, a live recording readout, the app version and a clock.
 - **Bluetooth or USB**: pick how to connect from the connection menu at the top right. Picking one drops the other, so readings are never recorded twice. The status bar warns when the sensor is connected but sends no readings.
 - **Turntable folders**: measurements are grouped per turntable, identified by model and serial number (e.g. "Beogram 4002 · SN 2145678"). Pick or create the turntable when starting a measurement; typing an existing model/serial files it with the earlier runs. Search the library by name or serial.
 - **Recording**: start/stop measurements, persisted locally in the browser (IndexedDB), so a page refresh or reconnect doesn't lose a running session. Automatic reconnect rides out a dropped Bluetooth link during an unattended run. Over USB, a cable pulled mid-session reconnects by itself when it's plugged back in, and a page reload during a recording picks the sensor back up without the picker. Otherwise an idle tab leaves the port alone for other tools.
@@ -76,6 +76,8 @@ Releases are listed in `web-app/app/core/changelog.ts`. Its newest entry must ma
 This folder contains the source code for the microcontroller. The RPM edge-counting/calculation logic is split out into a hardware-free class (`src/logic/RpmCounter`) with its own unit tests, runnable on the host (no board needed) via `pio test -e native`.
 
 Every 500 ms the firmware sends the current RPM two ways: as a Bluetooth notification, and as a line like `rpm:33.33` on the StampS3's own USB-C port. The web app reads those lines over Web Serial, and `pio device monitor` or the Arduino Serial Plotter can show them too.
+
+The firmware's version is the web app's: `scripts/firmware_version.py` reads it from `web-app/package.json` at build time, so a release bumps one number (see the web app section) and the sensor reports the version of the app it shipped with. The web app reads it on connecting and shows it in the status bar. Over Bluetooth it's the Firmware Revision String (`0x2A26`) in the standard Device Information Service (`0x180A`). Over USB the app sends a `version` line and the firmware answers with a line like `version:2.3.0`, which it also prints on startup. You can type `version` into `pio device monitor` to check it. Firmware from before 2.3.0 doesn't report a version, and the app shows it as unknown. Firmware built without `web-app/package.json` next to it reports `unversioned`.
 
 USB uses the ESP32-S3's built-in USB-Serial/JTAG unit (`ARDUINO_USB_CDC_ON_BOOT` in `platformio.ini`), which keeps uploads button-free. Its name, "USB JTAG/serial debug unit", is fixed in the chip. Only the USB-OTG controller (TinyUSB) could call the device "SpinDex", but on the pinned Arduino core its reboot-to-bootloader hangs the board, so every upload would need the G0 button.
 

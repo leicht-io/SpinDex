@@ -26,6 +26,10 @@ export interface TransportState {
     connecting: boolean;
     status: string;
     problem: LinkProblem | null;
+    // What the sensor reported on connecting; null while unknown, and for
+    // firmware from before it reported its version. Only meaningful while
+    // connected: it may be left over from the last connection otherwise.
+    firmwareVersion: string | null;
 }
 
 export interface TransportLink extends TransportState {
@@ -46,6 +50,8 @@ export interface ILinkContextProps {
     connecting: boolean;
     status: string;
     problem: LinkProblem | null;
+    // `transport`'s sensor firmware version, while connected and known.
+    firmwareVersion: string | null;
     // This browser can use at least one of the transports.
     canConnect: boolean;
     // Connected, but no reading has arrived for a while. Over USB that's

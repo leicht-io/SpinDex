@@ -43,6 +43,9 @@ void initialDevice() {
         // timeout applies to taking the driver's write lock.
         Serial.setTxTimeoutMs(10);
 #endif
+        // Also sent when asked (see loop()), but a host already reading
+        // when the sensor restarts learns it from here.
+        serialComm.printVersion();
     }
 
     if(BLUETOOTH_ENABLED) {
@@ -91,4 +94,9 @@ void emitRPM(float RPM) {
 }
 
 void loop() {
+    if(SERIAL_ENABLED) {
+        serialComm.handleInput();
+    }
+
+    delay(10);
 }

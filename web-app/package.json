@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "spindex",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "license": "MIT",
   "scripts": {
     "start": "parcel app/index.html --https",

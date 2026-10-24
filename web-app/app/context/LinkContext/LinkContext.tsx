@@ -129,6 +129,7 @@ export const LinkProvider = (props: ILinkProviderProps): React.ReactElement => {
             connecting: !connected && (shown?.connecting ?? false),
             status: shown?.status ?? '',
             problem: shown?.problem ?? null,
+            firmwareVersion: connected ? active?.firmwareVersion ?? null : null,
             canConnect: isUsable(bluetooth) || isUsable(usb),
             noData: connected && noData,
             receiving: connected && receiving,

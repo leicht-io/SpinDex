@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSerialReadingParser, parseReadingLine, SETTLE_MS } from './serialReadings';
+import { createSerialReadingParser, parseReadingLine, parseVersionLine, SETTLE_MS } from './serialReadings';
 
 describe('parseReadingLine', () => {
     it('reads a reading line', () => {
@@ -33,6 +33,20 @@ describe('parseReadingLine', () => {
     it('rejects two lines run together where the newline was dropped', () => {
         expect(parseReadingLine('rpm:3rpm:33.33')).toBeNull();
         expect(parseReadingLine('rpm:33.33rpm:33.34')).toBeNull();
+    });
+});
+
+describe('parseVersionLine', () => {
+    it('reads a version line', () => {
+        expect(parseVersionLine('version:1.0.0')).toBe('1.0.0');
+        expect(parseVersionLine('version:1.0.0\r')).toBe('1.0.0');
+    });
+
+    it('ignores other lines and malformed versions', () => {
+        expect(parseVersionLine('rpm:33.33')).toBeNull();
+        expect(parseVersionLine('version:')).toBeNull();
+        expect(parseVersionLine('version:1.0 beta')).toBeNull();
+        expect(parseVersionLine('firmware version:1.0.0')).toBeNull();
     });
 });
 
@@ -80,5 +94,38 @@ describe('createSerialReadingParser', () => {
 
         expect(parser.push('x'.repeat(200), settled)).toEqual([]);
         expect(parser.push('rpm:33.33\nrpm:33.34\n', settled + 10)).toEqual([33.33, 33.34]);
+    });
+
+    it('has no firmware version until a version line arrives', () => {
+        const parser = createSerialReadingParser(openedAt);
+
+        parser.push('rpm:33.33\n', settled);
+        expect(parser.firmwareVersion()).toBeNull();
+    });
+
+    it('reads the version even inside the settle window, where readings are dropped', () => {
+        const parser = createSerialReadingParser(openedAt);
+
+        expect(parser.push('rpm:33.10\nversion:1.0.0\nrpm:33.11\n', openedAt + 5)).toEqual([]);
+        expect(parser.firmwareVersion()).toBe('1.0.0');
+    });
+
+    it('reads a version line split across chunks, and keeps the latest one', () => {
+        const parser = createSerialReadingParser(openedAt);
+
+        parser.push('versi', settled);
+        expect(parser.push('on:1.0.0\nrpm:33.33\n', settled + 10)).toEqual([33.33]);
+        expect(parser.firmwareVersion()).toBe('1.0.0');
+
+        // The sensor restarted with new firmware mid-session.
+        parser.push('version:1.1.0\n', settled + 20);
+        expect(parser.firmwareVersion()).toBe('1.1.0');
+    });
+
+    it('records the first reading after a burst that ended on a newline', () => {
+        const parser = createSerialReadingParser(openedAt);
+
+        parser.push('rpm:33.10\n', openedAt + 5);
+        expect(parser.push('rpm:33.40\n', settled)).toEqual([33.4]);
     });
 });
