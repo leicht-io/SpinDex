@@ -33,6 +33,16 @@ ESP32Timer ITimer0(0);
 void initialDevice() {
     if(SERIAL_ENABLED) {
         Serial.begin(baudRate);
+#if ARDUINO_USB_CDC_ON_BOOT
+        // Once a host has enumerated the USB port, a full TX buffer (cable
+        // in a computer, but nothing reading) otherwise makes every print
+        // block for up to 100ms -- stalling emitRPMLoop, and with it the
+        // Bluetooth notifications. A short timeout drops that output
+        // instead (nobody's reading it anyway), yet still lets a print wait
+        // out another task's write rather than lose its line: the same
+        // timeout applies to taking the driver's write lock.
+        Serial.setTxTimeoutMs(10);
+#endif
     }
 
     if(BLUETOOTH_ENABLED) {
