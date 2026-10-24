@@ -1,18 +1,23 @@
 import * as React from 'react';
 import './menubar.scss';
+import BluetoothIcon from '@mui/icons-material/Bluetooth';
 import BluetoothSearchingIcon from '@mui/icons-material/BluetoothSearching';
-import BluetoothDisabledIcon from '@mui/icons-material/BluetoothDisabled';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import DownloadIcon from '@mui/icons-material/Download';
+import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 import MenuIcon from '@mui/icons-material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SensorsIcon from '@mui/icons-material/Sensors';
+import SensorsOffIcon from '@mui/icons-material/SensorsOff';
 import StopIcon from '@mui/icons-material/Stop';
-import { BLEContext, TrackingContext, UIContext } from '../../context';
+import UsbIcon from '@mui/icons-material/Usb';
+import { isUsable, LinkContext, TrackingContext, Transport, transportLabel, TransportState, UIContext } from '../../context';
 import { Menu, MenuEntry, useActionMenus } from '../Menu';
 import { SpinDexMark } from '../Logo';
 
 export const MenuBar = (): React.ReactElement => {
-    const { initBluetooth, status, connected, supported, available } = React.useContext(BLEContext);
+    const { transport, connected, connecting, canConnect, bluetooth, usb, connect, disconnect } = React.useContext(LinkContext);
     const {
         activeTracking,
         viewingTracking,
@@ -25,12 +30,58 @@ export const MenuBar = (): React.ReactElement => {
     const { viewMode, setViewMode, compare, setSidebarOpen, openDialog } = React.useContext(UIContext);
     const { trackingItems, newItems } = useActionMenus();
 
-    // The BLE status is a loose set of human-readable sentences (see
-    // BLEContext), not an enum, so this is a best-effort read of "an attempt
-    // is in flight" purely to drive the button's pulse animation.
-    const isSearching = !connected && available !== false && status !== ''
-        && !status.startsWith('Error') && !status.includes('not available');
-    const bluetoothUnusable = !supported || available === false;
+    // Why an option can't be picked, or how the picked one is doing.
+    const linkHint = (state: TransportState, which: Transport): string | undefined => {
+        if (!state.supported) {
+            return 'Not supported';
+        }
+        if (state.available === false) {
+            return 'Turned off';
+        }
+        if (transport !== which) {
+            return undefined;
+        }
+        return connected ? 'Connected' : (connecting ? 'Connecting…' : undefined);
+    };
+
+    const linkItems: MenuEntry[] = [
+        { heading: 'Connect via' },
+        {
+            label: 'Bluetooth',
+            icon: <BluetoothIcon fontSize={ 'small' } />,
+            checked: transport === 'bluetooth',
+            hint: linkHint(bluetooth, 'bluetooth'),
+            disabled: !isUsable(bluetooth),
+            onSelect: () => connect('bluetooth'),
+        },
+        {
+            label: 'USB cable',
+            icon: <UsbIcon fontSize={ 'small' } />,
+            checked: transport === 'usb',
+            hint: linkHint(usb, 'usb'),
+            disabled: !isUsable(usb),
+            onSelect: () => connect('usb'),
+        },
+        'divider',
+        {
+            label: 'Disconnect',
+            icon: <LinkOffIcon fontSize={ 'small' } />,
+            disabled: transport === null,
+            onSelect: disconnect,
+        },
+        {
+            label: 'Connection help…',
+            icon: <HelpOutlinedIcon fontSize={ 'small' } />,
+            onSelect: () => openDialog({ kind: 'connectionHelp' }),
+        },
+    ];
+
+    const linkIcon = transport === 'usb'
+        ? <UsbIcon fontSize={ 'small' } />
+        : (transport === 'bluetooth' ? <BluetoothSearchingIcon fontSize={ 'small' } /> : <SensorsIcon fontSize={ 'small' } />);
+    const linkTitle = transport && (connected || connecting)
+        ? `${ connected ? 'Connected' : 'Connecting' } via ${ transportLabel(transport) }`
+        : 'Connect to SpinDex';
 
     const viewItems: MenuEntry[] = [
         {
@@ -122,23 +173,25 @@ export const MenuBar = (): React.ReactElement => {
 
                 <span className={ 'menubar-sep' } />
 
-                {/* When Web Bluetooth can't be used at all, the button explains
-                    why instead of sitting there disabled. */}
-                <button
-                    onClick={ () => {
-                        if (bluetoothUnusable) {
-                            openDialog({ kind: 'bluetoothHelp' });
-                        } else {
-                            initBluetooth();
-                        }
-                    } }
-                    title={ bluetoothUnusable ? 'Bluetooth unavailable — read more' : (connected ? 'Connected' : 'Connect to SpinDex') }
-                    aria-label={ bluetoothUnusable ? 'Bluetooth unavailable, read more' : (connected ? 'Connected' : 'Connect to SpinDex') }
-                    className={ `square small menubar-link ${ connected ? 'connected' : '' } ${ bluetoothUnusable ? 'unusable' : '' } ${ isSearching ? 'searching' : '' }` }>
-                    {bluetoothUnusable
-                        ? <BluetoothDisabledIcon fontSize={ 'small' } />
-                        : <BluetoothSearchingIcon fontSize={ 'small' } />}
-                </button>
+                {/* Picks Bluetooth or USB. When this browser can do neither,
+                    the button explains why instead of offering a menu of
+                    disabled choices. */}
+                {canConnect ? (
+                    <Menu label={ linkIcon }
+                        ariaLabel={ linkTitle }
+                        title={ linkTitle }
+                        triggerClassName={ `square small menubar-link ${ connected ? 'connected' : '' } ${ connecting ? 'searching' : '' }` }
+                        align={ 'end' }
+                        items={ linkItems } />
+                ) : (
+                    <button
+                        onClick={ () => openDialog({ kind: 'connectionHelp' }) }
+                        title={ 'Can’t connect from this browser — read more' }
+                        aria-label={ 'Can’t connect from this browser, read more' }
+                        className={ 'square small menubar-link unusable' }>
+                        <SensorsOffIcon fontSize={ 'small' } />
+                    </button>
+                )}
 
                 <div className={ 'menubar-overflow' }>
                     <Menu label={ <MoreVertIcon /> }

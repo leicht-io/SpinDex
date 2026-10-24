@@ -1,3 +1,3 @@
-export * from './BLEContext';
+export * from './LinkContext';
 export * from './TrackingContext';
 export * from './UIContext';

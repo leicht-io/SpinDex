@@ -9,7 +9,7 @@ export type DialogState =
     | { kind: 'move'; tracking: Tracking }
     | { kind: 'deleteTracking'; tracking: Tracking }
     | { kind: 'deleteFolder'; folder: Folder }
-    | { kind: 'bluetoothHelp' }
+    | { kind: 'connectionHelp' }
     | { kind: 'changelog' };
 
 export interface CompareEntry {

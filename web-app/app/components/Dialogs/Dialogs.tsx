@@ -5,7 +5,7 @@ import { Folder, Tracking } from '../../core/storage/db';
 import { Dialog, Field } from '../Dialog';
 import { Select } from '../Menu';
 import { findFolder, folderLabel } from '../../core/tracking/folders';
-import { BluetoothHelpDialog } from './BluetoothHelpDialog';
+import { ConnectionHelpDialog } from './ConnectionHelpDialog';
 import { ChangelogDialog } from './ChangelogDialog';
 import { NewMeasurementDialog } from './NewMeasurementDialog';
 
@@ -162,8 +162,8 @@ export const DialogHost = (): React.ReactElement | null => {
             return <DeleteTrackingDialog tracking={ dialog.tracking } />;
         case 'deleteFolder':
             return <DeleteFolderDialog folder={ dialog.folder } />;
-        case 'bluetoothHelp':
-            return <BluetoothHelpDialog />;
+        case 'connectionHelp':
+            return <ConnectionHelpDialog />;
         case 'changelog':
             return <ChangelogDialog />;
         default:

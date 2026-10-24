@@ -19,7 +19,7 @@
   border-left-color: var(--warning);
 }
 
-// --- Bluetooth help ---
+// --- Connection help ---
 
 .help-section {
   display: flex;
@@ -39,53 +39,69 @@
   color: var(--primary);
 }
 
-.help-browsers {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+// Browser x transport support: a real table, with BeerCSS's global table
+// look (outline borders, 1rem top margin) reset to the hairline style.
+table.help-browsers {
+  margin: 0 !important;
   border: .0625rem solid var(--hairline);
   border-radius: 2px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .8125rem;
 
-  li {
-    display: grid;
-    grid-template-columns: 1.25rem 1fr auto;
-    align-items: baseline;
-    gap: .625rem;
+  th,
+  td {
     padding: .5rem .75rem;
-    font-size: .8125rem;
+    border: 0;
+    text-align: left;
+    vertical-align: middle;
+  }
 
-    & + li {
-      border-top: .0625rem solid var(--hairline);
-    }
+  thead th {
+    @include mono-label(.625rem, .12em);
+    border-bottom: .0625rem solid var(--hairline);
+    color: var(--on-surface-variant);
+  }
 
-    &.unsupported {
-      opacity: .6;
-    }
+  // The two support columns: narrow, marks centred under their heading.
+  thead th + th,
+  td {
+    width: 5.5rem;
+    text-align: center;
 
     @media only screen and (max-width: 520px) {
-      grid-template-columns: 1.25rem 1fr;
-
-      .help-browser-platforms {
-        grid-column: 2;
-      }
+      width: 4rem;
+      padding-inline: .375rem;
     }
+  }
+
+  tbody th {
+    font-weight: 400;
+  }
+
+  tbody tr + tr > * {
+    border-top: .0625rem solid var(--hairline);
+  }
+
+  tr.unsupported {
+    opacity: .6;
   }
 }
 
-// ✓ / ✕ in mono, colored -- paired with the aria-label, never color alone.
-.help-browser-mark {
+// ✓ / (✓) / ✕ in mono, colored -- each level has its own mark too, never
+// color alone.
+.help-mark {
   font-family: var(--font-mono);
   font-weight: 500;
-  color: var(--good);
+  white-space: nowrap;
 
-  .unsupported & {
-    color: var(--critical);
-  }
+  &.yes { color: var(--good); }
+  &.partial { color: var(--warning); }
+  &.no { color: var(--critical); }
 }
 
 .help-browser-name {
+  display: block;
   color: var(--on-surface);
 
   small {
@@ -95,15 +111,11 @@
 }
 
 .help-browser-platforms {
+  display: block;
   font-family: var(--font-mono);
   font-size: .6875rem;
   letter-spacing: .02em;
   color: var(--on-surface-variant);
-  text-align: right;
-
-  @media only screen and (max-width: 520px) {
-    text-align: left;
-  }
 }
 
 // Numbered steps, leicht.io style: a copper 01 / 02 / 03 above each.
@@ -140,6 +152,16 @@
 
 .help-note {
   font-size: .8125rem;
+}
+
+// A shell command to copy, on its own line so it never breaks mid-word.
+code.help-command {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: .375rem;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 // --- Changelog ---

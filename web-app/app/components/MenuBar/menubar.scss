@@ -154,8 +154,9 @@ button.menubar-record.recording {
   background: var(--hairline);
 }
 
-// Bluetooth link button: outlined when idle, green when connected, muted
-// with a crossed-out icon when the browser/adapter can't do Bluetooth.
+// Link button (opens the Bluetooth/USB menu): outlined when idle, green
+// when connected, muted with a crossed-out icon when the browser can use
+// neither.
 button.menubar-link {
   border: .0625rem solid var(--primary);
   background: var(--primary-tint);
