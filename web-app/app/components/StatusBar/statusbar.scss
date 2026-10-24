@@ -58,7 +58,8 @@ footer.statusbar {
   @include led(var(--outline), false);
 
   &.connected { @include led(var(--good)); }
-  &.searching {
+  &.searching,
+  &.updating {
     @include led(var(--primary));
     animation: statusbar-blink 1s steps(2, jump-none) infinite;
   }
@@ -66,22 +67,8 @@ footer.statusbar {
   &.nodata { @include led(var(--warning)); }
 }
 
-// Reset BeerCSS's button look down to an inline text link.
 button.statusbar-link {
-  height: auto;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  background: none;
-  color: var(--primary);
-  font-size: inherit;
-  letter-spacing: inherit;
-  text-decoration: underline;
-  text-underline-offset: .1875rem;
-
-  &:hover {
-    color: var(--on-primary-container);
-  }
+  @include link-button;
 }
 
 .statusbar-rec {
@@ -117,6 +104,7 @@ button.statusbar-link {
 
 @media (prefers-reduced-motion: reduce) {
   .statusbar-led.searching,
+  .statusbar-led.updating,
   .statusbar-rec .statusbar-rec-dot {
     animation: none;
   }

@@ -9,6 +9,8 @@ interface DialogProps {
     submitLabel?: string;
     submitDisabled?: boolean;
     danger?: boolean;
+    // Keeps it open: Escape, the backdrop and Cancel/Close do nothing.
+    closeDisabled?: boolean;
     // Small mono label above the title.
     eyebrow?: string;
     wide?: boolean;
@@ -21,7 +23,12 @@ interface DialogProps {
  * while open -- DialogHost unmounts it on close.
  */
 export const Dialog = (props: DialogProps): React.ReactElement => {
-    const { title, onClose, onSubmit, submitLabel = 'OK', submitDisabled, danger, eyebrow, wide, children } = props;
+    const { title, onClose, onSubmit, submitLabel = 'OK', submitDisabled, danger, closeDisabled, eyebrow, wide, children } = props;
+    const close = (): void => {
+        if (!closeDisabled) {
+            onClose();
+        }
+    };
     const ref = React.useRef<HTMLDialogElement>(null);
     const titleId = React.useId();
 
@@ -42,13 +49,13 @@ export const Dialog = (props: DialogProps): React.ReactElement => {
             // behind React's back.
             onCancel={ (e) => {
                 e.preventDefault();
-                onClose();
+                close();
             } }
             onClick={ (e) => {
                 // A click on the dialog element itself (not its content) is a
                 // click on the backdrop.
                 if (e.target === ref.current) {
-                    onClose();
+                    close();
                 }
             } }>
             <form
@@ -68,7 +75,8 @@ export const Dialog = (props: DialogProps): React.ReactElement => {
                 <div className={ 'app-dialog-actions' }>
                     <button type="button"
                         className={ 'transparent' }
-                        onClick={ onClose }>
+                        disabled={ closeDisabled }
+                        onClick={ close }>
                         {onSubmit ? 'Cancel' : 'Close'}
                     </button>
                     {onSubmit && (

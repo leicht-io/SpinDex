@@ -4,6 +4,10 @@ import { Dialog } from '../Dialog';
 
 type Platform = 'ios' | 'android' | 'linux' | 'desktop';
 
+// How port pickers list the sensor: the ESP32-S3's USB-Serial/JTAG unit,
+// whose name is fixed in the chip.
+export const USB_PORT_NAME = 'USB JTAG/serial debug unit';
+
 const detectPlatform = (): Platform => {
     const ua = navigator.userAgent;
     // iPadOS reports itself as a Mac -- tell them apart by touch support.
@@ -156,7 +160,7 @@ const UsbSteps = ({ state, platform }: { state: TransportState; platform: Platfo
                 {navigator.userAgent.includes('Firefox/') && (
                     <li>Firefox first asks to add a site permission add-on for serial ports — allow it.</li>
                 )}
-                <li>Open the connection menu (top right), choose <strong>USB cable</strong> and pick the sensor — it&apos;s listed as <em>USB JTAG/serial debug unit</em>.</li>
+                <li>Open the connection menu (top right), choose <strong>USB cable</strong> and pick the sensor — it&apos;s listed as <em>{USB_PORT_NAME}</em>.</li>
                 {platform === 'linux' ? (
                     <>
                         <li>
@@ -178,7 +182,7 @@ const UsbSteps = ({ state, platform }: { state: TransportState; platform: Platfo
                 and reloading the page during a recording picks the sensor back up. Otherwise it leaves the port alone,
                 so it doesn&apos;t get in the way of flashing or a serial monitor. If the status bar shows
                 {' '}<em>no data</em> or <em>no readings arrived</em>, the sensor&apos;s firmware is older than USB
-                support and needs updating.
+                support and needs updating: choose <strong>Update sensor firmware…</strong> in the connection menu.
             </p>
         </>
     );

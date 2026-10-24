@@ -1,3 +1,6 @@
+import { FirmwareBundle } from '../../core/firmware/firmwareBundle';
+import { FlashCallbacks } from '../../core/firmware/flashFirmware';
+
 export interface ILinkProviderProps {
     children: any;
 }
@@ -65,4 +68,10 @@ export interface ILinkContextProps {
     // Must be called from a user gesture: it opens the browser's picker.
     connect: (transport: Transport) => void;
     disconnect: () => void;
+    // A firmware update has the USB port (the only thing it's lent to).
+    updating: boolean;
+    // Flashes `bundle` over USB (see useSerialLink's updateFirmware), and
+    // reads from the sensor over USB afterwards unless Bluetooth was in use.
+    // Call it from a user gesture: it may open the browser's picker.
+    updateFirmware: (bundle: FirmwareBundle, callbacks: FlashCallbacks) => Promise<boolean>;
 }

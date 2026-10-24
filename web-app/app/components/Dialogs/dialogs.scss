@@ -19,6 +19,46 @@
   border-left-color: var(--warning);
 }
 
+.dialog-note a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: .1875rem;
+}
+
+// A text link inside dialog copy, opening another dialog.
+button.dialog-inline-link {
+  @include link-button;
+  text-transform: none;
+}
+
+// --- Firmware update ---
+
+.firmware-progress {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  color: var(--on-surface);
+
+  progress {
+    width: 100%;
+  }
+}
+
+.firmware-log {
+  font-size: .75rem;
+
+  pre {
+    max-height: 12rem;
+    margin: .5rem 0 0;
+    padding: .5rem .75rem;
+    overflow: auto;
+    background: var(--surface-container-lowest);
+    border: .0625rem solid var(--hairline);
+    font-family: var(--font-mono);
+    white-space: pre-wrap;
+  }
+}
+
 // --- Connection help ---
 
 .help-section {

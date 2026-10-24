@@ -7,6 +7,7 @@ import { Select } from '../Menu';
 import { findFolder, folderLabel } from '../../core/tracking/folders';
 import { ConnectionHelpDialog } from './ConnectionHelpDialog';
 import { ChangelogDialog } from './ChangelogDialog';
+import { FirmwareUpdateDialog } from './FirmwareUpdateDialog';
 import { NewMeasurementDialog } from './NewMeasurementDialog';
 
 const FolderDialog = ({ folder }: { folder?: Folder }): React.ReactElement => {
@@ -166,6 +167,8 @@ export const DialogHost = (): React.ReactElement | null => {
             return <ConnectionHelpDialog />;
         case 'changelog':
             return <ChangelogDialog />;
+        case 'firmwareUpdate':
+            return <FirmwareUpdateDialog />;
         default:
             return null;
     }
