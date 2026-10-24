@@ -16,6 +16,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
     {
+        version: '2.2.0',
+        date: '2026-10-24',
+        title: 'Connect over USB',
+        added: [
+            'Connect with a USB cable as well as Bluetooth: choose either from the connection menu at the top right. USB works in Chrome, Edge and Opera on a computer, in Chrome on Linux without any flag, and in Firefox 151 or newer.',
+            'A USB cable pulled mid-session reconnects by itself when it’s plugged back in, and reloading the page during a recording picks the sensor back up.',
+            'On Linux, if Chrome drops the USB port right after opening it (it can after PlatformIO or another serial tool used the port), SpinDex says how to fix it.',
+            'The status bar warns when the sensor is connected but sends no readings.',
+        ],
+        changed: [
+            'Connection help covers both Bluetooth and USB, with a table of which browsers support each.',
+            'USB needs updated sensor firmware. Older firmware connects, but sends no readings over USB.',
+        ],
+    },
+    {
         version: '2.1.0',
         date: '2026-10-18',
         title: 'A proper app: library, comparison and a new look',

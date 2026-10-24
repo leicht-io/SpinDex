@@ -1,8 +1,7 @@
 import * as React from 'react';
 import './measurement.scss';
-import { BLEContext, TrackingContext, UIContext } from '../../context';
+import { LinkContext, TrackingContext, UIContext } from '../../context';
 import { WindowOption } from '../../context/TrackingContext';
-import BluetoothIcon from '@mui/icons-material/Bluetooth';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import StopIcon from '@mui/icons-material/Stop';
@@ -21,6 +20,7 @@ import { nominalTarget, offsetPercentage, statusFor } from '../../core/tracking/
 import { folderLabel } from '../../core/tracking/folders';
 import { Menu, Select, useActionMenus } from '../../components/Menu';
 import { SpinDexMark } from '../../components/Logo';
+import { ConnectButtons } from '../../components/ConnectButtons';
 import { NARROW_QUERY, useMediaQuery } from '../../core/hooks/useMediaQuery';
 
 // Chart chrome in theme.scss's colors. Literal hexes rather than var(--...):
@@ -158,10 +158,9 @@ const formatStartedAt = (timestamp: number): string =>
     new Date(timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
 const EmptyState = (): React.ReactElement => {
-    const { connected, supported, available, initBluetooth } = React.useContext(BLEContext);
+    const { connected, canConnect } = React.useContext(LinkContext);
     const { trackings } = React.useContext(TrackingContext);
     const { openDialog, setSidebarOpen } = React.useContext(UIContext);
-    const bluetoothUnusable = !supported || available === false;
 
     if (trackings.length > 0) {
         return (
@@ -188,20 +187,17 @@ const EmptyState = (): React.ReactElement => {
             <span className={ 'empty-state-eyebrow' }>Getting started</span>
             <h2>Record your first measurement</h2>
             <ol className={ 'empty-state-steps' }>
-                <li className={ connected ? 'done' : '' }>Pair with the SpinDex sensor</li>
+                <li className={ connected ? 'done' : '' }>Connect the SpinDex sensor, over Bluetooth or a USB cable</li>
                 <li>Choose the turntable (model and serial number) it&apos;s fitted to</li>
                 <li>Start recording, then compare runs over time</li>
             </ol>
             <div className={ 'empty-state-actions' }>
-                {!connected && (bluetoothUnusable ? (
-                    <button className={ 'border' }
-                        onClick={ () => openDialog({ kind: 'bluetoothHelp' }) }>
-                        Bluetooth unavailable — read more
-                    </button>
+                {!connected && (canConnect ? (
+                    <ConnectButtons className={ 'border' } />
                 ) : (
                     <button className={ 'border' }
-                        onClick={ () => initBluetooth() }>
-                        <BluetoothIcon fontSize={ 'small' } /> Connect
+                        onClick={ () => openDialog({ kind: 'connectionHelp' }) }>
+                        Can’t connect from this browser — read more
                     </button>
                 ))}
                 <button className={ 'primary' }
@@ -214,7 +210,7 @@ const EmptyState = (): React.ReactElement => {
 };
 
 export const Measurement = (): React.ReactElement => {
-    const { connected } = React.useContext(BLEContext);
+    const { connected } = React.useContext(LinkContext);
     const {
         folders,
         activeTracking,

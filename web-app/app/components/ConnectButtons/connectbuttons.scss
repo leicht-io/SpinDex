@@ -1,0 +1,11 @@
+// Keeps the choices together as one group wherever they sit (a dialog note
+// spreads its children apart).
+.connect-buttons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  > button {
+    margin: 0;
+  }
+}

@@ -62,7 +62,8 @@ footer.statusbar {
     @include led(var(--primary));
     animation: statusbar-blink 1s steps(2, jump-none) infinite;
   }
-  &.unusable { @include led(var(--warning)); }
+  &.unusable,
+  &.nodata { @include led(var(--warning)); }
 }
 
 // Reset BeerCSS's button look down to an inline text link.

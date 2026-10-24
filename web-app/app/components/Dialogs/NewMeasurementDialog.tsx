@@ -1,6 +1,6 @@
 import * as React from 'react';
-import BluetoothSearchingIcon from '@mui/icons-material/BluetoothSearching';
-import { BLEContext, TrackingContext, UIContext } from '../../context';
+import { LinkContext, TrackingContext, UIContext } from '../../context';
+import { ConnectButtons } from '../ConnectButtons';
 import { Dialog, Field } from '../Dialog';
 import { Select } from '../Menu';
 import { findFolder, folderLabel } from '../../core/tracking/folders';
@@ -13,7 +13,7 @@ interface NewMeasurementDialogProps {
 }
 
 export const NewMeasurementDialog = ({ folderId }: NewMeasurementDialogProps): React.ReactElement => {
-    const { connected, supported, available, initBluetooth } = React.useContext(BLEContext);
+    const { connected, noData, canConnect, bluetooth } = React.useContext(LinkContext);
     const { folders, activeTracking, viewingTracking, startTracking, stopTracking, createFolder } = React.useContext(TrackingContext);
     const { closeDialog, setViewMode, openDialog } = React.useContext(UIContext);
 
@@ -32,7 +32,8 @@ export const NewMeasurementDialog = ({ folderId }: NewMeasurementDialogProps): R
     const isNewFolder = folderChoice === NEW_FOLDER;
     const existingMatch = isNewFolder && model.trim() ? findFolder(folders, model, serial) : undefined;
     const modelSuggestions = Array.from(new Set(folders.map(f => f.name)));
-    const canSubmit = connected && !busy && (!isNewFolder || model.trim() !== '');
+    // Not while the link is up but silent: the run would record nothing.
+    const canSubmit = connected && !noData && !busy && (!isNewFolder || model.trim() !== '');
 
     const onSubmit = async (): Promise<void> => {
         setBusy(true);
@@ -107,25 +108,32 @@ export const NewMeasurementDialog = ({ folderId }: NewMeasurementDialogProps): R
                 <p className={ 'dialog-note' }>&quot;{activeTracking.name}&quot; is still recording and will be stopped.</p>
             )}
 
-            {!connected && (supported && available !== false ? (
+            {!connected && (canConnect ? (
                 <div className={ 'dialog-note dialog-note-warning' }>
-                    <span>Pair with the SpinDex sensor to start recording.</span>
-                    <button type="button"
-                        className={ 'small' }
-                        onClick={ () => initBluetooth() }>
-                        <BluetoothSearchingIcon fontSize={ 'small' } /> Connect
-                    </button>
+                    <span>Connect the SpinDex sensor to start recording.</span>
+                    <ConnectButtons className={ 'small' } />
                 </div>
             ) : (
                 <div className={ 'dialog-note dialog-note-warning' }>
-                    <span>{supported ? 'Bluetooth is turned off.' : 'This browser can’t connect to the sensor.'}</span>
+                    <span>{bluetooth.supported ? 'Bluetooth is turned off.' : 'This browser can’t connect to the sensor.'}</span>
                     <button type="button"
                         className={ 'small border' }
-                        onClick={ () => openDialog({ kind: 'bluetoothHelp' }) }>
+                        onClick={ () => openDialog({ kind: 'connectionHelp' }) }>
                         Read more
                     </button>
                 </div>
             ))}
+
+            {noData && (
+                <div className={ 'dialog-note dialog-note-warning' }>
+                    <span>The sensor is connected but sends no readings.</span>
+                    <button type="button"
+                        className={ 'small border' }
+                        onClick={ () => openDialog({ kind: 'connectionHelp' }) }>
+                        Read more
+                    </button>
+                </div>
+            )}
         </Dialog>
     );
 };

@@ -8,7 +8,7 @@ import '@fontsource/ibm-plex-mono/latin-500.css';
 import './core/styles/main.scss';
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BLEProvider, TrackingProvider, UIProvider } from './context';
+import { LinkProvider, TrackingProvider, UIProvider } from './context';
 import { AppShell } from './components';
 
 const renderApp = (): void => {
@@ -17,11 +17,11 @@ const renderApp = (): void => {
 
     root.render(
         <TrackingProvider>
-            <BLEProvider>
+            <LinkProvider>
                 <UIProvider>
                     <AppShell />
                 </UIProvider>
-            </BLEProvider>
+            </LinkProvider>
         </TrackingProvider>
     );
 };

@@ -6,7 +6,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import InboxIcon from '@mui/icons-material/Inbox';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SearchIcon from '@mui/icons-material/Search';
-import { BLEContext, DRAWER_BREAKPOINT, TrackingContext, UIContext } from '../../context';
+import { DRAWER_BREAKPOINT, LinkContext, TrackingContext, UIContext } from '../../context';
 import { Tracking } from '../../core/storage/db';
 import { folderLabel, groupTrackings, TrackingGroup } from '../../core/tracking/folders';
 import { humanizeDuration } from '../../core/tracking/time';
@@ -40,7 +40,7 @@ interface TrackingRowProps {
 }
 
 const TrackingRow = ({ tracking }: TrackingRowProps): React.ReactElement => {
-    const { connected } = React.useContext(BLEContext);
+    const { connected } = React.useContext(LinkContext);
     const { viewingTracking } = React.useContext(TrackingContext);
     const { viewMode, openMeasurement, compare, maxCompare, toggleCompare } = React.useContext(UIContext);
     const { trackingItems } = useActionMenus();

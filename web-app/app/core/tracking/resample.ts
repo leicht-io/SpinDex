@@ -62,7 +62,7 @@ export const resampleSamples = (samples: Sample[], bucketMs: number, liveEndBoun
     // A non-finite value (NaN/Infinity) landing in one bucket's average
     // would turn that whole bucket, and the SVG path it's plotted in, into
     // "NaN" -- silently hiding the entire line/area for that segment rather
-    // than just the one bad point. BLEContext already rejects these at
+    // than just the one bad point. The Bluetooth link already rejects these at
     // ingestion, but filtering again here guards any sample that made it in
     // before that fix, or via another path (mock/CSV import) later.
     const sorted = samples

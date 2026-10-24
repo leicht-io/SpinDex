@@ -20,6 +20,8 @@ interface MenuProps {
     // Content of the trigger button.
     label: React.ReactNode;
     ariaLabel?: string;
+    // Hover tooltip for the trigger, e.g. for an icon-only one.
+    title?: string;
     triggerClassName?: string;
     items: MenuEntry[];
     align?: 'start' | 'end';
@@ -33,7 +35,7 @@ const isItem = (entry: MenuEntry): entry is MenuItem => typeof entry === 'object
  * Click/Enter opens, Escape or a click outside closes, arrow keys move
  * between enabled items.
  */
-export const Menu = ({ label, ariaLabel, triggerClassName, items, align = 'start' }: MenuProps): React.ReactElement => {
+export const Menu = ({ label, ariaLabel, title, triggerClassName, items, align = 'start' }: MenuProps): React.ReactElement => {
     const [open, setOpen] = React.useState(false);
     const rootRef = React.useRef<HTMLDivElement>(null);
     const triggerRef = React.useRef<HTMLButtonElement>(null);
@@ -99,6 +101,7 @@ export const Menu = ({ label, ariaLabel, triggerClassName, items, align = 'start
                 aria-expanded={ open }
                 aria-controls={ open ? menuId : undefined }
                 aria-label={ ariaLabel }
+                title={ title }
                 onClick={ () => setOpen(o => !o) }
                 onKeyDown={ (e) => {
                     if (e.key === 'ArrowDown') {
