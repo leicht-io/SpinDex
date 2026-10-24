@@ -27,7 +27,8 @@ export interface TransportState {
     status: string;
     problem: LinkProblem | null;
     // What the sensor reported on connecting; null while unknown, and for
-    // firmware from before it reported its version.
+    // firmware from before it reported its version. Only meaningful while
+    // connected: it may be left over from the last connection otherwise.
     firmwareVersion: string | null;
 }
 

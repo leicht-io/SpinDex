@@ -17,25 +17,19 @@ void SerialComm::printVersion() {
 void SerialComm::handleInput() {
     while (Serial.available() > 0) {
         int c = Serial.read();
-        if (c < 0) {
-            return;
-        }
 
-        if (c == '\n') {
-            // Tolerate CRLF from a terminal.
-            if (lineLength > 0 && line[lineLength - 1] == '\r') {
-                lineLength--;
-            }
+        // Terminals end lines with LF, CRLF or CR alone. A CRLF's LF just
+        // ends an empty line.
+        if (c == '\n' || c == '\r') {
             line[lineLength] = '\0';
-            if (!overflowed && strcmp(line, "version") == 0) {
+            if (strcmp(line, "version") == 0) {
                 printVersion();
             }
             lineLength = 0;
-            overflowed = false;
         } else if (lineLength < sizeof(line) - 1) {
             line[lineLength++] = static_cast<char>(c);
-        } else {
-            overflowed = true;
         }
+        // Otherwise the line is too long to be a request: the rest of it is
+        // dropped, and what was kept can't match one.
     }
 }

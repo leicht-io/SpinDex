@@ -13,14 +13,28 @@ const UNAVAILABLE_STATUS = 'Bluetooth is turned off or no adapter was found.';
 const DEVICE_INFORMATION_SERVICE: BluetoothServiceUUID = 'device_information';
 const FIRMWARE_REVISION_CHARACTERISTIC: BluetoothCharacteristicUUID = 'firmware_revision_string';
 
-// Null when the sensor doesn't have it: firmware from before it reported
-// its version. That's no reason to fail the connection.
-const readFirmwareVersion = (gattServer: BluetoothRemoteGATTServer): Promise<string | null> =>
-    gattServer.getPrimaryService(DEVICE_INFORMATION_SERVICE)
-        .then((service: BluetoothRemoteGATTService) => service.getCharacteristic(FIRMWARE_REVISION_CHARACTERISTIC))
-        .then((characteristic: BluetoothRemoteGATTCharacteristic) => characteristic.readValue())
-        .then((value: DataView) => parseFirmwareVersion(new TextDecoder().decode(value)))
-        .catch(() => null);
+// A failed read (not a missing service) is tried this many times in all.
+const FIRMWARE_VERSION_READ_TRIES = 2;
+
+// Null when the sensor doesn't have it (firmware from before it reported
+// its version), or the read kept failing. Neither is a reason to fail the
+// connection.
+const readFirmwareVersion = async (gattServer: BluetoothRemoteGATTServer): Promise<string | null> => {
+    for (let tries = 1; tries <= FIRMWARE_VERSION_READ_TRIES && gattServer.connected; tries++) {
+        try {
+            const service = await gattServer.getPrimaryService(DEVICE_INFORMATION_SERVICE);
+            const characteristic = await service.getCharacteristic(FIRMWARE_REVISION_CHARACTERISTIC);
+            return parseFirmwareVersion(new TextDecoder().decode(await characteristic.readValue()));
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'NotFoundError') {
+                return null; // no such service: trying again won't help
+            }
+            // Something transient (another GATT operation in progress, a
+            // timeout): worth another go while the link is up.
+        }
+    }
+    return null;
+};
 
 /**
  * Bluetooth link to the sensor over Web Bluetooth: picks the device,
@@ -189,6 +203,12 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
                     }
                     return;
                 }
+                if (!gattServer.connected) {
+                    // Dropped during the version read, whose failure that
+                    // hides. The disconnect listener has scheduled the
+                    // reconnect already.
+                    return;
+                }
                 setStatus('Connection Established.');
                 setFirmwareVersion(version);
                 setDeviceConnected(true);
@@ -225,7 +245,6 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
             return;
         }
         setDeviceConnected(false);
-        setFirmwareVersion(null);
         scheduleReconnect(disconnectedDevice, attemptRef.current);
     };
 
@@ -282,7 +301,6 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
 
         setStatus(`Device Selected: ${ selectedDevice.name }`);
         setDeviceConnected(false);
-        setFirmwareVersion(null);
         setConnecting(true);
 
         attachToDevice(selectedDevice, attempt).catch((error: unknown) => {
@@ -301,7 +319,6 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
     const disconnect = (): void => {
         releaseDevice();
         setDeviceConnected(false);
-        setFirmwareVersion(null);
         setConnecting(false);
         setStatus('');
     };

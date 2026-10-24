@@ -52,43 +52,43 @@ export interface SerialReadingParser {
 export const createSerialReadingParser = (openedAt: number): SerialReadingParser => {
     // Text after the last newline: the start of a line still arriving.
     let pending = '';
-    // `pending` started arriving inside the settle window, so a reading it
-    // completes is just as stale as the rest of the burst.
-    let pendingStale = false;
+    // When `pending` started arriving. A reading counts from when its line
+    // started, so one that began in the settle window is dropped with the
+    // rest of the burst even if it ends after it.
+    let pendingSince = openedAt;
     let version: string | null = null;
 
     return {
         push: (chunk, now) => {
-            // A version doesn't go stale, and the answer to the request sent
-            // on opening arrives inside the window -- so lines are still
-            // read while settling, only their readings are dropped.
-            const settling = now - openedAt < SETTLE_MS;
+            if (pending === '') {
+                pendingSince = now;
+            }
 
             const lines = (pending + chunk).split('\n');
-            const firstLineStale = pendingStale;
-            // No newline in the chunk: it only added to the pending line.
-            const continued = lines.length === 1;
             pending = lines.pop() ?? '';
-            pendingStale = pending !== '' && (settling || (continued && pendingStale));
             if (pending.length > MAX_LINE_LENGTH) {
                 pending = '';
-                pendingStale = false;
             }
 
             const readings: number[] = [];
             lines.forEach((line, index) => {
+                // A version doesn't go stale, and the answer to the request
+                // sent on opening arrives inside the settle window.
                 const lineVersion = parseVersionLine(line);
                 if (lineVersion !== null) {
                     version = lineVersion;
                     return;
                 }
 
+                const startedAt = index === 0 ? pendingSince : now;
                 const reading = parseReadingLine(line);
-                const stale = settling || (index === 0 && firstLineStale);
-                if (reading !== null && !stale) {
+                if (reading !== null && startedAt - openedAt >= SETTLE_MS) {
                     readings.push(reading);
                 }
             });
+            if (lines.length > 0) {
+                pendingSince = now; // the new pending line started in this chunk
+            }
             return readings;
         },
         firmwareVersion: () => version,

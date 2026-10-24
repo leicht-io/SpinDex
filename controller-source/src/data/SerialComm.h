@@ -21,8 +21,7 @@ class SerialComm {
 
     private:
     // The line being received. A line longer than this isn't a request, so
-    // it's dropped up to its newline.
+    // it's cut short (see handleInput()).
     char line[32];
     size_t lineLength = 0;
-    bool overflowed = false;
 };

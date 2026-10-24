@@ -35,7 +35,8 @@ interface SessionEnd {
 }
 
 // Asks the firmware for its version. Firmware from before it reported one
-// ignores this, as does one that isn't SpinDex's.
+// ignores this, as does one that isn't SpinDex's. Never rejects: a failed
+// request just leaves the version unknown.
 const requestFirmwareVersion = async (port: SerialPort): Promise<void> => {
     if (!port.writable) {
         return;
@@ -49,6 +50,8 @@ const requestFirmwareVersion = async (port: SerialPort): Promise<void> => {
     }, WRITE_TIMEOUT_MS);
     try {
         await writer.write(new TextEncoder().encode(VERSION_REQUEST));
+    } catch {
+        // Aborted above, or the device went away.
     } finally {
         clearTimeout(timeout);
         writer.releaseLock();
@@ -113,7 +116,6 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
     const goIdle = (status: string, problem: LinkProblem | null = null): void => {
         portRef.current = undefined;
         setPhase('idle');
-        setFirmwareVersion(null);
         setStatus(status, problem);
     };
 
@@ -137,8 +139,10 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         // starting up (its port appears before the firmware runs) can go
         // unread. The port is closed only once these have finished, as
         // close() fails while a write holds the writer.
-        let versionRequest = requestFirmwareVersion(port).catch(() => undefined);
+        let versionRequest = requestFirmwareVersion(port);
         let askedAgain = false;
+        // attach() starts each session at null.
+        let reportedVersion: string | null = null;
 
         const giveUpTimer = setTimeout(() => {
             if (!received) {
@@ -164,12 +168,13 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
                         onSampleRef.current(reading);
                     }
                     const version = parser.firmwareVersion();
-                    if (attemptRef.current === attempt) {
+                    if (version !== reportedVersion && attemptRef.current === attempt) {
+                        reportedVersion = version;
                         setFirmwareVersion(version);
                     }
                     if (received && version === null && !askedAgain) {
                         askedAgain = true;
-                        versionRequest = versionRequest.then(() => requestFirmwareVersion(port)).catch(() => undefined);
+                        versionRequest = versionRequest.then(() => requestFirmwareVersion(port));
                     }
                 }
             } catch (error) {

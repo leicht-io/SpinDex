@@ -4,8 +4,8 @@
   (see controller-source's Version.h).
 */
 
-// What controller-source's Version.h allows: a semver-like tag such as
-// `1.0.0` or `1.1.0-dev+3f2a1c`.
+// A semver-like tag such as `2.3.0` or `2.4.0-dev+3f2a1c`. controller-source's
+// scripts/firmware_version.py refuses to build firmware with anything else.
 const FIRMWARE_VERSION = /^[0-9A-Za-z][0-9A-Za-z.+-]{0,31}$/;
 
 // The version in `text`, or null if it isn't one -- not SpinDex firmware,

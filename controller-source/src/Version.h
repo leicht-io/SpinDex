@@ -5,7 +5,9 @@
 // `version:` line (see SerialComm).
 //
 // It's the web app's version, set at build time from web-app/package.json
-// by scripts/firmware_version.py -- so bump that, not anything here.
+// by scripts/firmware_version.py -- so bump that, not anything here. A
+// build without it (another build tool, or no web-app/ next to this
+// folder) says so instead of claiming a version.
 #ifndef FIRMWARE_VERSION
-#error "FIRMWARE_VERSION is unset: build with PlatformIO, whose scripts/firmware_version.py sets it"
+#define FIRMWARE_VERSION "unversioned"
 #endif

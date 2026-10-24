@@ -48,18 +48,13 @@ export const StatusBar = (): React.ReactElement => {
             <div className={ 'statusbar-group' }>
                 <span className={ `statusbar-led ${ link }` } />
                 <span>{linkLabel}</span>
-                {connected && firmwareVersion && (
-                    <span className={ 'statusbar-detail' }
-                        title={ 'Sensor firmware version' }>
-                        Firmware {firmwareVersion}
-                    </span>
-                )}
                 {/* Readings but no version: the request is answered well
-                    before the first reading, so this firmware doesn't report it. */}
-                {receiving && !firmwareVersion && (
+                    before the first reading, so this firmware most likely
+                    doesn't report it. */}
+                {(firmwareVersion || receiving) && (
                     <span className={ 'statusbar-detail' }
-                        title={ 'This firmware is from before the sensor reported its version' }>
-                        Firmware unknown
+                        title={ firmwareVersion ? 'Sensor firmware version' : 'The sensor didn\u2019t report its firmware version. Firmware from before SpinDex 2.3.0 doesn\u2019t.' }>
+                        Firmware {firmwareVersion ?? 'unknown'}
                     </span>
                 )}
                 {(!canConnect || noData || problem) && (
