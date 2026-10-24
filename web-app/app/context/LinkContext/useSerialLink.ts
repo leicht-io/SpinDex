@@ -19,12 +19,17 @@ const NO_READINGS_RELEASE_MS = 10_000;
 // A write still unfinished after this is abandoned (see
 // requestFirmwareVersion).
 const WRITE_TIMEOUT_MS = 1_000;
+// How long a sensor restarting after a loan (a firmware update) is given
+// before its port is looked for: long enough to have gone if the restart
+// re-enumerates it.
+const RESTART_DELAY_MS = 1_500;
 
 const UNSUPPORTED_STATUS = 'Web Serial API is not available in this browser!';
 
 // 'unplugged': the port went away mid-session (cable pulled, sensor
-// restarted) and is reattached as soon as it reappears.
-type Phase = 'idle' | 'opening' | 'open' | 'unplugged';
+// restarted) and is reattached as soon as it reappears. 'lent': someone
+// else has the port (see lendPort).
+type Phase = 'idle' | 'opening' | 'open' | 'unplugged' | 'lent';
 
 interface SessionEnd {
     received: boolean;
@@ -67,6 +72,16 @@ export interface SerialLink extends TransportLink {
     // Picks a sensor allowed on an earlier visit back up without a picker,
     // if one is plugged in. Resolves whether it started connecting.
     resume: () => Promise<boolean>;
+    // The port is lent out.
+    lent: boolean;
+    // Lends the sensor's port to `use` (the firmware updater), which gets it
+    // closed and must close it again; no session starts meanwhile. It's the
+    // attached port if its sensor has identified itself, otherwise one
+    // picked in the browser's picker -- so call this from a user gesture.
+    // Afterwards, with `reattach`, the link picks the sensor back up as it
+    // restarts. Resolves false if the picker was cancelled; rejects with
+    // whatever `use` rejected with.
+    lendPort: (use: (port: SerialPort) => Promise<void>, options: { status: string; reattach: boolean }) => Promise<boolean>;
 }
 
 /**
@@ -108,6 +123,9 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
     // The port of the current session; connect() uses it to spot re-picking
     // the open port.
     const portRef = React.useRef<SerialPort | undefined>(undefined);
+    // The current session's port sent a reading or its version, so it's a
+    // SpinDex: another ESP32-S3 board would share its USB IDs.
+    const identifiedRef = React.useRef(false);
     const readerRef = React.useRef<ReadableStreamDefaultReader<Uint8Array> | undefined>(undefined);
     // Settles once the latest session has ended and closed its port. Each
     // new session waits for it, so a port is never opened while still open.
@@ -168,9 +186,12 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
                         onSampleRef.current(reading);
                     }
                     const version = parser.firmwareVersion();
-                    if (version !== reportedVersion && attemptRef.current === attempt) {
-                        reportedVersion = version;
-                        setFirmwareVersion(version);
+                    if (attemptRef.current === attempt) {
+                        identifiedRef.current ||= received || version !== null;
+                        if (version !== reportedVersion) {
+                            reportedVersion = version;
+                            setFirmwareVersion(version);
+                        }
                     }
                     if (received && version === null && !askedAgain) {
                         askedAgain = true;
@@ -245,18 +266,36 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         }
     };
 
+    // Retires any current session and makes `port` the link's, in `phase`.
+    // Returns the new attempt number.
+    const takeOver = (port: SerialPort, phase: Phase, status: string): number => {
+        release();
+        portRef.current = port;
+        identifiedRef.current = false;
+        setPhase(phase);
+        setFirmwareVersion(null);
+        setStatus(status);
+        return attemptRef.current;
+    };
+
     // Retires any current session and opens `port` once that one has
     // closed its port.
     const attach = (port: SerialPort): void => {
-        release();
-        const attempt = attemptRef.current;
-        portRef.current = port;
-        setPhase('opening');
-        setFirmwareVersion(null);
-        setStatus('Opening USB port…');
+        const attempt = takeOver(port, 'opening', 'Opening USB port…');
         sessionRef.current = sessionRef.current
             .then(() => runSession(port, attempt))
             .catch(() => undefined);
+    };
+
+    // The browser's port picker. Cancelled, or not allowed: undefined, and
+    // an existing connection is left alone.
+    const pickPort = async (): Promise<SerialPort | undefined> => {
+        try {
+            return await navigator.serial.requestPort({ filters: [SPINDEX_USB_FILTER] });
+        } catch (error) {
+            setStatus(errorStatus(error));
+            return undefined;
+        }
     };
 
     const disconnect = (): void => {
@@ -269,17 +308,14 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
             setStatus(UNSUPPORTED_STATUS);
             return false;
         }
-
-        let port: SerialPort;
-        try {
-            port = await navigator.serial.requestPort({ filters: [SPINDEX_USB_FILTER] });
-        } catch (error) {
-            // Picker cancelled, or not allowed -- an existing connection is
-            // left alone.
-            setStatus(errorStatus(error));
+        if (phaseRef.current === 'lent') {
             return false;
         }
 
+        const port = await pickPort();
+        if (!port) {
+            return false;
+        }
         if (port !== portRef.current || phaseRef.current !== 'open') {
             attach(port);
         }
@@ -295,6 +331,51 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
             return false;
         }
         attach(port);
+        return true;
+    };
+
+    const lendPort = async (use: (port: SerialPort) => Promise<void>, { status, reattach }: { status: string; reattach: boolean }): Promise<boolean> => {
+        if (!supported || phaseRef.current === 'lent') {
+            return false;
+        }
+
+        const port = (phaseRef.current === 'open' && identifiedRef.current ? portRef.current : undefined) ?? await pickPort();
+        if (!port) {
+            return false;
+        }
+
+        // The reading session closes the port before `use` gets it.
+        const attempt = takeOver(port, 'lent', status);
+        const loan = sessionRef.current.then(() => use(port));
+        sessionRef.current = loan.catch(() => undefined);
+        try {
+            await loan;
+        } catch (error) {
+            if (attemptRef.current === attempt) {
+                goIdle(errorStatus(error));
+            }
+            throw error;
+        }
+
+        if (attemptRef.current !== attempt) {
+            return true; // disconnected meanwhile
+        }
+        if (!reattach) {
+            goIdle('');
+            return true;
+        }
+
+        // The sensor restarts. Pick it up like a cable plugged back in: on
+        // the connect event if the restart re-enumerated its port, or here if
+        // the port stayed. (A port the browser can't vouch for is left to
+        // the connect event.)
+        setPhase('unplugged');
+        setStatus('Restarting the sensor…');
+        await new Promise(resolve => setTimeout(resolve, RESTART_DELAY_MS));
+        const restarted = (await navigator.serial.getPorts()).find(candidate => isSpinDexPort(candidate) && candidate.connected === true);
+        if (restarted && attemptRef.current === attempt && phaseRef.current === 'unplugged') {
+            attach(restarted);
+        }
         return true;
     };
 
@@ -330,5 +411,7 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         connect,
         disconnect,
         resume,
+        lent: phase === 'lent',
+        lendPort,
     };
 };

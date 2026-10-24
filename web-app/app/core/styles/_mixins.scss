@@ -51,6 +51,24 @@
   text-transform: none;
 }
 
+// A <button> reset from BeerCSS's button look down to an inline text link.
+@mixin link-button {
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: var(--primary);
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  text-underline-offset: .1875rem;
+
+  &:hover {
+    color: var(--on-primary-container);
+  }
+}
+
 // A small square status LED.
 @mixin led($color, $glow: true) {
   display: inline-block;

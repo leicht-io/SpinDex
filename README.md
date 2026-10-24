@@ -36,6 +36,7 @@ Features:
 - **Organise**: rename, move between folders, export as CSV, delete.
 - **Connection help**: a dialog explains how to connect over Bluetooth and over USB on the current platform, with a table of which browsers support each. Browsing and comparing saved measurements works in any browser; only recording needs Web Bluetooth or Web Serial.
 - **Changelog**: click the version in the status bar.
+- **Sensor firmware updates**: *Update sensor firmware…* in the connection menu flashes firmware over USB, through the chip's own bootloader, so it works whatever the sensor runs now. It offers every firmware release: the one for this version of the app by default, or an older one to downgrade (see below).
 - Works from phone to desktop: below 900px the library becomes a drawer, and below 720px the menus fold into one overflow menu.
 - Dark, instrument-style design after the leicht.io look: IBM Plex Sans / Plex Mono and a copper accent.
 
@@ -66,6 +67,23 @@ Development, from `web-app/`:
 
 Releases are listed in `web-app/app/core/changelog.ts`. Its newest entry must match the `version` in `web-app/package.json` (a unit test checks this), so bump both together.
 
+`yarn build` also builds the sensor firmware from your working copy with PlatformIO (`pio` on the PATH, its own install in `~/.platformio`, or `PIO=/path/to/pio`). It puts the firmware in `dist/firmware/<version>/`, where the firmware updater loads it from, next to the older releases' firmware from GitHub if GitHub can be reached. `dist/` is gitignored, so this build is only for deploying or serving from your machine; released builds come from the Release workflow below. Browsers can't download GitHub release files from another site, so the app serves all firmware itself. `yarn build:web` builds the app alone.
+
+#### Releases
+
+Releases are automatic, driven by [conventional commits](https://www.conventionalcommits.org/) on master (`.github/workflows/release.yml`):
+
+1. After each push to master, the *Release* workflow opens or updates a **release PR**. It bumps the version from the commits since the last release (`feat`: minor; `fix`, `perf`: patch; `feat!:` or a `BREAKING CHANGE:` footer: major; `docs`, `chore`, `ci`, `test` and `refactor` don't release) and drafts the entry in `web-app/app/core/changelog.ts` from the commit subjects.
+2. Edit that entry into user-facing wording (the app shows it as release notes), then merge the PR. Once you've pushed to the PR, the workflow leaves it alone.
+3. The merge publishes the release: tests, the `v<version>` tag, and a GitHub release with notes from the changelog. It carries the firmware files (for the updater, and for flashing by hand) and `spindex-web-<version>.zip`, the built app with every firmware release in it.
+4. Upload the contents of that zip to the host.
+
+A version bumped by hand (in `package.json` and `changelog.ts`) is published the same way once it reaches master. With squash merges, the PR title becomes the commit, so give PRs conventional titles too.
+
+The workflow needs, under *Settings → Actions → General → Workflow permissions*, "Read and write permissions" and "Allow GitHub Actions to create and approve pull requests". The *CI* workflow (`.github/workflows/ci.yml`) checks every pull request: types, lint, tests and builds of the app and the firmware. Release PRs opened by the bot don't trigger it (GitHub doesn't run workflows for its own token's PRs), so publishing runs the tests itself. Dependabot (`.github/dependabot.yml`) proposes npm and Actions updates weekly.
+
+To try updates with `yarn start`, run `yarn firmware:local` (the working copy's firmware, as `yarn build` bundles it) or `yarn firmware` (only the GitHub releases) first; without either, the updater says the build has no firmware.
+
 ![SpinDex web app: measurement view](documentation/images/desktop_screenshot.png)
 
 ![SpinDex web app: comparing three runs](documentation/images/compare_screenshot.png)
@@ -84,6 +102,8 @@ USB uses the ESP32-S3's built-in USB-Serial/JTAG unit (`ARDUINO_USB_CDC_ON_BOOT`
 After each upload, `scripts/restore_tty.py` sets the port back to `VMIN=1` on Linux so Chrome can read it (see the Linux note in the web app section). After using `pio device monitor`, run `stty -F /dev/ttyACM0 min 1` yourself.
 
 A browser connected to the sensor holds its port, so choose **Disconnect** in the app (or close it) before uploading.
+
+`pio run -t webbundle` (with `SPINDEX_FIRMWARE_DIR` set) copies what an upload flashes into a folder, with a `manifest.json` of offsets and flash settings: bootloader, partition table, `boot_app0` and the app. The *Release* workflow runs it for each release and attaches the result to the GitHub release; `yarn firmware:local` runs it on the working copy. The web app's updater flashes exactly that set with esptool-js. Writing `boot_app0` resets which app slot boots, so the sensor always starts the image just written. The manifest carries each image's size and SHA-256, which the app checks after downloading (a missing or stale file is never flashed), and esptool-js reads every image back from flash to verify it. Before writing, the updater checks the board is an ESP32-S3 with 8 MB of flash, since other ESP32-S3 boards share the SpinDex's USB IDs.
 
 ---
 

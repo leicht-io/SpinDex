@@ -10,7 +10,8 @@ export type DialogState =
     | { kind: 'deleteTracking'; tracking: Tracking }
     | { kind: 'deleteFolder'; folder: Folder }
     | { kind: 'connectionHelp' }
-    | { kind: 'changelog' };
+    | { kind: 'changelog' }
+    | { kind: 'firmwareUpdate' };
 
 export interface CompareEntry {
     id: string;

@@ -3,6 +3,8 @@ import { ILinkContextProps, ILinkProviderProps, Transport, TransportLink, Transp
 import { TrackingContext } from '../TrackingContext';
 import { useBluetoothLink } from './useBluetoothLink';
 import { useSerialLink } from './useSerialLink';
+import { FirmwareBundle } from '../../core/firmware/firmwareBundle';
+import { FlashCallbacks, flashFirmware } from '../../core/firmware/flashFirmware';
 
 export const LinkContext = React.createContext({} as ILinkContextProps);
 
@@ -122,6 +124,39 @@ export const LinkProvider = (props: ILinkProviderProps): React.ReactElement => {
         selectTransport(null);
     };
 
+    const updateFirmware = async (bundle: FirmwareBundle, callbacks: FlashCallbacks): Promise<boolean> => {
+        if (recording) {
+            return false; // the dialog says so; the sensor can't measure meanwhile
+        }
+        // Over Bluetooth, the link rides out the sensor's restart by itself;
+        // USB is only for the update then.
+        const reattach = transportRef.current !== 'bluetooth';
+        if (reattach) {
+            setAttempted('usb');
+        }
+        const started = await usb.lendPort(port => flashFirmware(port, bundle, callbacks), {
+            status: 'Updating the sensor firmware…',
+            reattach,
+        });
+        if (started && reattach && transportRef.current !== 'bluetooth') {
+            selectTransport('usb');
+        }
+        return started;
+    };
+
+    // Closing or reloading the tab mid-update would leave the sensor half
+    // written (recoverable over USB, but avoidable): the browser asks first.
+    React.useEffect(() => {
+        if (!usb.lent) {
+            return;
+        }
+        const onBeforeUnload = (event: BeforeUnloadEvent): void => {
+            event.preventDefault();
+        };
+        window.addEventListener('beforeunload', onBeforeUnload);
+        return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    }, [usb.lent]);
+
     return (
         <LinkContext.Provider value={ {
             transport,
@@ -139,6 +174,8 @@ export const LinkProvider = (props: ILinkProviderProps): React.ReactElement => {
                 void connectVia(next);
             },
             disconnect,
+            updating: usb.lent,
+            updateFirmware,
         } }>
             {props.children}
         </LinkContext.Provider>

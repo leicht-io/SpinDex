@@ -6,6 +6,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import DownloadIcon from '@mui/icons-material/Download';
 import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 import MenuIcon from '@mui/icons-material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SensorsIcon from '@mui/icons-material/Sensors';
@@ -17,7 +18,7 @@ import { Menu, MenuEntry, useActionMenus } from '../Menu';
 import { SpinDexMark } from '../Logo';
 
 export const MenuBar = (): React.ReactElement => {
-    const { transport, connected, connecting, canConnect, bluetooth, usb, connect, disconnect } = React.useContext(LinkContext);
+    const { transport, connected, connecting, canConnect, bluetooth, usb, updating, connect, disconnect } = React.useContext(LinkContext);
     const {
         activeTracking,
         viewingTracking,
@@ -73,6 +74,13 @@ export const MenuBar = (): React.ReactElement => {
             label: 'Connection help…',
             icon: <HelpOutlinedIcon fontSize={ 'small' } />,
             onSelect: () => openDialog({ kind: 'connectionHelp' }),
+        },
+        'divider',
+        {
+            label: 'Update sensor firmware…',
+            icon: <SystemUpdateAltIcon fontSize={ 'small' } />,
+            hint: usb.supported ? (updating ? 'Updating…' : undefined) : 'Needs USB',
+            onSelect: () => openDialog({ kind: 'firmwareUpdate' }),
         },
     ];
 

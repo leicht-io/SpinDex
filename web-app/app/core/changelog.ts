@@ -16,6 +16,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
     {
+        version: '2.4.0',
+        date: '2026-10-24',
+        title: 'Update the sensor from the browser',
+        added: [
+            'Update the sensor’s firmware over a USB cable, right from SpinDex: choose Update sensor firmware… in the connection menu. It installs the firmware for this version of SpinDex by default, and works whatever firmware the sensor runs now.',
+            'Pick an older firmware release in the same dialog to downgrade the sensor.',
+            'The status bar offers the update when the sensor’s firmware isn’t the one for this version of SpinDex.',
+        ],
+    },
+    {
         version: '2.3.0',
         date: '2026-10-24',
         title: 'Sensor firmware version',

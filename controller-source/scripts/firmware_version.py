@@ -35,4 +35,5 @@ if version is not None:
     # Only the project's own sources need it. On `env` it would reach the
     # Arduino core and libraries too, recompiling all of them on every bump.
     projenv.Append(CPPDEFINES=[("FIRMWARE_VERSION", env.StringifyMacro(version))])  # noqa: F821
+    env.Replace(SPINDEX_FIRMWARE_VERSION=version)  # noqa: F821 -- for web_bundle.py
     print("Firmware version %s (from web-app/package.json)" % version)
