@@ -1,0 +1,51 @@
+# Checks every pull request and push to master: the web app (types, lint,
+# tests, build) and the firmware (host unit tests, a build for the board).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  web-app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+          cache-dependency-path: web-app/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - name: Type check
+        run: npx tsc --noEmit -p .
+      - name: Lint
+        run: npx eslint app
+      - name: Test
+        run: yarn test
+      - name: Build
+        run: yarn build:web
+
+  firmware:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: controller-source
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('controller-source/platformio.ini') }}
+      - run: pip install platformio
+      - name: Unit tests (on the host)
+        run: pio test -e native
+      - name: Build for the StampS3
+        run: pio run -e m5stack-stamps3

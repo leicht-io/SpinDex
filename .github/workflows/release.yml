@@ -1,0 +1,150 @@
+# Releases SpinDex from master: the next semantic version from conventional
+# commits, the tag, and a GitHub release carrying the sensor firmware and a
+# deployable build of the web app.
+#
+# On every push to master:
+# - If web-app/package.json's version has no v<version> tag yet (a merged
+#   release PR, or a bump made by hand), `publish` releases it: tests, the
+#   firmware bundle, the web app built with every firmware release, then the
+#   tag and the GitHub release.
+# - Otherwise `release-pr` opens or updates a pull request that bumps the
+#   version from the conventional commits since the last release (feat:
+#   minor; fix, perf: patch; `type!:` or a BREAKING CHANGE footer: major)
+#   and drafts the changelog entry, to edit before merging. Merging it
+#   publishes. Once anyone but the bot has pushed to it, it's left alone.
+#
+# Needs, under Settings → Actions → General → Workflow permissions: "Read
+# and write permissions" and "Allow GitHub Actions to create and approve
+# pull requests". Pull requests the bot opens don't trigger CI (a GitHub
+# rule for its token), which is why `publish` runs the tests itself.
+name: Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.status.outputs.version }}
+      released: ${{ steps.status.outputs.released }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - id: status
+        run: node web-app/scripts/release.mjs status | tee -a "$GITHUB_OUTPUT"
+
+  publish:
+    needs: plan
+    if: needs.plan.outputs.released == 'false'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+          cache-dependency-path: web-app/yarn.lock
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('controller-source/platformio.ini') }}
+
+      - name: Install
+        run: |
+          pip install platformio
+          yarn --cwd web-app install --frozen-lockfile
+
+      - name: Test
+        run: |
+          yarn --cwd web-app test
+          (cd controller-source && pio test -e native)
+
+      - name: Build the firmware bundle
+        working-directory: controller-source
+        env:
+          SPINDEX_FIRMWARE_DIR: ${{ runner.temp }}/firmware
+        run: pio run -e m5stack-stamps3 -t webbundle
+
+      - name: Build the web app with every firmware release
+        working-directory: web-app
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          yarn build:web
+          node scripts/bundle-firmware.mjs --current-from "$RUNNER_TEMP/firmware"
+          (cd dist && zip -qr "$RUNNER_TEMP/spindex-web-$VERSION.zip" .)
+
+      - name: Publish v${{ needs.plan.outputs.version }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON web-app/scripts/release.mjs notes "$RUNNER_TEMP/notes.md"
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "SpinDex $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            "$RUNNER_TEMP"/firmware/* "$RUNNER_TEMP/spindex-web-$VERSION.zip"
+
+  release-pr:
+    needs: plan
+    if: needs.plan.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Leave an edited release PR alone
+        id: branch
+        run: |
+          if git fetch --quiet origin release/next 2>/dev/null \
+            && [ "$(git log -1 --format=%ae FETCH_HEAD)" != "$BOT_EMAIL" ]; then
+            echo "::notice::release/next has edits, so it isn't regenerated. Delete the branch to start it over."
+            echo "edited=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Draft the next release
+        id: prepare
+        if: steps.branch.outputs.edited != 'true'
+        run: node web-app/scripts/release.mjs prepare "$RUNNER_TEMP/body.md" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Open or update the release PR
+        if: steps.prepare.outputs.next != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT: ${{ steps.prepare.outputs.next }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email "$BOT_EMAIL"
+          git switch -C release/next
+          git commit -am "chore(release): $NEXT"
+          git push --force origin release/next
+          if [ "$(gh pr view release/next --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            gh pr edit release/next --title "Release $NEXT" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --head release/next --base master --title "Release $NEXT" --body-file "$RUNNER_TEMP/body.md"
+          fi
