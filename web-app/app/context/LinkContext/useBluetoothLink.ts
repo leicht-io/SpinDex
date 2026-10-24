@@ -1,12 +1,26 @@
 import * as React from 'react';
 import { TransportLink } from './types';
 import { errorStatus } from './errorStatus';
+import { parseFirmwareVersion } from '../../core/link/firmwareVersion';
 
 const RECONNECT_BASE_DELAY_MS = 1_000;
 const RECONNECT_MAX_DELAY_MS = 30_000;
 
 const UNSUPPORTED_STATUS = 'Web Bluetooth API is not available in this browser!';
 const UNAVAILABLE_STATUS = 'Bluetooth is turned off or no adapter was found.';
+
+// The firmware's version is in the standard Device Information Service.
+const DEVICE_INFORMATION_SERVICE: BluetoothServiceUUID = 'device_information';
+const FIRMWARE_REVISION_CHARACTERISTIC: BluetoothCharacteristicUUID = 'firmware_revision_string';
+
+// Null when the sensor doesn't have it: firmware from before it reported
+// its version. That's no reason to fail the connection.
+const readFirmwareVersion = (gattServer: BluetoothRemoteGATTServer): Promise<string | null> =>
+    gattServer.getPrimaryService(DEVICE_INFORMATION_SERVICE)
+        .then((service: BluetoothRemoteGATTService) => service.getCharacteristic(FIRMWARE_REVISION_CHARACTERISTIC))
+        .then((characteristic: BluetoothRemoteGATTCharacteristic) => characteristic.readValue())
+        .then((value: DataView) => parseFirmwareVersion(new TextDecoder().decode(value)))
+        .catch(() => null);
 
 /**
  * Bluetooth link to the sensor over Web Bluetooth: picks the device,
@@ -29,6 +43,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
     const [status, setStatus] = React.useState<string>('');
     // null until the first availability check resolves.
     const [available, setAvailable] = React.useState<boolean | null>(null);
+    const [firmwareVersion, setFirmwareVersion] = React.useState<string | null>(null);
 
     const deviceName = 'SpinDex';
     const bleServiceId = '8abb038d-5a8d-4d29-ae05-0c1fd42583ab';
@@ -146,8 +161,9 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
             }
         };
 
-        return selectedDevice.gatt.connect()
-            .then((gattServer: BluetoothRemoteGATTServer) => {
+        const gattServer = selectedDevice.gatt;
+        return gattServer.connect()
+            .then(() => {
                 progress('Connected to GATT Server');
                 return gattServer.getPrimaryService(bleServiceId);
             })
@@ -160,7 +176,10 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
                 characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
                 return characteristic.startNotifications();
             })
-            .then(() => {
+            // Read on every (re)connection: the sensor may have been
+            // reflashed while the link was down.
+            .then(() => readFirmwareVersion(gattServer))
+            .then((version: string | null) => {
                 if (!isCurrent()) {
                     // Disconnected, or another device picked, while this was
                     // connecting. If it's the same device picked again, its
@@ -171,6 +190,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
                     return;
                 }
                 setStatus('Connection Established.');
+                setFirmwareVersion(version);
                 setDeviceConnected(true);
                 setConnecting(false);
                 reconnectAttemptsRef.current = 0;
@@ -205,6 +225,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
             return;
         }
         setDeviceConnected(false);
+        setFirmwareVersion(null);
         scheduleReconnect(disconnectedDevice, attemptRef.current);
     };
 
@@ -243,7 +264,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
         try {
             selectedDevice = await navigator.bluetooth.requestDevice({
                 filters: [{ name: deviceName }],
-                optionalServices: [bleServiceId]
+                optionalServices: [bleServiceId, DEVICE_INFORMATION_SERVICE]
             });
         } catch (error) {
             // requestDevice() itself failed/was cancelled — nothing to
@@ -261,6 +282,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
 
         setStatus(`Device Selected: ${ selectedDevice.name }`);
         setDeviceConnected(false);
+        setFirmwareVersion(null);
         setConnecting(true);
 
         attachToDevice(selectedDevice, attempt).catch((error: unknown) => {
@@ -279,6 +301,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
     const disconnect = (): void => {
         releaseDevice();
         setDeviceConnected(false);
+        setFirmwareVersion(null);
         setConnecting(false);
         setStatus('');
     };
@@ -290,6 +313,7 @@ export const useBluetoothLink = (onSample: (value: number) => void): TransportLi
         connecting,
         status,
         problem: null,
+        firmwareVersion,
         connect,
         disconnect,
     };

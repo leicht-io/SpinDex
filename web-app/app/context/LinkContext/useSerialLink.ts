@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { LinkProblem, TransportLink } from './types';
 import { errorStatus } from './errorStatus';
-import { createSerialReadingParser } from '../../core/link/serialReadings';
+import { createSerialReadingParser, VERSION_REQUEST } from '../../core/link/serialReadings';
 
 // The StampS3's USB-C port is the ESP32-S3's built-in USB-Serial/JTAG
 // controller, which enumerates with Espressif's IDs (and is listed as "USB
@@ -16,6 +16,9 @@ const BAUD_RATE = 115_200;
 // doesn't stay locked away from other tools: older firmware, another ESP32
 // board with the same IDs, or the chip's bootloader during a flash.
 const NO_READINGS_RELEASE_MS = 10_000;
+// A write still unfinished after this is abandoned (see
+// requestFirmwareVersion).
+const WRITE_TIMEOUT_MS = 1_000;
 
 const UNSUPPORTED_STATUS = 'Web Serial API is not available in this browser!';
 
@@ -30,6 +33,27 @@ interface SessionEnd {
     // Closed by us after NO_READINGS_RELEASE_MS without a reading.
     gaveUp: boolean;
 }
+
+// Asks the firmware for its version. Firmware from before it reported one
+// ignores this, as does one that isn't SpinDex's.
+const requestFirmwareVersion = async (port: SerialPort): Promise<void> => {
+    if (!port.writable) {
+        return;
+    }
+    const writer = port.writable.getWriter();
+    // Firmware older than USB support never reads what the host sends, so
+    // the chip stops taking more once its buffer is full. A write left
+    // hanging would keep the port from closing, so it's aborted instead.
+    const timeout = setTimeout(() => {
+        writer.abort().catch(() => undefined);
+    }, WRITE_TIMEOUT_MS);
+    try {
+        await writer.write(new TextEncoder().encode(VERSION_REQUEST));
+    } finally {
+        clearTimeout(timeout);
+        writer.releaseLock();
+    }
+};
 
 const isSpinDexPort = (port: SerialPort): boolean => {
     const { usbVendorId, usbProductId } = port.getInfo();
@@ -71,6 +95,7 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
     // disagree.
     const [report, setReport] = React.useState<{ status: string; problem: LinkProblem | null }>({ status: '', problem: null });
     const setStatus = (status: string, problem: LinkProblem | null = null): void => setReport({ status, problem });
+    const [firmwareVersion, setFirmwareVersion] = React.useState<string | null>(null);
 
     // Bumped by every attach() and disconnect(): a session whose number is
     // no longer current stands down at its next step. (Comparing ports
@@ -88,6 +113,7 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
     const goIdle = (status: string, problem: LinkProblem | null = null): void => {
         portRef.current = undefined;
         setPhase('idle');
+        setFirmwareVersion(null);
         setStatus(status, problem);
     };
 
@@ -105,6 +131,14 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         let received = false;
         let lostWhilePlugged = false;
         let gaveUp = false;
+
+        // Sent on opening, and once more with the first reading if no
+        // answer has come by then: a request sent while the sensor was still
+        // starting up (its port appears before the firmware runs) can go
+        // unread. The port is closed only once these have finished, as
+        // close() fails while a write holds the writer.
+        let versionRequest = requestFirmwareVersion(port).catch(() => undefined);
+        let askedAgain = false;
 
         const giveUpTimer = setTimeout(() => {
             if (!received) {
@@ -129,6 +163,14 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
                         received = true;
                         onSampleRef.current(reading);
                     }
+                    const version = parser.firmwareVersion();
+                    if (attemptRef.current === attempt) {
+                        setFirmwareVersion(version);
+                    }
+                    if (received && version === null && !askedAgain) {
+                        askedAgain = true;
+                        versionRequest = versionRequest.then(() => requestFirmwareVersion(port)).catch(() => undefined);
+                    }
                 }
             } catch (error) {
                 // The loop condition sorts out whether the port carries on.
@@ -142,6 +184,7 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         }
 
         clearTimeout(giveUpTimer);
+        await versionRequest;
         await port.close().catch(() => undefined);
         return { received, lostWhilePlugged, gaveUp };
     };
@@ -204,6 +247,7 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         const attempt = attemptRef.current;
         portRef.current = port;
         setPhase('opening');
+        setFirmwareVersion(null);
         setStatus('Opening USB port…');
         sessionRef.current = sessionRef.current
             .then(() => runSession(port, attempt))
@@ -277,6 +321,7 @@ export const useSerialLink = (onSample: (value: number) => void): SerialLink => 
         connecting: phase === 'opening' || phase === 'unplugged',
         status: report.status,
         problem: report.problem,
+        firmwareVersion,
         connect,
         disconnect,
         resume,

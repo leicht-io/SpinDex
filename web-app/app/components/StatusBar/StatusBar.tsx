@@ -18,13 +18,14 @@ const useClock = (): Date => {
 type LinkState = 'connected' | 'nodata' | 'searching' | 'idle' | 'unusable';
 
 /**
- * IDE-style status strip along the bottom: the link (Bluetooth or USB) on
- * the left (with a "read more" when the browser can't connect either way),
+ * IDE-style status strip along the bottom: the link (Bluetooth or USB) and
+ * the sensor's firmware version on the left (with a "read more" when the
+ * browser can't connect either way),
  * the live recording readout in the middle, library totals, the version
  * (opens the changelog) and a clock on the right.
  */
 export const StatusBar = (): React.ReactElement => {
-    const { transport, connected, connecting, noData, receiving, status, problem, canConnect, bluetooth } = React.useContext(LinkContext);
+    const { transport, connected, connecting, noData, receiving, status, problem, firmwareVersion, canConnect, bluetooth } = React.useContext(LinkContext);
     const { trackings, folders, activeTracking, latestValue } = React.useContext(TrackingContext);
     const { openDialog } = React.useContext(UIContext);
     const now = useClock();
@@ -47,6 +48,20 @@ export const StatusBar = (): React.ReactElement => {
             <div className={ 'statusbar-group' }>
                 <span className={ `statusbar-led ${ link }` } />
                 <span>{linkLabel}</span>
+                {connected && firmwareVersion && (
+                    <span className={ 'statusbar-detail' }
+                        title={ 'Sensor firmware version' }>
+                        Firmware {firmwareVersion}
+                    </span>
+                )}
+                {/* Readings but no version: the request is answered well
+                    before the first reading, so this firmware doesn't report it. */}
+                {receiving && !firmwareVersion && (
+                    <span className={ 'statusbar-detail' }
+                        title={ 'This firmware is from before the sensor reported its version' }>
+                        Firmware unknown
+                    </span>
+                )}
                 {(!canConnect || noData || problem) && (
                     <button className={ 'statusbar-link' }
                         onClick={ () => openDialog({ kind: 'connectionHelp' }) }>
