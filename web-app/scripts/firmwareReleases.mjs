@@ -53,6 +53,7 @@ export const firmwareReleases = releases => releases
     .sort((a, b) => compareVersions(b.version, a.version));
 
 // What the app reads from dist/firmware/index.json (core/firmware).
+// `local` marks a bundle built from a working copy rather than released.
 export const firmwareIndex = releases => ({
-    versions: releases.map(({ version, date, url }) => ({ version, date, url })),
+    versions: releases.map(({ version, date, url, local }) => ({ version, date, url, ...(local && { local }) })),
 });

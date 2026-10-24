@@ -14,16 +14,17 @@
   `--current-from <dir>` takes this app's version from a bundle already
   built there instead (the Release workflow, which publishes it alongside).
 
-  `--local` (`yarn firmware:local`) builds the working copy with PlatformIO
-  instead, as the only version: for trying updates with `yarn start`. It
-  needs `pio` on the PATH, PlatformIO's own install in ~/.platformio, or
-  the PIO env variable.
+  `--local` (`yarn build`, `yarn firmware:local`) builds this app's version
+  from the working copy with PlatformIO, for a build deployed or served
+  from here (dist/ is gitignored), and adds the older releases if GitHub
+  can be reached. It needs `pio` on the PATH, PlatformIO's own install in
+  ~/.platformio, or the PIO env variable.
 */
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compareVersions, firmwareIndex, firmwareReleases } from './firmwareReleases.mjs';
@@ -60,23 +61,6 @@ const writeIndex = (index) => {
     writeFileSync(join(firmwareRoot, 'index.json'), `${ JSON.stringify(index, null, 2) }\n`);
 };
 
-const bundleLocal = () => {
-    // Found before anything is deleted: no PlatformIO, no change to dist/.
-    const pio = findPio();
-    rmSync(firmwareRoot, { recursive: true, force: true });
-
-    const build = spawnSync(pio, ['run', '-e', 'm5stack-stamps3', '-t', 'webbundle'], {
-        cwd: controller,
-        stdio: 'inherit',
-        env: { ...process.env, SPINDEX_FIRMWARE_DIR: join(firmwareRoot, appVersion) },
-    });
-    if (build.status !== 0) {
-        fail('Building the firmware failed.');
-    }
-    writeIndex({ versions: [{ version: appVersion, date: new Date().toISOString().slice(0, 10), url: null, local: true }] });
-    console.log(`Firmware ${ appVersion } (built from the working copy) is in ${ firmwareRoot }`);
-};
-
 const download = async (url, what) => {
     const headers = { 'User-Agent': 'spindex-build' };
     if (process.env.GITHUB_TOKEN && url.startsWith('https://api.github.com/')) {
@@ -111,8 +95,30 @@ const readBundle = async (version, read) => {
     return { version, manifestText, files };
 };
 
-const bundleReleases = async (currentDir) => {
-    let releases = firmwareReleases(await (await download(`https://api.github.com/repos/${ REPOSITORY }/releases?per_page=100`, 'the release list')).json());
+const listReleases = async () => {
+    const response = await fetch(`https://api.github.com/repos/${ REPOSITORY }/releases?per_page=100`, {
+        headers: { 'User-Agent': 'spindex-build', ...(process.env.GITHUB_TOKEN && { Authorization: `Bearer ${ process.env.GITHUB_TOKEN }` }) },
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP ${ response.status }`);
+    }
+    return firmwareReleases(await response.json());
+};
+
+// `currentDir`: this app's version comes from a bundle there, not a
+// release. `local`: that bundle is the working copy's, and the releases
+// are a bonus if GitHub can't be reached.
+const bundleReleases = async (currentDir, local = false) => {
+    let releases;
+    try {
+        releases = await listReleases();
+    } catch (error) {
+        if (!local) {
+            fail(`Couldn't list the GitHub releases (${ error.message }).`);
+        }
+        console.warn(`Couldn't list the GitHub releases (${ error.message }), so only the working copy's firmware is bundled.`);
+        releases = [];
+    }
     if (currentDir) {
         releases = releases.filter(release => release.version !== appVersion);
     } else if (!releases.some(release => release.version === appVersion)) {
@@ -136,7 +142,7 @@ const bundleReleases = async (currentDir) => {
         releases = [...releases, {
             version: appVersion,
             date: new Date().toISOString().slice(0, 10),
-            url: `https://github.com/${ REPOSITORY }/releases/tag/v${ appVersion }`,
+            ...(local ? { url: null, local: true } : { url: `https://github.com/${ REPOSITORY }/releases/tag/v${ appVersion }` }),
         }].sort((a, b) => compareVersions(b.version, a.version));
     }
 
@@ -153,9 +159,29 @@ const bundleReleases = async (currentDir) => {
     console.log(`Firmware ${ releases.map(release => release.version).join(', ') } is in ${ firmwareRoot }`);
 };
 
+// Builds the working copy's firmware with PlatformIO into a temporary
+// folder, and bundles it as this app's version with the older releases.
+const bundleLocal = async () => {
+    const pio = findPio();
+    const built = mkdtempSync(join(tmpdir(), 'spindex-firmware-'));
+    try {
+        const build = spawnSync(pio, ['run', '-e', 'm5stack-stamps3', '-t', 'webbundle'], {
+            cwd: controller,
+            stdio: 'inherit',
+            env: { ...process.env, SPINDEX_FIRMWARE_DIR: built },
+        });
+        if (build.status !== 0) {
+            fail('Building the firmware failed.');
+        }
+        await bundleReleases(built, true);
+    } finally {
+        rmSync(built, { recursive: true, force: true });
+    }
+};
+
 const currentFlag = process.argv.indexOf('--current-from');
 if (process.argv.includes('--local')) {
-    bundleLocal();
+    await bundleLocal();
 } else if (currentFlag !== -1 && !process.argv[currentFlag + 1]) {
     fail('--current-from needs the folder of the bundle to include.');
 } else {

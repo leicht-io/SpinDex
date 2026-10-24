@@ -67,7 +67,7 @@ Development, from `web-app/`:
 
 Releases are listed in `web-app/app/core/changelog.ts`. Its newest entry must match the `version` in `web-app/package.json` (a unit test checks this), so bump both together.
 
-`yarn build` also downloads the sensor firmware of every GitHub release into `dist/firmware/<version>/`, with an `index.json` of the versions, for the firmware updater. Browsers can't download GitHub release files from another site, so the app serves them itself. The build stops if this app's version has no release yet. `yarn build:web` builds the app alone.
+`yarn build` also builds the sensor firmware from your working copy with PlatformIO (`pio` on the PATH, its own install in `~/.platformio`, or `PIO=/path/to/pio`). It puts the firmware in `dist/firmware/<version>/`, where the firmware updater loads it from, next to the older releases' firmware from GitHub if GitHub can be reached. `dist/` is gitignored, so this build is only for deploying or serving from your machine; released builds come from the Release workflow below. Browsers can't download GitHub release files from another site, so the app serves all firmware itself. `yarn build:web` builds the app alone.
 
 #### Releases
 
@@ -82,7 +82,7 @@ A version bumped by hand (in `package.json` and `changelog.ts`) is published the
 
 The workflow needs, under *Settings → Actions → General → Workflow permissions*, "Read and write permissions" and "Allow GitHub Actions to create and approve pull requests". The *CI* workflow (`.github/workflows/ci.yml`) checks every pull request: types, lint, tests and builds of the app and the firmware. Release PRs opened by the bot don't trigger it (GitHub doesn't run workflows for its own token's PRs), so publishing runs the tests itself. Dependabot (`.github/dependabot.yml`) proposes npm and Actions updates weekly.
 
-To try updates with `yarn start`, run `yarn firmware` (the releases) or `yarn firmware:local` (the working copy, built with PlatformIO: `pio` on the PATH, its own install in `~/.platformio`, or `PIO=/path/to/pio`) first; without either, the updater says the build has no firmware.
+To try updates with `yarn start`, run `yarn firmware:local` (the working copy's firmware, as `yarn build` bundles it) or `yarn firmware` (only the GitHub releases) first; without either, the updater says the build has no firmware.
 
 ![SpinDex web app: measurement view](documentation/images/desktop_screenshot.png)
 
